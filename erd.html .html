@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERP ERD Table Connections</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .connected-tables {
+            max-width: 600px;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <h1>ERP ERD Table Connections</h1>
+    <table>
+        <tr>
+            <th>Table</th>
+            <th>Connected Tables</th>
+            <th>Relationship Description</th>
+        </tr>
+        <tr>
+            <td>COMPANY</td>
+            <td class="connected-tables">BRANCHES, USERS, CHART_OF_ACCOUNTS, EMPLOYEES, CUSTOMERS, SUPPLIERS, PRODUCTS, DEPARTMENTS, LEAVE_TYPES, PAYROLL_COMPONENTS, PRODUCT_CATEGORIES, PRODUCT_BRANDS, UNITS_OF_MEASURE, TAX_TYPES, FINANCIAL_YEAR, SYSTEM_SETTINGS, NUMBER_SERIES, BANK_RECONCILIATIONS, FIXED_ASSETS, BUDGETS, PROJECTS</td>
+            <td>has, employs, maintains, serves, works_with, sells, defines, configures, generates, tracks, owns, plans, manages</td>
+        </tr>
+        <tr>
+            <td>BRANCHES</td>
+            <td class="connected-tables">USER_BRANCH_ACCESS, EMPLOYEES, CUSTOMERS, SUPPLIERS, JOURNAL_ENTRIES, WAREHOUSES, CUSTOMER_INVOICES, VENDOR_BILLS, SALES_ORDERS, PURCHASE_REQUISITIONS, PURCHASE_ORDERS, GOODS_RECEIPTS, STOCK_ADJUSTMENTS, STOCK_TRANSFERS, PAYROLL, ATTENDANCE, BANK_RECONCILIATIONS, FIXED_ASSETS, SYSTEM_SETTINGS</td>
+            <td>allows_access, employs, serves, works_with, records, has, issues, receives, fulfills, requests, adjusts, transfers, processes, tracks, reconciles, locates, for</td>
+        </tr>
+        <tr>
+            <td>USERS</td>
+            <td class="connected-tables">USER_BRANCH_ACCESS, USER_ROLES, JOURNAL_ENTRIES, VENDOR_BILLS, CUSTOMER_INVOICES, LEAVE_APPLICATIONS, PURCHASE_REQUISITIONS, SALES_ORDERS, STOCK_ADJUSTMENTS, AUDIT_TRAIL</td>
+            <td>has_access, assigned, posts, creates, applies, requests, performs, logs</td>
+        </tr>
+        <tr>
+            <td>USER_BRANCH_ACCESS</td>
+            <td class="connected-tables">BRANCHES, USERS</td>
+            <td>allows_access, has_access</td>
+        </tr>
+        <tr>
+            <td>ROLES</td>
+            <td class="connected-tables">USER_ROLES, ROLE_PERMISSIONS</td>
+            <td>assigned_to, has</td>
+        </tr>
+        <tr>
+            <td>USER_ROLES</td>
+            <td class="connected-tables">USERS, ROLES</td>
+            <td>assigned, assigned_to</td>
+        </tr>
+        <tr>
+            <td>PERMISSIONS</td>
+            <td class="connected-tables">ROLE_PERMISSIONS</td>
+            <td>granted_through</td>
+        </tr>
+        <tr>
+            <td>ROLE_PERMISSIONS</td>
+            <td class="connected-tables">ROLES, PERMISSIONS</td>
+            <td>has, granted_through</td>
+        </tr>
+        <tr>
+            <td>CHART_OF_ACCOUNTS</td>
+            <td class="connected-tables">JOURNAL_ENTRY_DETAILS, BANK_RECONCILIATIONS, FIXED_ASSETS, BUDGETS</td>
+            <td>used_in, for_account, links_to_asset_account</td>
+        </tr>
+        <tr>
+            <td>JOURNAL_ENTRIES</td>
+            <td class="connected-tables">JOURNAL_ENTRY_DETAILS, VENDOR_PAYMENTS, CUSTOMER_PAYMENTS, CUSTOMER_INVOICES, VENDOR_BILLS, STOCK_MOVEMENTS, PAYROLL, ASSET_DEPRECIATION, BANK_RECONCILIATIONS, FINANCIAL_YEAR, NUMBER_SERIES, PROJECTS</td>
+            <td>contains, links_via_reference, auto_posts, costs, posts, reconciles, belongs_to, generates_no, posts_to</td>
+        </tr>
+        <tr>
+            <td>JOURNAL_ENTRY_DETAILS</td>
+            <td class="connected-tables">JOURNAL_ENTRIES, CHART_OF_ACCOUNTS</td>
+            <td>contains, used_in</td>
+        </tr>
+        <tr>
+            <td>SUPPLIERS</td>
+            <td class="connected-tables">VENDOR_BILLS, VENDOR_PAYMENTS, PURCHASE_ORDERS, SUPPLIER_CATEGORIES, SUPPLIER_CONTACTS, GOODS_RECEIPTS</td>
+            <td>bills, receives_payments, receives_orders, categorizes, has, supplies</td>
+        </tr>
+        <tr>
+            <td>SUPPLIER_CATEGORIES</td>
+            <td class="connected-tables">SUPPLIERS</td>
+            <td>categorizes</td>
+        </tr>
+        <tr>
+            <td>VENDOR_BILLS</td>
+            <td class="connected-tables">SUPPLIERS, VENDOR_BILL_DETAILS, VENDOR_PAYMENT_DETAILS, PURCHASE_ORDERS, JOURNAL_ENTRIES, NUMBER_SERIES, TAX_TYPES</td>
+            <td>bills, contains, allocated_to, links, auto_posts, generates_no, applies_to</td>
+        </tr>
+        <tr>
+            <td>VENDOR_BILL_DETAILS</td>
+            <td class="connected-tables">VENDOR_BILLS, PRODUCTS, TAX_TYPES</td>
+            <td>contains, billed, applies_to</td>
+        </tr>
+        <tr>
+            <td>VENDOR_PAYMENTS</td>
+            <td class="connected-tables">SUPPLIERS, VENDOR_PAYMENT_DETAILS, JOURNAL_ENTRIES, BANK_RECONCILIATION_DETAILS</td>
+            <td>receives_payments, allocates, links_via_reference, reconciles</td>
+        </tr>
+        <tr>
+            <td>VENDOR_PAYMENT_DETAILS</td>
+            <td class="connected-tables">VENDOR_PAYMENTS, VENDOR_BILLS</td>
+            <td>allocates, allocated_to</td>
+        </tr>
+        <tr>
+            <td>CUSTOMERS</td>
+            <td class="connected-tables">CUSTOMER_INVOICES, CUSTOMER_PAYMENTS, SALES_ORDERS, QUOTATIONS, CUSTOMER_CATEGORIES, CUSTOMER_CONTACTS, SERIAL_NUMBERS</td>
+            <td>receives, makes_payments, places, categorizes, has, assigned</td>
+        </tr>
+        <tr>
+            <td>CUSTOMER_CATEGORIES</td>
+            <td class="connected-tables">CUSTOMERS</td>
+            <td>categorizes</td>
+        </tr>
+        <tr>
+            <td>CUSTOMER_INVOICES</td>
+            <td class="connected-tables">CUSTOMERS, CUSTOMER_INVOICE_DETAILS, CUSTOMER_PAYMENT_DETAILS, SALES_ORDERS, JOURNAL_ENTRIES, NUMBER_SERIES, STOCK_MOVEMENTS, TAX_TYPES</td>
+            <td>receives, contains, allocated_to, generates, auto_posts, generates_no, triggers_outbound, applies_to</td>
+        </tr>
+        <tr>
+            <td>CUSTOMER_INVOICE_DETAILS</td>
+            <td class="connected-tables">CUSTOMER_INVOICES, PRODUCTS, TAX_TYPES</td>
+            <td>contains, invoiced, applies_to</td>
+        </tr>
+        <tr>
+            <td>CUSTOMER_PAYMENTS</td>
+            <td class="connected-tables">CUSTOMERS, CUSTOMER_PAYMENT_DETAILS, JOURNAL_ENTRIES, BANK_RECONCILIATION_DETAILS</td>
+            <td>makes_payments, allocates, links_via_reference, reconciles</td>
+        </tr>
+        <tr>
+            <td>CUSTOMER_PAYMENT_DETAILS</td>
+            <td class="connected-tables">CUSTOMER_PAYMENTS, CUSTOMER_INVOICES</td>
+            <td>allocates, allocated_to</td>
+        </tr>
+        <tr>
+            <td>DEPARTMENTS</td>
+            <td class="connected-tables">EMPLOYEES, PURCHASE_REQUISITIONS, DESIGNATIONS</td>
+            <td>employs, requests_from, holds</td>
+        </tr>
+        <tr>
+            <td>DESIGNATIONS</td>
+            <td class="connected-tables">EMPLOYEES, DEPARTMENTS</td>
+            <td>holds, employs</td>
+        </tr>
+        <tr>
+            <td>EMPLOYEES</td>
+            <td class="connected-tables">ATTENDANCE, LEAVE_APPLICATIONS, PAYROLL, EMPLOYEE_DOCUMENTS, EMPLOYEE_SALARY_STRUCTURE, EMPLOYEE_LEAVE_ALLOCATION, WAREHOUSES, PURCHASE_REQUISITIONS, SALES_ORDERS, DEPARTMENTS, DESIGNATIONS, FIXED_ASSETS, PROJECTS, PROJECT_TASKS</td>
+            <td>has, applies, receives, manages, requests, sales_person, employs, holds, assigned, managed_by, assigned_to</td>
+        </tr>
+        <tr>
+            <td>EMPLOYEE_DOCUMENTS</td>
+            <td class="connected-tables">EMPLOYEES</td>
+            <td>has</td>
+        </tr>
+        <tr>
+            <td>ATTENDANCE</td>
+            <td class="connected-tables">EMPLOYEES, LEAVE_APPLICATIONS, HOLIDAYS</td>
+            <td>has, affects, excludes</td>
+        </tr>
+        <tr>
+            <td>LEAVE_TYPES</td>
+            <td class="connected-tables">EMPLOYEE_LEAVE_ALLOCATION, LEAVE_APPLICATIONS</td>
+            <td>allocated, type_of</td>
+        </tr>
+        <tr>
+            <td>EMPLOYEE_LEAVE_ALLOCATION</td>
+            <td class="connected-tables">EMPLOYEES, LEAVE_TYPES</td>
+            <td>allocated, allocated</td>
+        </tr>
+        <tr>
+            <td>LEAVE_APPLICATIONS</td>
+            <td class="connected-tables">EMPLOYEES, LEAVE_TYPES, ATTENDANCE</td>
+            <td>applies, approves, type_of, affects</td>
+        </tr>
+        <tr>
+            <td>HOLIDAYS</td>
+            <td class="connected-tables">ATTENDANCE</td>
+            <td>excludes</td>
+        </tr>
+        <tr>
+            <td>PAYROLL_COMPONENTS</td>
+            <td class="connected-tables">EMPLOYEE_SALARY_STRUCTURE, PAYROLL_DETAILS</td>
+            <td>uses, calculates</td>
+        </tr>
+        <tr>
+            <td>EMPLOYEE_SALARY_STRUCTURE</td>
+            <td class="connected-tables">EMPLOYEES, PAYROLL_COMPONENTS</td>
+            <td>has, uses</td>
+        </tr>
+        <tr>
+            <td>PAYROLL</td>
+            <td class="connected-tables">EMPLOYEES, PAYROLL_DETAILS, JOURNAL_ENTRIES, FINANCIAL_YEAR</td>
+            <td>receives, contains, posts, for</td>
+        </tr>
+        <tr>
+            <td>PAYROLL_DETAILS</td>
+            <td class="connected-tables">PAYROLL, PAYROLL_COMPONENTS</td>
+            <td>contains, calculates</td>
+        </tr>
+        <tr>
+            <td>SALES_ORDERS</td>
+            <td class="connected-tables">CUSTOMERS, SALES_ORDER_DETAILS, CUSTOMER_INVOICES, NUMBER_SERIES, STOCK_MOVEMENTS, EMPLOYEES, PROJECTS</td>
+            <td>places, contains, generates, generates_no, fulfills, sales_person, billed_to</td>
+        </tr>
+        <tr>
+            <td>SALES_ORDER_DETAILS</td>
+            <td class="connected-tables">SALES_ORDERS, PRODUCTS, STOCK_MOVEMENTS, TAX_TYPES</td>
+            <td>contains, ordered, fulfills, applies_to</td>
+        </tr>
+        <tr>
+            <td>QUOTATIONS</td>
+            <td class="connected-tables">CUSTOMERS, QUOTATION_DETAILS</td>
+            <td>receives, contains</td>
+        </tr>
+        <tr>
+            <td>QUOTATION_DETAILS</td>
+            <td class="connected-tables">QUOTATIONS, PRODUCTS, TAX_TYPES</td>
+            <td>contains, ordered, applies_to</td>
+        </tr>
+        <tr>
+            <td>CUSTOMER_CONTACTS</td>
+            <td class="connected-tables">CUSTOMERS</td>
+            <td>has</td>
+        </tr>
+        <tr>
+            <td>PURCHASE_REQUISITIONS</td>
+            <td class="connected-tables">PURCHASE_REQUISITION_DETAILS, PURCHASE_ORDERS, DEPARTMENTS, EMPLOYEES</td>
+            <td>contains, generates, requests_from, requests</td>
+        </tr>
+        <tr>
+            <td>PURCHASE_REQUISITION_DETAILS</td>
+            <td class="connected-tables">PURCHASE_REQUISITIONS, PRODUCTS</td>
+            <td>contains, requested</td>
+        </tr>
+        <tr>
+            <td>PURCHASE_ORDERS</td>
+            <td class="connected-tables">SUPPLIERS, PURCHASE_ORDER_DETAILS, GOODS_RECEIPTS, PURCHASE_REQUISITIONS, VENDOR_BILLS, NUMBER_SERIES, PROJECTS</td>
+            <td>receives_orders, contains, fulfilled_by, generates, links, generates_no, costs_from</td>
+        </tr>
+        <tr>
+            <td>PURCHASE_ORDER_DETAILS</td>
+            <td class="connected-tables">PURCHASE_ORDERS, PRODUCTS, GOODS_RECEIPT_DETAILS, STOCK_MOVEMENTS, TAX_TYPES</td>
+            <td>contains, purchased, received, receives, applies_to</td>
+        </tr>
+        <tr>
+            <td>GOODS_RECEIPTS</td>
+            <td class="connected-tables">SUPPLIERS, PURCHASE_ORDERS, GOODS_RECEIPT_DETAILS, STOCK_MOVEMENTS, NUMBER_SERIES</td>
+            <td>supplies, fulfilled_by, contains, triggers_inbound, generates_no</td>
+        </tr>
+        <tr>
+            <td>GOODS_RECEIPT_DETAILS</td>
+            <td class="connected-tables">GOODS_RECEIPTS, PURCHASE_ORDER_DETAILS, PRODUCTS</td>
+            <td>contains, received, purchased</td>
+        </tr>
+        <tr>
+            <td>SUPPLIER_CONTACTS</td>
+            <td class="connected-tables">SUPPLIERS</td>
+            <td>has</td>
+        </tr>
+        <tr>
+            <td>PRODUCT_CATEGORIES</td>
+            <td class="connected-tables">PRODUCTS</td>
+            <td>categorizes</td>
+        </tr>
+        <tr>
+            <td>PRODUCT_BRANDS</td>
+            <td class="connected-tables">PRODUCTS</td>
+            <td>branded</td>
+        </tr>
+        <tr>
+            <td>UNITS_OF_MEASURE</td>
+            <td class="connected-tables">PRODUCTS</td>
+            <td>measured_in</td>
+        </tr>
+        <tr>
+            <td>PRODUCTS</td>
+            <td class="connected-tables">VENDOR_BILL_DETAILS, CUSTOMER_INVOICE_DETAILS, SALES_ORDER_DETAILS, PURCHASE_REQUISITION_DETAILS, PURCHASE_ORDER_DETAILS, INVENTORY_STOCK, STOCK_BATCHES, SERIAL_NUMBERS, STOCK_MOVEMENTS, STOCK_ADJUSTMENT_DETAILS, STOCK_TRANSFER_DETAILS, PRODUCT_CATEGORIES, PRODUCT_BRANDS, UNITS_OF_MEASURE, TAX_TYPES</td>
+            <td>billed, invoiced, ordered, requested, purchased, stocked, batched, serialized, moved, adjusted, transferred, categorizes, branded, measured_in, default_for</td>
+        </tr>
+        <tr>
+            <td>PRODUCT_VARIANTS</td>
+            <td class="connected-tables">PRODUCTS</td>
+            <td>variant_of</td>
+        </tr>
+        <tr>
+            <td>WAREHOUSES</td>
+            <td class="connected-tables">STORAGE_LOCATIONS, INVENTORY_STOCK, STOCK_BATCHES, STOCK_MOVEMENTS, STOCK_ADJUSTMENTS, STOCK_TRANSFERS, EMPLOYEES</td>
+            <td>contains, holds, stores, from/to, adjusts, transfers, manages</td>
+        </tr>
+        <tr>
+            <td>STORAGE_LOCATIONS</td>
+            <td class="connected-tables">WAREHOUSES, INVENTORY_STOCK, STOCK_MOVEMENTS, STOCK_ADJUSTMENT_DETAILS, STOCK_TRANSFER_DETAILS</td>
+            <td>contains, located, to/from, at</td>
+        </tr>
+        <tr>
+            <td>INVENTORY_STOCK</td>
+            <td class="connected-tables">PRODUCTS, WAREHOUSES, STORAGE_LOCATIONS</td>
+            <td>stocked, holds, located</td>
+        </tr>
+        <tr>
+            <td>STOCK_BATCHES</td>
+            <td class="connected-tables">PRODUCTS, WAREHOUSES, STOCK_MOVEMENTS, SERIAL_NUMBERS, STOCK_ADJUSTMENT_DETAILS, STOCK_TRANSFER_DETAILS</td>
+            <td>batched, stores, batched, contains, adjusted, transferred</td>
+        </tr>
+        <tr>
+            <td>SERIAL_NUMBERS</td>
+            <td class="connected-tables">PRODUCTS, WAREHOUSES, STOCK_BATCHES, STOCK_MOVEMENTS, CUSTOMERS</td>
+            <td>serialized, stores, contains, moved, assigned</td>
+        </tr>
+        <tr>
+            <td>STOCK_MOVEMENTS</td>
+            <td class="connected-tables">PRODUCTS, WAREHOUSES, STORAGE_LOCATIONS, STOCK_BATCHES, SERIAL_NUMBERS, CUSTOMER_INVOICES, SALES_ORDER_DETAILS, GOODS_RECEIPTS, PURCHASE_ORDER_DETAILS, JOURNAL_ENTRIES</td>
+            <td>moved, from/to, to/from, batched, moved, triggers_outbound, fulfills, triggers_inbound, receives, costs</td>
+        </tr>
+        <tr>
+            <td>STOCK_ADJUSTMENTS</td>
+            <td class="connected-tables">STOCK_ADJUSTMENT_DETAILS, WAREHOUSES</td>
+            <td>contains, adjusts</td>
+        </tr>
+        <tr>
+            <td>STOCK_ADJUSTMENT_DETAILS</td>
+            <td class="connected-tables">STOCK_ADJUSTMENTS, PRODUCTS, STORAGE_LOCATIONS, STOCK_BATCHES</td>
+            <td>contains, adjusted, at, adjusted</td>
+        </tr>
+        <tr>
+            <td>STOCK_TRANSFERS</td>
+            <td class="connected-tables">STOCK_TRANSFER_DETAILS, WAREHOUSES</td>
+            <td>contains, from/to</td>
+        </tr>
+        <tr>
+            <td>STOCK_TRANSFER_DETAILS</td>
+            <td class="connected-tables">STOCK_TRANSFERS, PRODUCTS, STORAGE_LOCATIONS, STOCK_BATCHES</td>
+            <td>contains, transferred, to/from, transferred</td>
+        </tr>
+        <tr>
+            <td>TAX_TYPES</td>
+            <td class="connected-tables">TAX_SLABS, VENDOR_BILLS, CUSTOMER_INVOICES, SALES_ORDER_DETAILS, PURCHASE_ORDER_DETAILS, VENDOR_BILL_DETAILS, CUSTOMER_INVOICE_DETAILS, PRODUCTS</td>
+            <td>has_slabs, applies_to, default_for</td>
+        </tr>
+        <tr>
+            <td>TAX_SLABS</td>
+            <td class="connected-tables">TAX_TYPES</td>
+            <td>has_slabs</td>
+        </tr>
+        <tr>
+            <td>FINANCIAL_YEAR</td>
+            <td class="connected-tables">JOURNAL_ENTRIES, PAYROLL, BUDGETS</td>
+            <td>belongs_to, for, in_year</td>
+        </tr>
+        <tr>
+            <td>AUDIT_TRAIL</td>
+            <td class="connected-tables">USERS</td>
+            <td>logs</td>
+        </tr>
+        <tr>
+            <td>SYSTEM_SETTINGS</td>
+            <td class="connected-tables">BRANCHES</td>
+            <td>for</td>
+        </tr>
+        <tr>
+            <td>NUMBER_SERIES</td>
+            <td class="connected-tables">JOURNAL_ENTRIES, VENDOR_BILLS, CUSTOMER_INVOICES, SALES_ORDERS, PURCHASE_ORDERS, GOODS_RECEIPTS</td>
+            <td>generates_no</td>
+        </tr>
+        <tr>
+            <td>BANK_RECONCILIATIONS</td>
+            <td class="connected-tables">BANK_RECONCILIATION_DETAILS, CHART_OF_ACCOUNTS, JOURNAL_ENTRIES</td>
+            <td>contains, for_account, reconciles</td>
+        </tr>
+        <tr>
+            <td>BANK_RECONCILIATION_DETAILS</td>
+            <td class="connected-tables">BANK_RECONCILIATIONS, VENDOR_PAYMENTS, CUSTOMER_PAYMENTS</td>
+            <td>contains, reconciles</td>
+        </tr>
+        <tr>
+            <td>FIXED_ASSETS</td>
+            <td class="connected-tables">ASSET_DEPRECIATION, CHART_OF_ACCOUNTS, EMPLOYEES</td>
+            <td>depreciates, links_to_asset_account, assigned_to</td>
+        </tr>
+        <tr>
+            <td>ASSET_DEPRECIATION</td>
+            <td class="connected-tables">FIXED_ASSETS, JOURNAL_ENTRIES</td>
+            <td>depreciates, posts</td>
+        </tr>
+        <tr>
+            <td>BUDGETS</td>
+            <td class="connected-tables">CHART_OF_ACCOUNTS, FINANCIAL_YEAR</td>
+            <td>for_account, in_year</td>
+        </tr>
+        <tr>
+            <td>PROJECTS</td>
+            <td class="connected-tables">PROJECT_TASKS, EMPLOYEES, SALES_ORDERS, PURCHASE_ORDERS, JOURNAL_ENTRIES</td>
+            <td>has, managed_by, billed_to, costs_from, posts_to</td>
+        </tr>
+        <tr>
+            <td>PROJECT_TASKS</td>
+            <td class="connected-tables">PROJECTS, EMPLOYEES</td>
+            <td>has, assigned_to</td>
+        </tr>
+    </table>
+</body>
+</html>
