@@ -1,0 +1,34 @@
+import { Controller, Get, Post, Body, Param, Patch, Delete, Put } from '@nestjs/common';
+import { ShiftService } from './shift.service';
+import { CreateShiftDto } from './dto/create-shift.dto';
+import { UpdateShiftDto } from './dto/update-shift.dto';
+
+@Controller('shifts')
+export class ShiftController {
+  constructor(private readonly shiftService: ShiftService) {}
+
+  @Post('create')
+  create(@Body() dto: CreateShiftDto) {
+    return this.shiftService.create(dto);
+  }
+
+  @Get('list')
+  findAll() {
+    return this.shiftService.findAll();
+  }
+
+  @Get(':id/get')
+  findOne(@Param('id') id: number) {
+    return this.shiftService.findOne(+id);
+  }
+
+  @Put(':id/update')
+  update(@Param('id') id: number, @Body() dto: UpdateShiftDto) {
+    return this.shiftService.update(+id, dto);
+  }
+
+  @Delete(':id/delete')
+  remove(@Param('id') id: number) {
+    return this.shiftService.remove(+id);
+  }
+}
