@@ -9,14 +9,20 @@ export class Product {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column()
+  category_id:number;
   @ManyToOne(() => Category)
   @JoinColumn({ name: 'category_id' })
   category: Category;
 
+  @Column()
+  brand_id:number;
   @ManyToOne(() => Brand)
   @JoinColumn({ name: 'brand_id' })
   brand: Brand;
 
+  @Column()
+  uom_id:number;
   @ManyToOne(() => UnitOfMeasure)
   @JoinColumn({ name: 'uom_id' })
   uom: UnitOfMeasure;

@@ -14,6 +14,19 @@ import { userRoleMapping } from './entities/user-role-mapping.entity';
 import { sideMenus } from './entities/side-menu.entity';
 import { subSideMenus } from './entities/sub-side-menu.entity';
 import { sidemunuRolesMapping } from './entities/role-side-menu-mapping.entity';
+import { ProductModule } from './procurement/product/product.module';
+import { PurchaseRequestModule } from './procurement/purchase_request/purchase_request.module';
+import { PurchaseRequestItemsModule } from './procurement/purchase_request_items/purchase_request_items.module';
+import { PurchaseOrderModule } from './procurement/purchase_order/purchase_order.module';
+import { CategoriesModule } from './procurement/categories/categories.module';
+import { BrandModule } from './procurement/brand/brand.module';
+import { UnitOfMeasureModule } from './procurement/unit_of_measure/unit_of_measure.module';
+import { Brand } from './procurement/brand/entities/brand.entity';
+import { Category } from './procurement/categories/entities/category.entity';
+import { UnitOfMeasure } from './procurement/unit_of_measure/entities/unit_of_measure.entity';
+import { productVariant } from './procurement/product/entities/variant.entity';
+import { StockModule } from './procurement/stock/stock.module';
+import { WarehouseModule } from './procurement/warehouse/warehouse.module';
 
 @Module({
   imports: [
@@ -28,9 +41,33 @@ import { sidemunuRolesMapping } from './entities/role-side-menu-mapping.entity';
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
     }),
-    TypeOrmModule.forFeature([User, Role, userRoleMapping, sideMenus, subSideMenus, sidemunuRolesMapping]),
+    TypeOrmModule.forFeature([
+      User,
+      Role,
+      userRoleMapping,
+      sideMenus, 
+      subSideMenus,
+      sidemunuRolesMapping,
+      Brand,
+      Category,
+      UnitOfMeasure,
+      ProductModule,
+      productVariant
+    ]),
 
-    AuthModule, PermissionsModule, RolesModule, UsersModule
+    AuthModule, 
+    PermissionsModule,
+    RolesModule,
+    UsersModule,
+    ProductModule,
+    PurchaseRequestModule,
+    PurchaseRequestItemsModule,
+    PurchaseOrderModule,
+    CategoriesModule,
+    BrandModule,
+    UnitOfMeasureModule,
+    StockModule,
+    WarehouseModule,
   ],
   controllers: [AppController],
   providers: [AppService, registerUser, userRoles],

@@ -56,26 +56,35 @@ export class ProductService {
 //     }
 
 async store(createProductDto: CreateProductDto) {
+  try{
   return await this.dataSource.transaction(async (manager) => {
-    // 1. Save product
-const product = manager.getRepository(Product).create(createProductDto);
-const savedProduct = await manager.getRepository(Product).save(product);
-const variantsData = ""
-    // 2. Prepare variants with product_id
-    if (createProductDto.variants && createProductDto.variants.length > 0) {
-      const variantsData = createProductDto.variants.map((variant) =>
-        manager.getRepository(productVariant).create({
-          ...variant,
-          product: savedProduct, // relation ke liye
-        }),
-      );
-      await manager.getRepository(productVariant).save(variantsData);
-    }
-       return successResponse('product created successfully!',{
-        savedProduct,
-        variantsData
-       });
-  });
+    // Save product
+    const product = manager.getRepository(Product).create(createProductDto);
+    const savedProduct = await manager.getRepository(Product).save(product);
+    let variantsData: any[] = []; 
+        // Save variant
+        if (createProductDto.variants && createProductDto.variants.length > 0) {
+          const variantsData = createProductDto.variants.map((variant) =>
+            manager.getRepository(productVariant).create({
+              ...variant,
+              product: savedProduct, // relation ke liye
+            }),
+          );
+          await manager.getRepository(productVariant).save(variantsData);
+        }
+          return successResponse('product created successfully!',{
+            savedProduct,
+            variantsData
+          });
+      });
+  } catch (error) {
+          if (error.code === 'ER_DUP_ENTRY') {
+          throw new BadRequestException('product already exists');
+        }
+        throw new BadRequestException(error.message || 'Failed to create product');
+      }
+
+
 }
 
 
