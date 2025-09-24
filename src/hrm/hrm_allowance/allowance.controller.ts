@@ -1,0 +1,34 @@
+import { Controller, Post, Get, Put, Delete, Param, Body } from '@nestjs/common';
+import { AllowanceService } from './allowance.service';
+import { CreateAllowanceDto } from './dto/create-allowance.dto';
+import { UpdateAllowanceDto } from './dto/update-allowance.dto';
+
+@Controller('allowance')
+export class AllowanceController {
+  constructor(private readonly allowanceService: AllowanceService) {}
+
+  @Post('create')
+  create(@Body() dto: CreateAllowanceDto) {
+    return this.allowanceService.create(dto);
+  }
+
+  @Get('list')
+  findAll() {
+    return this.allowanceService.findAll();
+  }
+
+  @Get(':id/get')
+  findOne(@Param('id') id: number) {
+    return this.allowanceService.findOne(+id);
+  }
+
+  @Put(':id/update')
+  update(@Param('id') id: number, @Body() dto: UpdateAllowanceDto) {
+    return this.allowanceService.update(+id, dto);
+  }
+
+  @Delete(':id/delete')
+  remove(@Param('id') id: number) {
+    return this.allowanceService.remove(+id);
+  }
+}
