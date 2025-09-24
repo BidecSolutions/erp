@@ -37,20 +37,20 @@ export class Role {
     this.created_time = now.toTimeString().split(' ')[0];
   }
 
-  @ManyToMany(() => User, user => user.roles)
-  users: User[];
+  // @ManyToMany(() => User, user => user.roles)
+  // users: User[];
 
-  @ManyToMany(() => Permission, permission => permission.roles, { eager: true })
-  @JoinTable({
-    name: 'role_permission_mappings',
-    joinColumn: {
-      name: 'role_id',
-      referencedColumnName: 'id'
-    },
-    inverseJoinColumn: {
-      name: 'permission_id',
-      referencedColumnName: 'id'
-    }
-  })
-  permissions: Permission[];
+  // @ManyToMany(() => Permission, permission => permission.roles, { eager: true })
+  // @JoinTable({
+  //   name: 'role_permission_mappings',
+  //   joinColumn: {
+  //     name: 'role_id',
+  //     referencedColumnName: 'id'
+  //   },
+  //   inverseJoinColumn: {
+  //     name: 'permission_id',
+  //     referencedColumnName: 'id'
+  //   }
+  // })
+  // permissions: Permission[];
 }

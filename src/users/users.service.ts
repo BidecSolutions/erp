@@ -13,6 +13,7 @@ import { User } from 'src/entities/user.entity'; // Corrected path
 import * as bcrypt from 'bcryptjs';
 import { Permission } from 'src/entities/Permission.entity';
 import { Role } from 'src/entities/role.entity';
+import { userRoleMapping } from 'src/entities/user-role-mapping.entity';
 
 @Injectable()
 export class UsersService {
@@ -22,6 +23,11 @@ export class UsersService {
 
     @InjectRepository(Permission)
     private permRepo: Repository<Permission>,
+
+
+    @InjectRepository(userRoleMapping)
+    private roleMappingRepo: Repository<userRoleMapping>,
+
 
     @InjectRepository(Role)
     private roleRepo: Repository<Role>,
@@ -52,34 +58,93 @@ export class UsersService {
     });
   }
 
-  async create(name: string, email: string, password: string, phone: string, role_id?: number): Promise<User> {
-    // Check if user already exists
-    const existingUser = await this.findOneByEmail(email);
+  // async create(body: any) {
+  //   const existingUser = await this.findOneByEmail(body.user.email);
+  //   if (existingUser) {
+  //     throw new BadRequestException('Email already exists');
+  //   }
+
+  //   if (!body.permission) {
+  //     throw new BadRequestException('Please Enter User Permission to Intract with the System');
+  //   }
+
+  //   if (!body.user.role_id) {
+  //     throw new BadRequestException('Please Select the User Role in the system');
+  //   }
+  //   const hashedPassword = await bcrypt.hash(body.user.password, 10);
+
+  //   const now = new Date();
+  //   const user = this.usersRepository.create({
+  //     name: body.user.name,
+  //     email: body.user.email,
+  //     password: hashedPassword,
+  //     created_at: now.toISOString().split('T')[0],
+  //     updated_at: now.toISOString().split('T')[0]
+  //   });
+  //   const savedUser = await this.usersRepository.save(user);
+  //   const roleMapping = body.permission.map((perm: any) => this.permRepo.create({
+  //     menu_id: perm.menu_id,
+  //     sub_menu_id: perm.sub_menu_id,
+  //     user_id: savedUser.id
+  //   }));
+  //   await this.permRepo.save(roleMapping);
+
+  //   const userRoleMapping = this.roleMappingRepo.create({
+  //     user_id: savedUser.id,
+  //     roll_id: body.user.role_id
+  //   });
+
+  //   await this.roleMappingRepo.save(userRoleMapping);
+  // }
+
+
+  async create(body: any) {
+    const existingUser = await this.findOneByEmail(body.user.email);
     if (existingUser) {
       throw new BadRequestException('Email already exists');
     }
-    const phoneNO = await this.usersRepository.find({
-      where: {
-        phone: phone,
-      },
-    });
-    if (phoneNO.length !== 0) {
-      throw new BadRequestException('phone No Alraedy Exists');
+
+    if (!body.permission) {
+      throw new BadRequestException('Please Enter User Permission to Intract with the System');
     }
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-    // Create new user
+
+    if (!body.user.role_id) {
+      throw new BadRequestException('Please Select the User Role in the system');
+    }
+
+    const hashedPassword = await bcrypt.hash(body.user.password, 10);
+
     const now = new Date();
     const user = this.usersRepository.create({
-      name,
-      email,
+      name: body.user.name,
+      email: body.user.email,
       password: hashedPassword,
-      phone,
-      created_at: now.toDateString()
+      created_at: now.toISOString().split('T')[0],
+      updated_at: now.toISOString().split('T')[0],
     });
 
-    return this.usersRepository.save(user);
+    const savedUser = await this.usersRepository.save(user);
+
+    // 👇 Map permissions with array of module_permission
+    const roleMapping = body.permission.map((perm: any) =>
+      this.permRepo.create({
+        menu_id: perm.menu_id,
+        sub_menu_id: perm.sub_menu_id,
+        user_id: savedUser.id,
+        module_permission: perm.module_permission,
+      }),
+    );
+
+    await this.permRepo.save(roleMapping);
+
+    const userRoleMapping = this.roleMappingRepo.create({
+      user_id: savedUser.id,
+      roll_id: body.user.role_id,
+    });
+
+    await this.roleMappingRepo.save(userRoleMapping);
   }
+
 
   async validateUser(email: string, password: string): Promise<User | null> {
     const user = await this.findOneByEmail(email);
@@ -224,8 +289,8 @@ export class UsersService {
 
     const permissions = await this.permRepo.findBy({ id: In(permissionIds) });
 
-    // Overwrite existing permissions instead of adding new ones
-    user.permissions = permissions;
+    // // Overwrite existing permissions instead of adding new ones
+    // user.permissions = permissions;
 
     return await this.usersRepository.save(user);
   }
@@ -248,7 +313,7 @@ export class UsersService {
       throw new NotFoundException('No valid roles found');
     }
 
-    user.roles = roles;
+    // user.roles = roles;
     await this.usersRepository.save(user);
 
     return {

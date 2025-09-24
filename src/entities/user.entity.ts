@@ -8,8 +8,8 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'int', nullable: true, default: 2, comment: '1 = Admin, 2 User' })
-  type: number;;
+  // @Column({ type: 'int', nullable: true, default: 2, comment: '1 = Admin, 2 User' })
+  // type: number;;
 
   @Column({ length: 255 })
   name: string;
@@ -48,7 +48,7 @@ export class User {
   setDefaults() {
     const now = new Date();
     this.created_at = now.toISOString().split('T')[0];
-    this.updated_at = now.toTimeString().split(' ')[0];
+    this.updated_at = now.toISOString().split('T')[0];
   }
 
   @Column({
@@ -65,31 +65,31 @@ export class User {
   two_fa_expiry: Date;
 
 
-  @ManyToMany(() => Role, role => role.users, { eager: true })
-  @JoinTable({
-    name: 'user_role_mappings',
-    joinColumn: {
-      name: 'user_id',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'role_id',
-      referencedColumnName: 'id',
-    },
-  })
-  roles: Role[];
+  // @ManyToMany(() => Role, role => role.users, { eager: true })
+  // @JoinTable({
+  //   name: 'user_role_mappings',
+  //   joinColumn: {
+  //     name: 'user_id',
+  //     referencedColumnName: 'id',
+  //   },
+  //   inverseJoinColumn: {
+  //     name: 'role_id',
+  //     referencedColumnName: 'id',
+  //   },
+  // })
+  // roles: Role[];
 
-  @ManyToMany(() => Permission, permission => permission.users, { eager: true })
-  @JoinTable({
-    name: 'user_permissions',
-    joinColumn: {
-      name: 'user_id',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'permission_id',
-      referencedColumnName: 'id',
-    },
-  })
-  permissions: Permission[];
+  // @ManyToMany(() => Permission, permission => permission.users, { eager: true })
+  // @JoinTable({
+  //   name: 'user_permissions',
+  //   joinColumn: {
+  //     name: 'user_id',
+  //     referencedColumnName: 'id',
+  //   },
+  //   inverseJoinColumn: {
+  //     name: 'permission_id',
+  //     referencedColumnName: 'id',
+  //   },
+  // })
+  // permissions: Permission[];
 }

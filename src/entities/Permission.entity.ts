@@ -13,13 +13,23 @@ export class Permission {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
-  permission_name: string;
+  @Column({ type: 'int' })
+  menu_id: number;
+
+  @Column({ type: 'int' })
+  sub_menu_id: number;
+
+
+  @Column({ type: 'int' })
+  user_id: number;
+
+  @Column('json', { nullable: true })
+  module_permission: string[];
 
   @Column({
     type: 'int',
     default: 1,
-    comment: '1 = Active, 2 = Inactive',
+    comment: '1 = Active, 2 = Inactive ',
   })
   status: number;
 
@@ -35,10 +45,4 @@ export class Permission {
     this.created_date = now.toISOString().split('T')[0];
     this.created_time = now.toTimeString().split(' ')[0];
   }
-
-  @ManyToMany(() => Role, (role) => role.permissions)
-  roles: Role[];
-
-  @ManyToMany(() => User, (user) => user.permissions)
-  users: User[];
 }

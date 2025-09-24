@@ -11,9 +11,16 @@ import { UserToken } from './save-token.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/entities/user.entity';
 import { MailService } from './mail.service';
+import { userRoleMapping } from 'src/entities/user-role-mapping.entity';
+import { sideMenus } from 'src/entities/side-menu.entity';
+import { subSideMenus } from 'src/entities/sub-side-menu.entity';
+import { sidemunuRolesMapping } from 'src/entities/role-side-menu-mapping.entity';
+import { Permission } from 'src/entities/Permission.entity';
+import { Role } from 'src/entities/role.entity';
+import { subSideMenuPermission } from 'src/entities/sub-side-menu-permission.entity';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserToken, User]),
+    TypeOrmModule.forFeature([subSideMenuPermission, Role, Permission, UserToken, User, userRoleMapping, sideMenus, subSideMenus, sidemunuRolesMapping]),
     UsersModule,
     PassportModule,
     JwtModule.register({
@@ -21,7 +28,7 @@ import { MailService } from './mail.service';
       signOptions: { expiresIn: '1d' },
     }),
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy,MailService],
+  providers: [AuthService, LocalStrategy, JwtStrategy, MailService],
   controllers: [AuthController],
 })
 export class AuthModule { }

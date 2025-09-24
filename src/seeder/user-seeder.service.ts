@@ -29,7 +29,7 @@ export class registerUser {
                 email: 'admin@gmail.com',
                 phone: '1234567890',
                 address: 'NZ',
-                type: 1
+                // type: 1
             },
         ];
 

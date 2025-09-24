@@ -6,8 +6,15 @@ import * as nodemailer from 'nodemailer';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserToken } from './save-token.entity';
-import { Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
+import { Role } from 'src/entities/role.entity';
+import { userRoleMapping } from 'src/entities/user-role-mapping.entity';
+import { sideMenus } from 'src/entities/side-menu.entity';
+import { subSideMenus } from 'src/entities/sub-side-menu.entity';
+import { sidemunuRolesMapping } from 'src/entities/role-side-menu-mapping.entity';
+import { Permission } from 'src/entities/Permission.entity';
+import { subSideMenuPermission } from 'src/entities/sub-side-menu-permission.entity';
 @Injectable()
 export class AuthService {
   constructor(
@@ -20,6 +27,26 @@ export class AuthService {
     @InjectRepository(User)
     private usersRepository: Repository<User>,
 
+    @InjectRepository(Role)
+    private usersRoles: Repository<Role>,
+
+    @InjectRepository(userRoleMapping)
+    private usersRoleRepository: Repository<userRoleMapping>,
+
+    @InjectRepository(sideMenus)
+    private sideMenuRepository: Repository<sideMenus>,
+
+    @InjectRepository(subSideMenus)
+    private subSideMenuRepository: Repository<subSideMenus>,
+
+    @InjectRepository(sidemunuRolesMapping)
+    private sideMenuMapppingRepository: Repository<sidemunuRolesMapping>,
+
+    @InjectRepository(Permission)
+    private permissionRepository: Repository<Permission>,
+
+    @InjectRepository(subSideMenuPermission)
+    private subMenuPermRepository: Repository<subSideMenuPermission>,
 
   ) { }
 
@@ -67,27 +94,130 @@ export class AuthService {
   }
 
   async login(user: any) {
-
-
     const payload = { email: user.email, sub: user.id };
     const accessToken = this.jwtService.sign(payload);
+
+    // 🔹 Get role
+    const roles = await this.usersRoleRepository
+      .createQueryBuilder('urm')
+      .innerJoin('roles', 'r', 'urm.roll_id = r.id')
+      .select(['r.id as id', 'r.role_name as role_name', 'urm.roll_id as roll_id'])
+      .where('urm.user_id = :userId', { userId: user.id })
+      .getRawOne();
+
     const userDetails = {
       id: user.id,
       name: user.name,
-      image: user.image, // if available
-      email: user.email, // if available
-      status: user.status, // if available
-      address: user.address ?? '', // if available
-      dob: user.dob ?? '', // if available
-      phone: user.phone ?? '', // if available
-      seperatePermission: user.permissions ?? '',
-      roles: user.roles || [], // if using roles
+      image: user.image,
+      email: user.email,
+      status: user.status,
+      address: user.address ?? '',
+      dob: user.dob ?? '',
+      phone: user.phone ?? '',
+      role: roles ? roles.role_name : 'No Role',
+      role_id: roles ? roles.id : 'No ID',
     };
+    if (roles?.roll_id == 1 || roles?.roll_id == 2) {
+      const allMenus = await this.sideMenuRepository.find();
+
+      const menuTrees = await Promise.all(
+        allMenus.map(async (menu) => {
+          const subMenus = await this.subSideMenuRepository.find({
+            where: { menu_id: menu.id },
+          });
+
+          const subMenusWithPerms = await Promise.all(
+            subMenus.map(async (sm) => {
+              const perms = await this.subMenuPermRepository.find({
+                where: { sub_menu_id: sm.id },
+              });
+
+              return {
+                id: sm.id,
+                name: sm.name,
+                link: sm.link,
+                permissions: perms.map((p) => ({
+                  id: p.id,
+                  name: p.name,
+                })),
+              };
+            }),
+          );
+
+          return {
+            id: menu.id,
+            name: menu.name,
+            subMenus: subMenusWithPerms,
+          };
+        }),
+      );
+
+      return {
+        access_token: accessToken,
+        user: userDetails,
+        menus: menuTrees,
+      };
+    }
+    const userPerms = await this.permissionRepository.findBy({ user_id: user.id });
+
+    console.log('User Permissions:', userPerms);
+
+    const menuIds = [...new Set(userPerms.map((p) => p.menu_id))];
+    const menus = await this.sideMenuRepository.findBy({ id: In(menuIds) });
+
+    const menuTree = await Promise.all(
+      menus.map(async (menu) => {
+        const allowedSubIds = userPerms
+          .filter((p) => p.menu_id === menu.id)
+          .map((p) => p.sub_menu_id);
+
+        const subMenus = await this.subSideMenuRepository.find({
+          where: { menu_id: menu.id, id: In(allowedSubIds) },
+        });
+
+        const subMenusWithPerms = await Promise.all(
+          subMenus.map(async (sm) => {
+            const perms = await this.subMenuPermRepository.find({
+              where: { sub_menu_id: sm.id },
+            });
+
+            // Keep only the permissions that match user's allowed list
+            const allowedPerms = perms.filter((p) =>
+              userPerms.some(
+                (up) =>
+                  up.sub_menu_id === sm.id &&
+                  up.module_permission?.includes(p.name),
+              ),
+            );
+
+            return {
+              id: sm.id,
+              name: sm.name,
+              link: sm.link,
+              permissions: allowedPerms.map((p) => ({
+                id: p.id,
+                name: p.name,
+              })),
+            };
+          }),
+        );
+
+        return {
+          id: menu.id,
+          name: menu.name,
+          subMenus: subMenusWithPerms,
+        };
+      }),
+    );
+
     return {
       access_token: accessToken,
       user: userDetails,
+      menus: menuTree,
     };
   }
+
+
 
   async userTokenValidation(token) {
     const found = await this.tokenRepo.findOneBy({ token });
@@ -163,6 +293,235 @@ export class AuthService {
       </p>`,
 
     });
+  }
+
+
+  // async updateMenu(body: any) {
+  //   const menu = await this.sideMenuRepository.findOne({ where: { id: body.menu_id } });
+  //   if (!menu) throw new NotFoundException('Menu not found');
+
+  //   menu.name = body.name ?? menu.name;
+  //   menu.status = body.status ?? menu.status;
+  //   await this.sideMenuRepository.save(menu);
+
+  //   // 2. handle subMenus
+  //   const existingSubMenus = await this.subMenuRepo.find({ where: { menu_id: menuId } });
+
+  //   // IDs sent from client
+  //   const incomingSubMenuIds = dto.subMenus.filter((sm) => sm.id).map((sm) => sm.id);
+
+  //   // remove missing subMenus
+  //   const subMenusToRemove = existingSubMenus.filter(
+  //     (esm) => !incomingSubMenuIds.includes(esm.id),
+  //   );
+  //   if (subMenusToRemove.length > 0) {
+  //     await this.subMenuRepo.remove(subMenusToRemove);
+  //     await this.permRepo.delete({ sub_menu_id: In(subMenusToRemove.map((s) => s.id)) });
+  //   }
+
+  //   // insert/update subMenus + permissions
+  //   for (const sm of dto.subMenus) {
+  //     let subMenu: SubSideMenu;
+
+  //     if (sm.id) {
+  //       // update existing submenu
+  //       subMenu = await this.subMenuRepo.findOne({ where: { id: sm.id, menu_id: menuId } });
+  //       if (!subMenu) throw new NotFoundException(`SubMenu ${sm.id} not found`);
+
+  //       subMenu.name = sm.name ?? subMenu.name;
+  //       subMenu.link = sm.link ?? subMenu.link;
+  //       subMenu.status = sm.status ?? subMenu.status;
+  //       await this.subMenuRepo.save(subMenu);
+  //     } else {
+  //       // create new submenu
+  //       subMenu = this.subMenuRepo.create({
+  //         name: sm.name,
+  //         link: sm.link,
+  //         status: sm.status ?? 1,
+  //         menu_id: menuId,
+  //       });
+  //       subMenu = await this.subMenuRepo.save(subMenu);
+  //     }
+
+  //     // handle permissions
+  //     const existingPerms = await this.permRepo.find({ where: { sub_menu_id: subMenu.id } });
+  //     const incomingPermIds = sm.permissions.filter((p) => p.id).map((p) => p.id);
+
+  //     // remove missing perms
+  //     const permsToRemove = existingPerms.filter((ep) => !incomingPermIds.includes(ep.id));
+  //     if (permsToRemove.length > 0) {
+  //       await this.permRepo.remove(permsToRemove);
+  //     }
+
+  //     // insert/update perms
+  //     for (const p of sm.permissions) {
+  //       if (p.id) {
+  //         const perm = await this.permRepo.findOne({ where: { id: p.id, sub_menu_id: subMenu.id } });
+  //         if (!perm) throw new NotFoundException(`Permission ${p.id} not found`);
+  //         perm.name = p.name ?? perm.name;
+  //         perm.status = p.status ?? perm.status;
+  //         await this.permRepo.save(perm);
+  //       } else {
+  //         const newPerm = this.permRepo.create({
+  //           name: p.name,
+  //           status: p.status ?? 1,
+  //           sub_menu_id: subMenu.id,
+  //         });
+  //         await this.permRepo.save(newPerm);
+  //       }
+  //     }
+  //   }
+
+  //   return { message: 'Menu updated successfully' };
+  // }
+
+
+
+  async createMenuOrSubMenus(body: any) {
+    // 1. create the menu
+    const menu = this.sideMenuRepository.create({
+      name: body.sideMenu.name,
+    });
+    const savedMenu = await this.sideMenuRepository.save(menu);
+
+    // 2. create subMenus
+    for (const sm of body.subMenus || []) {
+      const subMenu = this.subSideMenuRepository.create({
+        name: sm.name,
+        link: sm.link,
+        menu_id: savedMenu.id,
+      });
+      const savedSubMenu = await this.subSideMenuRepository.save(subMenu);
+
+      // 3. create permissions
+      for (const p of sm.permissions || []) {
+        const perm = this.subMenuPermRepository.create({
+          name: p.name,
+          sub_menu_id: savedSubMenu.id,
+        });
+        await this.subMenuPermRepository.save(perm);
+      }
+    }
+    return { message: 'Menu created successfully', id: savedMenu.id };
+  }
+
+
+
+
+  // async createMenuOrSubMenus(body: any,) {
+  //   let savedMenu: sideMenus | null = null;
+  //   let subMenus: subSideMenus[] = [];
+
+  //   try {
+  //     if (body.sideMenu) {
+  //       const newMenu = this.sideMenuRepository.create({
+  //         name: body.sideMenu.name,
+  //       });
+  //       savedMenu = await this.sideMenuRepository.save(newMenu);
+
+  //       if (!savedMenu) {
+  //         throw new BadRequestException('Cannot create role mappings: savedMenu is null');
+  //       }
+  //     }
+
+  //     if (body.subMenus && Array.isArray(body.subMenus) && body.subMenus.length > 0) {
+  //       const menuId = savedMenu ? savedMenu.id : body.menu_id;
+
+  //       if (!menuId) {
+  //         throw new BadRequestException(
+  //           'menu_id is required when creating subMenus without a new sideMenu',
+  //         );
+  //       }
+
+  //       const subMenuEntities = body.subMenus.map((sub: any) =>
+  //         this.subSideMenuRepository.create({
+  //           name: sub.name,
+  //           menu_id: menuId,
+  //           link: sub.link,
+  //         }),
+  //       );
+
+  //       subMenus = await this.subSideMenuRepository.save(subMenuEntities);
+  //     }
+  //     return [];
+  //   }
+
+  //   catch (error) {
+  //     throw new NotFoundException('Error creating menu or sub-menus: ' + error.message);
+  //   }
+
+  // }
+
+  async createRoles(body: any) {
+    try {
+      if (!body.permission || !Array.isArray(body.permission) || body.permission.length === 0) {
+        throw new BadRequestException('Please Assing Side Menu Permissions to the Role');
+      }
+      const roles = this.usersRoles.create({ role_name: body.role.role_name });
+      const savedRole = await this.usersRoles.save(roles);
+
+      const roleMapping = body.permission.map((perm: any) => this.sideMenuMapppingRepository.create({
+        role_id: savedRole.id,
+        side_menu_id: perm.menu_id,
+      }));
+      await this.sideMenuMapppingRepository.save(roleMapping);
+    }
+    catch (error) {
+      throw new NotFoundException('Error creating role: ' + error.message);
+    }
+  }
+
+  async getAllRoles(body: any) {
+    return await this.usersRoles.find({ where: { status: body.status, id: Not(In([1, 2])), } });
+  }
+
+
+
+  async getSubMenusByRoles(body: any) {
+    const roleId = body.role_id;
+    if (!roleId) {
+      throw new BadRequestException('role ID is required');
+    }
+    // 1. Get all side_menu_id for this role
+    const sideMenuIds = await this.sideMenuMapppingRepository.findBy({ role_id: roleId });
+    const menuIds = sideMenuIds.map((s) => s.side_menu_id);
+
+    // 2. Get menus
+    const menus = await this.sideMenuRepository.findBy({ id: In(menuIds) });
+
+    // 3. Build tree with subMenus + permissions
+    const menuTree = await Promise.all(
+      menus.map(async (menu) => {
+        const subMenus = await this.subSideMenuRepository.findBy({ menu_id: menu.id });
+
+        const subMenusWithPermissions = await Promise.all(
+          subMenus.map(async (sm) => {
+            const permissions = await this.subMenuPermRepository.findBy({
+              sub_menu_id: sm.id,
+            });
+
+            return {
+              id: sm.id,
+              name: sm.name,
+              link: sm.link,
+              permissions: permissions.map((p) => ({
+                id: p.id,
+                name: p.name,
+                status: p.status,
+              })),
+            };
+          }),
+        );
+
+        return {
+          id: menu.id,
+          name: menu.name,
+          subMenus: subMenusWithPermissions,
+        };
+      }),
+    );
+
+    return menuTree.filter((menu) => menu !== undefined);
   }
 
 }

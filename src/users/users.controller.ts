@@ -30,21 +30,12 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) { }
   //@UseGuards(JwtAuthGuard)
   @Post('register')
-  async create(
-
-    @Body() body: { name: string; email: string; password: string; phone: string; role_id: number },
-    @Res() res: Response,
-  ) {
+  async create(@Body() body: any, @Res() res: Response) {
     try {
-      const { name, email, password, phone, role_id } = body;
-      const newUser = await this.usersService.create(name, email, password, phone, role_id);
+      const newUser = await this.usersService.create(body);
       return res.status(HttpStatus.CREATED).json({
         status: true,
         message: 'User registered successfully',
-        data: {
-          id: newUser.id,
-          email: newUser.email,
-        },
       });
     }
     catch (error) {
@@ -103,8 +94,8 @@ export class UsersController {
       address: user.address ?? '',
       dob: user.dob ?? '',
       phone: user.phone ?? '',
-      seperatePermission: user.permissions ?? '',
-      roles: user.roles ?? [],
+      // seperatePermission: user.permissions ?? '',
+      // roles: user.roles ?? [],
     };
 
     return res.status(HttpStatus.OK).json({
@@ -259,29 +250,6 @@ export class UsersController {
       message: "User Profile Delete Successfully...!"
     }
   }
-
-  // @UseGuards(JwtAuthGuard)
-  // @Post('change-profile')
-  // @UseInterceptors(
-  //   FileInterceptor('upload_image',
-  //     {
-  //       storage: UploadService.storage,
-  //       fileFilter: UploadService.fileFilter,
-  //     },
-  //   ),
-  // )
-  // async changesProfileImage(@UploadedFile() file: Express.Multer.File, @Request() req) {
-  //   if (!file) {
-  //     return { message: "select Image" }
-  //   }
-  //   const image = `uploads/${file.filename}`;
-  //   const id = req.user.userId;
-  //   const data = await this.usersService.changeImage(id, image);
-  //   return {
-  //     message: "User Profile Image Changes Successfully...!",
-  //     data : data
-  //   }
-  // }
 
   @Post(':id/permissions')
   async assignPermission(

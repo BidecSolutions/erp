@@ -20,9 +20,13 @@ import { User } from 'src/entities/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { InjectRepository } from '@nestjs/typeorm';
+import { sideMenus } from 'src/entities/side-menu.entity';
+import { subSideMenus } from 'src/entities/sub-side-menu.entity';
+import { CreateMenuDto } from '../auth/menus.dto'; // Adjust the path if needed
 @Controller('auth')
 export class AuthController {
   jwtService: any;
+  menuService: any;
   constructor(
     private authService: AuthService,
     private readonly mailService: MailService,
@@ -237,4 +241,70 @@ export class AuthController {
       message: 'Password has been successfully reset',
     });
   }
+
+
+  @Post('create-menu-or-sub-menus')
+  async createMenuOrSubMenus(@Body() body: any) {
+    if (!body || !body.sideMenu.name) {
+      throw new BadRequestException('Menu name is required');
+    }
+
+    if (!Array.isArray(body.subMenus) || body.subMenus.length === 0) {
+      throw new BadRequestException('At least one subMenu is required');
+    }
+
+    // if (!Array.isArray(body.subMenus.permissions) || body.subMenus.permissions === 0) {
+    //   throw new BadRequestException(
+    //     `Sub Menu must have at least one permission`,
+    //   );
+    // }
+    const query = await this.authService.createMenuOrSubMenus(body);
+
+    return {
+      status: true,
+      message: 'Created Successfully',
+      data: query,
+    };
+  }
+
+
+  @Post('by-role-get-menus')
+  async getSubMenusByRoles(@Body() body: any) {
+    if (!body.role_id) {
+      throw new BadRequestException('role ID is required');
+    }
+
+    const menuTree = await this.authService.getSubMenusByRoles(body);
+
+    return {
+      status: true,
+      message: 'Menus fetched successfully',
+      data: menuTree,
+    };
+  }
+
+
+
+  @Post('create-roles')
+  async createRolesAndMapping(@Body() body: any,) {
+    const query = await this.authService.createRoles(body);
+    return {
+      status: true,
+      message: 'Created Successfully',
+    }
+  }
+
+  @Post('get-roles')
+  async getRolles(@Body() body: any,) {
+    const query = await this.authService.getAllRoles(body);
+    return {
+      status: true,
+      message: 'Get All Roles Successfully',
+      data: query
+    }
+  }
+
+
+
+
 }

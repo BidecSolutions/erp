@@ -8,6 +8,12 @@ import { AuthModule } from './auth/auth.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { RolesModule } from './roles/roles.module';
 import { UsersModule } from './users/users.module';
+import { userRoles } from './seeder/system-roles.entity';
+import { Role } from './entities/role.entity';
+import { userRoleMapping } from './entities/user-role-mapping.entity';
+import { sideMenus } from './entities/side-menu.entity';
+import { subSideMenus } from './entities/sub-side-menu.entity';
+import { sidemunuRolesMapping } from './entities/role-side-menu-mapping.entity';
 
 @Module({
   imports: [
@@ -17,22 +23,26 @@ import { UsersModule } from './users/users.module';
       port: 3306,
       username: 'root',
       password: '',
-      database: 'bidec_ERP',
+      database: 'bidec_erp',
       autoLoadEntities: true,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
-      dropSchema: true,
     }),
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, Role, userRoleMapping, sideMenus, subSideMenus, sidemunuRolesMapping]),
 
     AuthModule, PermissionsModule, RolesModule, UsersModule
   ],
   controllers: [AppController],
-  providers: [AppService, registerUser],
+  providers: [AppService, registerUser, userRoles],
 })
 export class AppModule implements OnModuleInit {
-  constructor(private readonly registration: registerUser) { }
+  constructor(
+    private readonly registration: registerUser,
+    private readonly userRole: userRoles
+
+  ) { }
   async onModuleInit() {
     await this.registration.run()
+    await this.userRole.run()
   }
 }

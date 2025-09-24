@@ -1,0 +1,196 @@
+{
+	"info": {
+		"_postman_id": "f9fd6d37-905c-4a08-b54b-84af8c8fdc51",
+		"name": "Bidec ERP",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "45325052",
+		"_collection_link": "https://community-app-6028901.postman.co/workspace/Community-app's-Workspace~e273abcc-b60f-443e-8a84-6d154258e441/collection/45325052-f9fd6d37-905c-4a08-b54b-84af8c8fdc51?action=share&source=collection_link&creator=45325052"
+	},
+	"item": [
+		{
+			"name": "Side Menu, Roles and Permission",
+			"item": [
+				{
+					"name": "Create Menu and Sub Menu and Permission",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sideMenu\": {\n    \"name\": \"Supplier\"\n  },\n  \"subMenus\": [\n    { \n      \"name\": \"Add New Supplier\", \n      \"link\": \"xyz\",\n      \"permissions\": [\n        { \"name\": \"Create\" },\n        { \"name\": \"Update\" },\n        { \"name\": \"Delete\" }\n      ]\n    },\n\n     { \n      \"name\": \"Supplier Profile\", \n      \"link\": \"xyz\",\n      \"permissions\": [\n        { \"name\": \"View Profile\" },\n        { \"name\": \"Edit Credit Limit\" },\n        { \"name\": \"Edit Credit Days\" }\n      ]\n    },\n\n     { \n      \"name\": \"Supplier Ledger Report\", \n      \"link\": \"xyz\",\n      \"permissions\": [\n        { \"name\": \"View Ledger\" }\n      ]\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "localhost:3000/auth/create-menu-or-sub-menus",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"auth",
+								"create-menu-or-sub-menus"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Roles and Role Mapping",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"role\": {\n    \"role_name\": \"Operator\"\n  },\n  \"permission\": [\n    { \"menu_id\": 1 },\n    { \"menu_id\": 3 },\n    { \"menu_id\": 7 }\n  ]\n}\n\n\n\n"
+						},
+						"url": {
+							"raw": "localhost:3000/auth/create-roles",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"auth",
+								"create-roles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Roles",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\" : 1\n}\n\n\n\n"
+						},
+						"url": {
+							"raw": "localhost:3000/auth/get-roles",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"auth",
+								"get-roles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"user\": {\n    \"name\": \"XYZ\",\n    \"email\": \"abc@gmail.com\",\n    \"password\": \"123456789\",\n    \"role_id\" : 3\n  },\n  \"permission\": [\n    { \"menu_id\": 1, \"sub_menu_id\": 1 },\n    { \"menu_id\": 1, \"sub_menu_id\": 2 },\n    { \"menu_id\": 2, \"sub_menu_id\": 4 },\n    { \"menu_id\": 2, \"sub_menu_id\": 5 },\n    { \"menu_id\": 3, \"sub_menu_id\": 7 },\n    { \"menu_id\": 3, \"sub_menu_id\": 8 }\n  ]\n}\n\n\n\n"
+						},
+						"url": {
+							"raw": "localhost:3000/users/register",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "login",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "",
+						"value": "",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\" : \"admin@gmail.com\",\n    \"password\" : \"123456789\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/auth/login",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

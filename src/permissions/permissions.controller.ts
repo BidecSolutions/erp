@@ -6,41 +6,41 @@ import type { Response } from 'express';
 export class PermissionsController {
   constructor(private readonly permissionsService: PermissionsService) { }
 
-  @Post()
-  async create(
-    @Body() dto: { permission_name: string },
-    @Res() response: Response,
-  ) {
-    const result = await this.permissionsService.create(dto);
+  // @Post()
+  // async create(
+  //   @Body() dto: { permission_name: string },
+  //   @Res() response: Response,
+  // ) {
+  //   const result = await this.permissionsService.create(dto);
 
-    return response
-      .status(result.success ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST)
-      .json(result);
-  }
+  //   return response
+  //     .status(result.success ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST)
+  //     .json(result);
+  // }
 
-  @Get()
-  findAll() {
-    return this.permissionsService.findAll();
-  }
+  // @Get()
+  // findAll() {
+  //   return this.permissionsService.findAll();
+  // }
 
-  @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.permissionsService.findOne(+id);
-  }
+  // @Get(':id')
+  // findOne(@Param('id') id: number) {
+  //   return this.permissionsService.findOne(+id);
+  // }
 
-  @Put(':id')
-  async update(
-    @Param('id') id: number,
-    @Body() dto: { permission_name: string },
-    @Res() res: Response
-  ) {
-    const result = await this.permissionsService.update(+id, dto);
-    const status = result.success ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
-    return res.status(status).json(result);
-  }
+  // @Put(':id')
+  // async update(
+  //   @Param('id') id: number,
+  //   @Body() dto: { permission_name: string },
+  //   @Res() res: Response
+  // ) {
+  //   const result = await this.permissionsService.update(+id, dto);
+  //   const status = result.success ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
+  //   return res.status(status).json(result);
+  // }
 
-  //   @Delete(':id')
-  //   remove(@Param('id') id: number) {
-  //     return this.permissionsService.remove(+id);
-  //   }
+  // //   @Delete(':id')
+  // //   remove(@Param('id') id: number) {
+  // //     return this.permissionsService.remove(+id);
+  // //   }
 }

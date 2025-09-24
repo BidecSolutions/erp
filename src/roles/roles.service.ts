@@ -9,7 +9,7 @@ export class RolesService {
   constructor(
     @InjectRepository(Role) private roleRepo: Repository<Role>,
     @InjectRepository(Permission) private permRepo: Repository<Permission>,
-  ) {}
+  ) { }
 
   async create(roleDto: { role_name: string; permissionIds?: number[] }) {
     try {
@@ -28,7 +28,7 @@ export class RolesService {
         const permissions = await this.permRepo.findBy({
           id: In(roleDto.permissionIds),
         });
-        role.permissions = permissions;
+        // role.permissions = permissions;
       }
 
       const savedRole = await this.roleRepo.save(role);
@@ -75,11 +75,11 @@ export class RolesService {
       role.role_name = roleDto.role_name;
 
       // Set permissions
-      if (roleDto.permissionIds?.length) {
-        role.permissions = await this.permRepo.findByIds(roleDto.permissionIds);
-      } else {
-        role.permissions = [];
-      }
+      // if (roleDto.permissionIds?.length) {
+      //   role.permissions = await this.permRepo.findByIds(roleDto.permissionIds);
+      // } else {
+      //   role.permissions = [];
+      // }
 
       const updateRole = await this.roleRepo.save(role);
 
@@ -98,8 +98,8 @@ export class RolesService {
     }
   }
 
-//   async remove(id: number) {
-//     const role = await this.roleRepo.findOne({ where: { id } });
-//     return this.roleRepo.remove(role);
-//   }
+  //   async remove(id: number) {
+  //     const role = await this.roleRepo.findOne({ where: { id } });
+  //     return this.roleRepo.remove(role);
+  //   }
 }
