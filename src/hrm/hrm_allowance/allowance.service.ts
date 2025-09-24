@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Allowance, AllowanceType } from './allowance.entity';
-import { CreateAllowanceDto } from './dto/create-allowance.dto';
+import { CreateAllowanceDto } from '../hrm_allowance/dto/create-allowance.dto';
 import { UpdateAllowanceDto } from './dto/update-allowance.dto';
 import { AllowanceOption } from '../hrm_allowance-option/allowance-option.entity';
 

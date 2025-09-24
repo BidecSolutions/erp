@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CommissionService } from './commission.service';
+import { LeaveSetupService } from './leave-setup.service';
 
-describe('CommissionService', () => {
-  let service: CommissionService;
+describe('LeaveSetupService', () => {
+  let service: LeaveSetupService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [CommissionService],
+      providers: [LeaveSetupService],
     }).compile();
 
-    service = module.get<CommissionService>(CommissionService);
+    service = module.get<LeaveSetupService>(LeaveSetupService);
   });
 
   it('should be defined', () => {

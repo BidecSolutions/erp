@@ -14,6 +14,7 @@ import { userRoleMapping } from './entities/user-role-mapping.entity';
 import { sideMenus } from './entities/side-menu.entity';
 import { subSideMenus } from './entities/sub-side-menu.entity';
 import { sidemunuRolesMapping } from './entities/role-side-menu-mapping.entity';
+import { LeaveSetupModule } from './hrm/hrm_leave-setup/leave-setup.module';
 
 @Module({
   imports: [
@@ -30,7 +31,7 @@ import { sidemunuRolesMapping } from './entities/role-side-menu-mapping.entity';
     }),
     TypeOrmModule.forFeature([User, Role, userRoleMapping, sideMenus, subSideMenus, sidemunuRolesMapping]),
 
-    AuthModule, PermissionsModule, RolesModule, UsersModule
+    AuthModule, PermissionsModule, RolesModule, UsersModule, LeaveSetupModule
   ],
   controllers: [AppController],
   providers: [AppService, registerUser, userRoles],
