@@ -2,6 +2,8 @@ import { Branch } from '../branch/branch.entity';
 import { CustomerCategory } from '../customer-categories/customer-category.entity';
 import { Customer } from '../customers/customer.entity';
 import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert, BeforeUpdate, OneToMany } from 'typeorm';
+import { SupplierCategory } from '../supplier-category/supplier-category.entity';
+import { Supplier } from '../supplier/supplier.entity';
 
 @Entity('companies')
 export class Company {
@@ -101,6 +103,14 @@ export class Company {
   // Reverse relation for customers
   @OneToMany(() => Customer, (customer) => customer.company)
   customers: Customer[];
+
+  // One company has many suppliers
+  @OneToMany(() => Supplier, (supplier) => supplier.company)
+  suppliers: Supplier[];
+
+  // Reverse relation for supplier categories
+  @OneToMany(() => SupplierCategory, (supplierCategory) => supplierCategory.company)
+  supplierCategories: SupplierCategory[];
 
   @BeforeInsert()
   setCreateDate() {

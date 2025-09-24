@@ -25,6 +25,8 @@ import { CompaniesModule } from './Company/companies/companies.module';
 import { BranchModule } from './Company/branch/branch.module';
 import { CustomerModule } from './Company/customers/customer.module';
 import { CustomerCategoryModule } from './Company/customer-categories/customer-category.module';
+import { SupplierCategoryModule } from './Company/supplier-category/supplier-category.module';
+import { SupplierModule } from './Company/supplier/supplier.module';
 
 @Module({
   imports: [
@@ -52,6 +54,8 @@ import { CustomerCategoryModule } from './Company/customer-categories/customer-c
     BranchModule,
     CustomerCategoryModule,
     CustomerModule,
+    SupplierCategoryModule,
+    SupplierModule,
   ],
   controllers: [AppController],
   providers: [AppService, registerUser, userRoles],
