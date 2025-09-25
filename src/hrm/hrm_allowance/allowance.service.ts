@@ -1,78 +1,80 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Allowance, AllowanceType } from './allowance.entity';
-import { CreateAllowanceDto } from '../hrm_allowance/dto/create-allowance.dto';
-import { UpdateAllowanceDto } from './dto/update-allowance.dto';
-import { AllowanceOption } from '../hrm_allowance-option/allowance-option.entity';
-
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { UpdateAllowanceDto } from "./dto/update-allowance.dto";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Allowance } from "./allowance.entity";
+import { Company } from "src/Company/companies/company.entity";
+import { CreateAllowanceDto } from "./dto/create-allowance.dto";
+import { Repository } from "typeorm";
 
 @Injectable()
 export class AllowanceService {
   constructor(
     @InjectRepository(Allowance)
     private readonly allowanceRepo: Repository<Allowance>,
-    @InjectRepository(AllowanceOption)
-    private readonly optionRepo: Repository<AllowanceOption>,
+
+    @InjectRepository(Company)
+    private readonly companyRepo: Repository<Company>,
   ) {}
 
+  // ✅ Create allowance with company
   async create(dto: CreateAllowanceDto) {
-    const option = await this.optionRepo.findOneBy({ id: dto.allowanceOptionId });
-    if (!option) throw new NotFoundException('Allowance Option not found');
+    const company = await this.companyRepo.findOneBy({ id: dto.company_id });
+    if (!company) throw new NotFoundException('Company not found');
 
     const newAllowance = this.allowanceRepo.create({
-      allowanceOption: option,
       title: dto.title,
       type: dto.type,
       amount: dto.amount,
+      company,
     });
 
     const saved = await this.allowanceRepo.save(newAllowance);
 
     return {
       id: saved.id,
-      allowanceOption: option.name,
       title: saved.title,
       type: saved.type,
       amount: saved.amount,
+      company: saved.company?.company_name,
     };
   }
 
+  // ✅ Get all allowances with company name
   async findAll() {
-    const allowances = await this.allowanceRepo.find({ relations: ['allowanceOption'] });
+    const allowances = await this.allowanceRepo.find({ relations: ['company'] });
     return allowances.map(a => ({
       id: a.id,
-      allowanceOption: a.allowanceOption?.name || null,
       title: a.title,
       type: a.type,
       amount: a.amount,
+      company: a.company?.company_name,
+      status: a.status,
     }));
   }
 
+  // ✅ Get single allowance by id with company
   async findOne(id: number) {
-    const a = await this.allowanceRepo.findOne({
-      where: { id },
-      relations: ['allowanceOption'],
-    });
+    const a = await this.allowanceRepo.findOne({ where: { id }, relations: ['company'] });
     if (!a) throw new NotFoundException(`Allowance ID ${id} not found`);
 
     return {
       id: a.id,
-      allowanceOption: a.allowanceOption?.name || null,
       title: a.title,
       type: a.type,
       amount: a.amount,
+      company: a.company?.company_name,
     };
   }
 
+  // ✅ Update allowance including company
   async update(id: number, dto: UpdateAllowanceDto) {
-    const allowance = await this.allowanceRepo.findOne({ where: { id }, relations: ['allowanceOption'] });
+    const allowance = await this.allowanceRepo.findOne({ where: { id }, relations: ['company'] });
     if (!allowance) throw new NotFoundException(`Allowance ID ${id} not found`);
 
-    if (dto.allowanceOptionId) {
-      const option = await this.optionRepo.findOneBy({ id: dto.allowanceOptionId });
-      if (!option) throw new NotFoundException('Allowance Option not found');
-      allowance.allowanceOption = option;
+    if (dto.company_id) {
+      const company = await this.companyRepo.findOneBy({ id: dto.company_id });
+      if (!company) throw new NotFoundException('Company not found');
+      allowance.company = company;
     }
 
     Object.assign(allowance, dto);
@@ -80,13 +82,14 @@ export class AllowanceService {
 
     return {
       id: saved.id,
-      allowanceOption: saved.allowanceOption?.name || null,
       title: saved.title,
       type: saved.type,
       amount: saved.amount,
+      company: saved.company?.company_name,
     };
   }
 
+  // ✅ Delete allowance
   async remove(id: number) {
     const allowance = await this.allowanceRepo.findOneBy({ id });
     if (!allowance) throw new NotFoundException(`Allowance ID ${id} not found`);

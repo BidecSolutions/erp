@@ -1,7 +1,17 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsInt, IsOptional, Min } from 'class-validator';
 
-export class UpdateShiftDto {
+export class UpdateLeaveSetupDto {
+  @IsInt()
+  @Min(0)
   @IsOptional()
-  @IsString()
-  name?: string;
+  total_leave?: number;
+
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  leave_remaining?: number;
+
+  @IsInt()
+  @IsOptional()
+  year?: number;
 }

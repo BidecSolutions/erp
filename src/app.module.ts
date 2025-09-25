@@ -26,6 +26,19 @@ import { CompaniesModule } from './Company/companies/companies.module';
 import { BranchModule } from './Company/branch/branch.module';
 import { CustomerModule } from './Company/customers/customer.module';
 import { CustomerCategoryModule } from './Company/customer-categories/customer-category.module';
+import { DepartmentModule } from './hrm/hrm_department/department.module';
+import { DesignationModule } from './hrm/hrm_designation/designation.module';
+import { EmployeeModule } from './hrm/hrm_employee/employee.module';
+import { PaysliptypeModule } from './hrm/hrm_paysliptype/paysliptype.module';
+import { EmployeeSalaryModule } from './hrm/hrm_employee-salary/employee-salary.module';
+import { AllowanceModule } from './hrm/hrm_allowance/allowance.module';
+import { LoanOptionModule } from './hrm/hrm_loan-option/loan-option.module';
+import { LoanModule } from './hrm/hrm_loan/loan.module';
+import { AttendanceModule } from './hrm/hrm_mark-attendance/mark-attendance.module';
+import { BulkAttendanceModule } from './hrm/hrm_bulk-attendance/bulk-attendance.module';
+import { BankDetailModule } from './hrm/hrm_bank-details/bank-details.module';
+import { ShiftModule } from './hrm/hrm_shift/shift.module';
+import { DocumentModule } from './hrm/hrm_document/document.module';
 
 @Module({
   imports: [
@@ -42,7 +55,7 @@ import { CustomerCategoryModule } from './Company/customer-categories/customer-c
     }),
     TypeOrmModule.forFeature([User, Role, userRoleMapping, sideMenus, subSideMenus, sidemunuRolesMapping]),
 
-    AuthModule, PermissionsModule, RolesModule, UsersModule, ProductModule, LeaveSetupModule,
+    AuthModule, PermissionsModule, RolesModule, UsersModule, ProductModule,
     PurchaseRequestModule,
     PurchaseRequestItemsModule,
     PurchaseOrderModule,
@@ -53,6 +66,21 @@ import { CustomerCategoryModule } from './Company/customer-categories/customer-c
     BranchModule,
     CustomerCategoryModule,
     CustomerModule,
+    // HRM 
+    DepartmentModule,
+    DesignationModule,
+    EmployeeModule,
+    PaysliptypeModule,
+    EmployeeSalaryModule,
+    AllowanceModule,
+    LoanOptionModule,
+    LoanModule,
+    AttendanceModule,
+    BulkAttendanceModule,
+    BankDetailModule,
+    ShiftModule,
+    DocumentModule,
+    LeaveSetupModule
   ],
   controllers: [AppController],
   providers: [AppService, registerUser, userRoles],

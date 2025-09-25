@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Employee } from '../hrm_employee/employee.entity';
 
 @Entity('hrm_leave_setup')
-export class Leave {
+export class LeaveSetup {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -15,6 +15,6 @@ export class Leave {
   @Column()
   year: number;
 
-//   @OneToMany(() => Employee, (emp) => emp.leave)
-//   employees: Employee[];
+  @OneToMany(() => Employee, (emp) => emp.leaveSetup)
+  employees: Employee[];
 }

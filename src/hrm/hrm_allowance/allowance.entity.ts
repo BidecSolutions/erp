@@ -1,5 +1,5 @@
+import { Company } from 'src/Company/companies/company.entity';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, BeforeInsert } from 'typeorm';
-import { AllowanceOption } from '../hrm_allowance-option/allowance-option.entity';
 
 
 export enum AllowanceType {
@@ -12,10 +12,6 @@ export class Allowance {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => AllowanceOption, { eager: true })
-  @JoinColumn({ name: 'allowanceOptionId' })
-  allowanceOption: AllowanceOption;
-
   @Column()
   title: string;
 
@@ -24,6 +20,14 @@ export class Allowance {
 
   @Column('decimal', { precision: 10, scale: 2 })
   amount: number;
+
+@ManyToOne(() => Company, { eager: true })
+@JoinColumn({ name: 'company_Id' }) 
+company: Company;
+
+@Column({ name: 'company_Id' })
+company_id: number; 
+
 
    @Column({
           type: 'int',
