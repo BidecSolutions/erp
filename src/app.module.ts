@@ -25,6 +25,8 @@ import { CompaniesModule } from './Company/companies/companies.module';
 import { BranchModule } from './Company/branch/branch.module';
 import { CustomerModule } from './Company/customers/customer.module';
 import { CustomerCategoryModule } from './Company/customer-categories/customer-category.module';
+import { companySetting } from './Company/company-module-file.module';
+import { procurement } from './procurement/procurement-module-list.module';
 
 @Module({
   imports: [
@@ -40,18 +42,8 @@ import { CustomerCategoryModule } from './Company/customer-categories/customer-c
       synchronize: true,
     }),
     TypeOrmModule.forFeature([User, Role, userRoleMapping, sideMenus, subSideMenus, sidemunuRolesMapping]),
-
-    AuthModule, PermissionsModule, RolesModule, UsersModule, ProductModule,
-    PurchaseRequestModule,
-    PurchaseRequestItemsModule,
-    PurchaseOrderModule,
-    CategoriesModule,
-    BrandModule,
-    UnitOfMeasureModule,
-    CompaniesModule,
-    BranchModule,
-    CustomerCategoryModule,
-    CustomerModule,
+    ...procurement,
+    ...companySetting
   ],
   controllers: [AppController],
   providers: [AppService, registerUser, userRoles],
