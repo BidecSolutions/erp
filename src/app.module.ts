@@ -12,6 +12,7 @@ import { subSideMenus } from './entities/sub-side-menu.entity';
 import { sidemunuRolesMapping } from './entities/role-side-menu-mapping.entity';
 import { companySetting } from './Company/company-module-file.module';
 import { procurement } from './procurement/procurement-module-list.module';
+import { HRM } from './hrm/hrm-module-list.entity';
 
 @Module({
   imports: [
@@ -28,7 +29,8 @@ import { procurement } from './procurement/procurement-module-list.module';
     }),
     TypeOrmModule.forFeature([User, Role, userRoleMapping, sideMenus, subSideMenus, sidemunuRolesMapping]),
     ...procurement,
-    ...companySetting
+    ...companySetting,
+    ...HRM
   ],
   controllers: [AppController],
   providers: [AppService, registerUser, userRoles],
