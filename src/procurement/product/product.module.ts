@@ -8,8 +8,8 @@ import { UnitOfMeasure } from '../unit_of_measure/entities/unit_of_measure.entit
 import { Brand } from '../brand/entities/brand.entity';
 import { productVariant } from './entities/variant.entity';
 @Module({
-  imports: [TypeOrmModule.forFeature([Product , Category , Brand , UnitOfMeasure , productVariant])],
+  imports: [TypeOrmModule.forFeature([Product, Category, Brand, UnitOfMeasure, productVariant])],
   controllers: [ProductController],
   providers: [ProductService],
 })
-export class ProductModule {}
+export class ProductModule { }
