@@ -8,6 +8,10 @@ import { RolesModule } from "src/roles/roles.module";
 import { UsersModule } from "src/users/users.module";
 import { SupplierCategoryModule } from "./supplier-category/supplier-category.module";
 import { SupplierModule } from "./supplier/supplier.module";
+import { CustomerPaymentModule } from "./customer-payment/customer-payment.module";
+import { CustomerInvoiceModule } from "./customer-invoice/customer-invoice.module";
+import { SupplierPaymentModule } from "./supplier-payment/supplier-payment.module";
+import { SupplierInvoiceModule } from "./supplier-invoice/supplier-invoice.module";
 
 export const companySetting = [
     CompaniesModule,
@@ -20,4 +24,8 @@ export const companySetting = [
     PermissionsModule,
     RolesModule,
     UsersModule,
+    CustomerPaymentModule,
+    CustomerInvoiceModule,
+    SupplierPaymentModule,
+    SupplierInvoiceModule,
 ];

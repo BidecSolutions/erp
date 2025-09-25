@@ -5,9 +5,13 @@ import {
   ManyToOne,
   BeforeInsert,
   BeforeUpdate,
+  OneToMany,
 } from 'typeorm';
 import { Company } from '../companies/company.entity';
 import { CustomerCategory } from '../customer-categories/customer-category.entity';
+import { CustomerPayment } from '../customer-payment/customer-payment.entity';
+import { CustomerInvoice } from '../customer-invoice/customer-invoice.entity';
+import { CustomerAccount } from './customer.customer_account.entity';
 
 @Entity()
 export class Customer {
@@ -21,6 +25,17 @@ export class Customer {
     onDelete: 'CASCADE',
   })
   category_customer: CustomerCategory;
+
+  @OneToMany(() => CustomerAccount, (account) => account.customer)
+  accounts: CustomerAccount[];
+
+  // One customer can have many payments
+  @OneToMany(() => CustomerPayment, (payment) => payment.customer)
+  customer_payments: CustomerPayment[];
+
+  // One customer can have many invoices
+  @OneToMany(() => CustomerInvoice, (invoice) => invoice.customer)
+  customer_invoices: CustomerInvoice[];
 
   @Column()
   customer_code: string;
