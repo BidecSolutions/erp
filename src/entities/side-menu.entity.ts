@@ -24,10 +24,10 @@ export class sideMenus {
     })
     status: number;
 
-    @Column({ type: 'date' })
+    @Column({ type: 'date', nullable: true })
     created_at: string;
 
-    @Column({ type: 'date' })
+    @Column({ type: 'date', nullable: true })
     updated_at: string;
 
     @BeforeInsert()
