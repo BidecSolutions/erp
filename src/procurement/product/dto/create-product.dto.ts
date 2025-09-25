@@ -79,53 +79,26 @@ export class CreateProductDto {
   updated_by?: number;
 
   // Relations
-  // @IsOptional()
-  // company_id?: number;
-
-  // @IsOptional()
-  // branch_id?: number;
+  @IsOptional()
+  company_id?: number;
 
   @IsOptional()
+  branch_id?: number;
+
+  @IsNotEmpty()
   category_id?: number;
 
-  @IsOptional()
+   @IsNotEmpty()
   brand_id?: number;
 
-  @IsOptional()
+   @IsNotEmpty()
   uom_id?: number;
-
 
   // variant data
   @IsOptional()               
   @ValidateNested({ each: true })     
   @Type(() =>  CreateProductVariantDto)      
   variants?: CreateProductVariantDto[]; 
-
-    // @IsOptional()
-    // @IsNumber()
-    // product_id?: number;
-  
-    // @IsString()
-    // @IsOptional()
-    // variant_name: string;
-  
-    // @IsOptional()
-    // @IsString()
-    // variant_code?: string;
-  
-    // @IsOptional()
-    // @IsString()
-    // attribute_name?: string;
-  
-    // @IsOptional()
-    // @IsString()
-    // attribute_value?: string;
-  
-    // @IsOptional()
-    // price_difference?: number;
-  
-    // @IsOptional()
-    // cost_difference?: number;
 
 
 }

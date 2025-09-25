@@ -16,7 +16,7 @@ export class productVariant {
     @Column()
     variant_name:string;
 
-    @Column( {unique:true})
+    @Column( )
     variant_code :string;
 
     @Column()
@@ -35,17 +35,17 @@ export class productVariant {
      status: number; 
 
 
-    // @Column({ name: 'company_id', nullable: false })
-    // company_id:number;
-    // // @ManyToOne(() => Branch)
-    // // @JoinColumn({name : 'branch_id'})
-    // // comapany: Comapany
+    @Column({ name: 'company_id', nullable: false })
+    company_id:number;
+    // @ManyToOne(() => Branch)
+    // @JoinColumn({name : 'branch_id'})
+    // comapany: Comapany
 
-    // @Column({ name: 'branch_id', nullable: false })
-    // branch_id:number;
-    // // @ManyToOne(() => Branch)
-    // // @JoinColumn({name : 'branch_id'})
-    // // branch: Branch
+    @Column({ name: 'branch_id', nullable: false })
+    branch_id:number;
+    // @ManyToOne(() => Branch)
+    // @JoinColumn({name : 'branch_id'})
+    // branch: Branch
 
     @Column({ name: 'created_by', type: 'int', nullable: true })
     created_by?: number;

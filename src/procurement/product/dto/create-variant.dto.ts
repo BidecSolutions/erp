@@ -26,4 +26,10 @@ export class CreateProductVariantDto {
   @IsOptional()
   cost_difference?: number;
 
+    @IsOptional()
+  company_id?: number;
+
+  @IsOptional()
+  branch_id?: number;
+
 }
