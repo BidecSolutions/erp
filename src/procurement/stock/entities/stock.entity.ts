@@ -1,19 +1,38 @@
+import { Branch } from 'src/Company/branch/branch.entity';
+import { Company } from 'src/Company/companies/company.entity';
 import { Product } from 'src/procurement/product/entities/product.entity';
 import { Warehouse } from 'src/procurement/warehouse/entities/warehouse.entity';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity('inventory_stock')
 export class Stock {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @ManyToOne(() => Product, { eager: true })
-  @JoinColumn({ name: 'product_id' })
-  product: Product;
+  @Column()
+    product_id:number;
+    @ManyToOne(() => Product)
+    @JoinColumn({name : 'product_id'})
+    product: Product
+  @Column()
+    warehouse_id:number;
+    @ManyToOne(() => Company)
+    @JoinColumn({name : 'warehouse_id'})
+    warehouse: Warehouse
 
-  @ManyToOne(() => Warehouse, { eager: true })
-  @JoinColumn({ name: 'warehouse_id' })
-  warehouse: Warehouse;
+
+  @Column()
+  company_id:number;
+  @ManyToOne(() => Company)
+  @JoinColumn({name : 'company_id'})
+  company: Company
+
+
+   @Column()
+    branch_id:number;
+    @ManyToOne(() => Branch)
+    @JoinColumn({name : 'branch_id'})
+    branch: Branch
 
   @Column({ type: 'int', default: 0 })
   quantity_on_hand: number;
@@ -33,17 +52,6 @@ export class Stock {
   status: number; 
 
 
-@Column({ name: 'company_id', nullable: false })
-    company_id:number;
-    // @ManyToOne(() => Branch)
-    // @JoinColumn({name : 'branch_id'})
-    // comapany: Comapany
-
-   @Column({ name: 'branch_id', nullable: false })
-    branch_id:number;
-    // @ManyToOne(() => Branch)
-    // @JoinColumn({name : 'branch_id'})
-    // branch: Branch
 
  @Column({ name: 'created_by', type: 'int', nullable: true })
   created_by?: number;
