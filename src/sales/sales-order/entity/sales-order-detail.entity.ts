@@ -1,0 +1,92 @@
+
+import { SalesOrder } from 'src/sales/sales-order/entity/sales-order.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  BeforeInsert,
+} from 'typeorm';
+
+
+@Entity('sales_order_details')
+export class SalesOrderDetail {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+
+  @ManyToOne(() => SalesOrder, (order) => order.salesOrderDetails)
+@JoinColumn({ name: 'order_id' })
+salesOrder: SalesOrder;
+
+
+  // @ManyToOne(() => SalesOrder, (order) => order.details, { onDelete: 'CASCADE' })
+  // @JoinColumn({ name: 'sale_order_id' })
+  // order: SalesOrder;
+
+  @Column({ nullable: true })
+  product_id: number;
+
+  @Column({ type: 'text', nullable: true })
+  description: string;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  quantity: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  unit_price: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  discount_percent: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  discount_amount: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  line_total: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  tax_rate: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  tax_amount: number;
+
+  @Column({ type: 'date', nullable: true })
+  required_date: Date;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  delivered_quantity: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  pending_quantity: number;
+
+  @Column({ length: 50, nullable: true })
+  line_status: string;
+
+  @Column({ nullable: true })
+  line_order: number;
+
+  // ✅ NEW STATUS & AUDIT COLUMNS
+  @Column({
+    type: 'smallint',
+    default: 1,
+    nullable: false,
+    comment: '0 = inactive, 1 = active',
+  })
+  status: number;
+
+  @Column({ type: 'date' })
+  created_at: string;
+
+  @Column({ type: 'date' })
+  updated_at: string;
+
+  @BeforeInsert()
+  setCreateDateParts() {
+    const today = new Date();
+    const onlyDate = today.toISOString().split('T')[0]; // YYYY-MM-DD
+    this.created_at = onlyDate;
+    this.updated_at = onlyDate;
+  }
+}
