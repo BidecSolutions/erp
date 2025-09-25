@@ -96,7 +96,7 @@ async store(createDto: CreateSalesOrderDto) {
         const details = createDto.salesOrderDetails.map((detailDto) =>
           detailRepo.create({
             ...detailDto,
-            salesOrder: savedSaleOrder, // ✅ attach relation
+            salesOrder: savedSaleOrder, 
           }),
         );
 
@@ -115,8 +115,6 @@ async store(createDto: CreateSalesOrderDto) {
   }
 }
 
-
-  // ✅ GET ALL
   async findAll() {
     const orders = await this.orderRepo.find({
       relations: ['details'],
@@ -130,7 +128,6 @@ async store(createDto: CreateSalesOrderDto) {
     };
   }
 
-  // ✅ GET ONE
   async findOne(id: number) {
     const order = await this.orderRepo.findOne({
       where: {  id },
@@ -144,7 +141,6 @@ async store(createDto: CreateSalesOrderDto) {
     };
   }
 
-  // ✅ UPDATE
   async update(id: number, dto: UpdateSalesOrderDto) {
     const existing = await this.orderRepo.findOne({ where: { id: id } });
     if (!existing) throw new NotFoundException(`Order with ID ${id} not found`);
@@ -190,7 +186,6 @@ async store(createDto: CreateSalesOrderDto) {
     };
   }
 
-  // ✅ TOGGLE SOFT DELETE
   async toggleStatus(id: number) {
     const existing = await this.orderRepo.findOne({ where: { id: id } });
     if (!existing) throw new NotFoundException(`Order with ID ${id} not found`);

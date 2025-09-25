@@ -26,6 +26,7 @@ import { BranchModule } from './Company/branch/branch.module';
 import { CustomerModule } from './Company/customers/customer.module';
 import { CustomerCategoryModule } from './Company/customer-categories/customer-category.module';
 import { SalesOrder } from './sales/sales-order/entity/sales-order.entity';
+import { SalesOrderModule } from './sales/sales-order/sales-order.module';
 
 @Module({
   imports: [
@@ -53,7 +54,7 @@ import { SalesOrder } from './sales/sales-order/entity/sales-order.entity';
     BranchModule,
     CustomerCategoryModule,
     CustomerModule,
-    SalesOrder,
+    SalesOrderModule,
   ],
   controllers: [AppController],
   providers: [AppService, registerUser, userRoles],
