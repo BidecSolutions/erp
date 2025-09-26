@@ -14,7 +14,7 @@ import { CreateSalesOrderDto, UpdateSalesOrderDto } from './dto/sales-order.dto'
 
 @Controller('sales-order')
 export class SalesOrderController {
-  constructor(private readonly salesOrderService: SalesOrderService) {}
+  constructor(private readonly salesOrderService: SalesOrderService) { }
 
   @Post('store')
   async create(@Body() dto: CreateSalesOrderDto) {
@@ -39,8 +39,8 @@ export class SalesOrderController {
     return this.salesOrderService.update(id, dto);
   }
 
-  @Delete(':id/toggle')
-  async toggleStatus(@Param('id', ParseIntPipe) id: number) {
-    return this.salesOrderService.toggleStatus(id);
+  @Get('toogleStatus/:id')
+  statusChange(@Param('id', ParseIntPipe) id: number) {
+    return this.salesOrderService.statusUpdate(id);
   }
 }

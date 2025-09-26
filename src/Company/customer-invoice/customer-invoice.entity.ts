@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { Company } from '../companies/company.entity';
 import { Customer } from '../customers/customer.entity';
+import { SalesOrder } from 'src/sales/sales-order/entity/sales-order.entity';
 
 @Entity('customer_invoice')
 export class CustomerInvoice {
@@ -20,7 +21,11 @@ export class CustomerInvoice {
   @ManyToOne(() => Customer, (customer) => customer.customer_invoices, { onDelete: 'CASCADE' })
   customer: Customer;
 
-  @Column({ nullable: true })
+  @ManyToOne(() => SalesOrder, (order) => order.customerInvoices, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'sales_order_id' })
+  salesOrder: SalesOrder;
+
+  @Column()
   sales_order_id: number;
 
   @Column()
