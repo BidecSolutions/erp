@@ -37,6 +37,11 @@ export class sideMenuAndRoleSeederService {
                 id: 2,
                 name: "Branch"
             },
+
+            {
+                id: 3,
+                name: "Customer"
+            },
         ];
 
         const subSideMenu: Partial<subSideMenus>[] = [
@@ -55,6 +60,15 @@ export class sideMenuAndRoleSeederService {
                 menu_id: 2,
                 link: "auth/login"
             },
+
+            {
+                id: 3,
+                name: "Add new Branch",
+                menu_id: 3,
+                link: "auth/login"
+            },
+
+
         ];
 
         const subMenuPermRepository: Partial<subSideMenuPermission>[] = [
@@ -91,6 +105,24 @@ export class sideMenuAndRoleSeederService {
                 id: 6,
                 name: "Delete",
                 sub_menu_id: 2,
+            },
+
+
+            {
+                id: 7,
+                name: "Create",
+                sub_menu_id: 3,
+            },
+
+            {
+                id: 8,
+                name: "Update",
+                sub_menu_id: 3,
+            },
+            {
+                id: 9,
+                name: "Delete",
+                sub_menu_id: 3,
             },
         ];
         await this.sideMenuRepo.save(sideMenu);
