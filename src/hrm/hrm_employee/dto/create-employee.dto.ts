@@ -32,18 +32,14 @@ export class CreateEmployeeDto {
   @IsNotEmpty({ message: 'Gender is required' })
   gender: string;
 
-  // ✅ validate email only when is_system_user === true
-  @ValidateIf((o) => o.is_system_user === true)
-  @IsEmail({}, { message: 'Invalid email format' })
-  @IsNotEmpty({ message: 'Email is required for system users' })
-  email?: string | null;
+@ValidateIf(o => o.is_system_user === true)
+@IsEmail()
+email?: string;
 
-  // ✅ validate password only when is_system_user === true
-  @ValidateIf((o) => o.is_system_user === true)
-  @IsString()
-  @IsNotEmpty({ message: 'Password is required for system users' })
-  @Length(6, 100)
-  password?: string | null;
+@ValidateIf(o => o.is_system_user === true)
+@IsString()
+@Length(6, 100)
+password?: string;
 
   @IsString()
   @IsNotEmpty({ message: 'Address is required' })
@@ -141,7 +137,7 @@ export class CreateEmployeeDto {
 @IsOptional()
  @Type(() => Number)
   @IsInt({ message: 'leave_setup_id must be an integer number' })
-  leave_setup_id: number;
+  annual_leave_id: number;
 
 
  @IsOptional()
@@ -149,7 +145,10 @@ export class CreateEmployeeDto {
    @Type(() => Number)
   @IsNumber({}, { each: true })
   allowance_ids?: number[];
-
-
+  
+@IsOptional()
+@IsNumber()
+@Type(() => Number)
+role_id?: number; 
 
 }

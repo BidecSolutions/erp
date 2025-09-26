@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { LeaveSetupController } from './leave-setup.controller';
+import { AnnualLeaveController } from './annual-leave.controller';
 
 describe('LeaveSetupController', () => {
-  let controller: LeaveSetupController;
+  let controller: AnnualLeaveController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [LeaveSetupController],
+      controllers: [AnnualLeaveController],
     }).compile();
 
-    controller = module.get<LeaveSetupController>(LeaveSetupController);
+    controller = module.get<AnnualLeaveController>(AnnualLeaveController);
   });
 
   it('should be defined', () => {

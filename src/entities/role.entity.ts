@@ -4,10 +4,12 @@ import {
   Column,
   ManyToMany,
   JoinTable,
-  BeforeInsert
+  BeforeInsert,
+  OneToMany
 } from 'typeorm';
 import { User } from './user.entity';
 import { Permission } from './Permission.entity';
+import { Employee } from 'src/hrm/hrm_employee/employee.entity';
 
 @Entity('roles')
 export class Role {
@@ -16,6 +18,9 @@ export class Role {
 
   @Column({ length: 255, unique: true })
   role_name: string;
+
+    // @OneToMany(() => Employee, (emp) => emp.role)
+    // employees: Employee[];
 
   @Column({
     type: 'int',

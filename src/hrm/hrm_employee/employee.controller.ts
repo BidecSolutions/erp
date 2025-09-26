@@ -47,15 +47,15 @@ export class EmployeeController {
     return this.employeeService.create(dto, files);
   }
 
-  @Get('list')
-  findAll() {
-    return this.employeeService.findAll();
-  }
+  // @Get('list')
+  // findAll() {
+  //   return this.employeeService.findAll();
+  // }
 
-  @Get(':id/get')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.employeeService.findOne(id);
-  }
+  // @Get(':id/get')
+  // findOne(@Param('id', ParseIntPipe) id: number) {
+  //   return this.employeeService.findOne(id);
+  // }
 
   @Put(':id/update')
   @UseInterceptors(
