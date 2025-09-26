@@ -41,20 +41,14 @@ export class userRoles {
             },
             {
                 id: 2,
-                role_name: 'Admin',
-                created_date: formattedDate,
-                created_time: now.toTimeString().split(' ')[0],
-            },
-            {
-                id: 3,
-                role_name: 'Branch',
+                role_name: 'Admin ',
                 created_date: formattedDate,
                 created_time: now.toTimeString().split(' ')[0],
             },
             //HR Manager
             {
-                id: 4,
-                role_name: 'HR Manager ',
+                id: 3,
+                role_name: 'HR Manager',
                 created_date: formattedDate,
                 created_time: now.toTimeString().split(' ')[0],
                 // menuRoles: [
@@ -65,7 +59,7 @@ export class userRoles {
 
             // Inventory And Procurement
             {
-                id: 5,
+                id: 4,
                 role_name: 'Inventory & Procurement Assistant',
                 created_date: formattedDate,
                 created_time: now.toTimeString().split(' ')[0],
@@ -75,7 +69,7 @@ export class userRoles {
                 // ],
             },
             {
-                id: 6,
+                id: 5,
                 role_name: 'Inventory & Procurement Manager',
                 created_date: formattedDate,
                 created_time: now.toTimeString().split(' ')[0],
@@ -87,7 +81,7 @@ export class userRoles {
 
             //Sales
             {
-                id: 7,
+                id: 6,
                 role_name: 'Sales Assistant',
                 created_date: formattedDate,
                 created_time: now.toTimeString().split(' ')[0],
@@ -97,7 +91,7 @@ export class userRoles {
                 // ],
             },
             {
-                id: 8,
+                id: 7,
                 role_name: 'Sales Manager',
                 created_date: formattedDate,
                 created_time: now.toTimeString().split(' ')[0],
@@ -109,7 +103,7 @@ export class userRoles {
 
             //Accouts
             {
-                id: 9,
+                id: 8,
                 role_name: 'Accountant',
                 created_date: formattedDate,
                 created_time: now.toTimeString().split(' ')[0],
@@ -121,7 +115,7 @@ export class userRoles {
 
             //Finance
             {
-                id: 10,
+                id: 9,
                 role_name: 'Finance Manager',
                 created_date: formattedDate,
                 created_time: now.toTimeString().split(' ')[0],
@@ -135,6 +129,10 @@ export class userRoles {
         await this.userRepo.save(seedData);
         const allMenuRoles = seedData.flatMap(r => r.menuRoles ?? []);
         await this.sideMenuRoleMapping.save(allMenuRoles)
+
+
+
+
 
         //User Role Mapping
         const roleMap: Partial<userRoleMapping>[] = [
@@ -155,5 +153,7 @@ export class userRoles {
         ];
 
         await this.rolemap.save(roleMap);
+
+
     }
 }
