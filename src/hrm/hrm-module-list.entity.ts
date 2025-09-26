@@ -14,7 +14,6 @@ import { PaysliptypeModule } from "./hrm_paysliptype/paysliptype.module";
 import { ShiftModule } from "./hrm_shift/shift.module";
 
 export const HRM = [
-
     DepartmentModule,
     DesignationModule,
     EmployeeModule,

@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany, BeforeInsert } from 'typeorm';
 import { Company } from '../companies/company.entity';
 import { Supplier } from '../supplier/supplier.entity';
 
@@ -28,9 +28,16 @@ export class SupplierCategory {
   @Column({ type: 'smallint', default: 1, comment: '1 = active, 2 = inactive' })
   is_active: number;
 
-  @Column()
-  created_by: number;
+  @Column({ type: 'date', nullable: true })
+  created_at: string;
 
-  @Column({ type: 'date' })
-  created_date: string;
+  @Column({ type: 'date', nullable: true })
+  updated_at: string;
+
+  @BeforeInsert()
+  setDefaults() {
+    const now = new Date();
+    this.created_at = now.toISOString().split('T')[0];
+    this.updated_at = now.toISOString().split('T')[0];
+  }
 }

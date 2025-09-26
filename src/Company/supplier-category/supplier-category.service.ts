@@ -13,9 +13,9 @@ export class SupplierCategoryService {
     private readonly supplierCategoryRepo: Repository<SupplierCategory>,
     @InjectRepository(Company)
     private companyRepo: Repository<Company>,
-  ) {}
+  ) { }
 
-  async create(dto: CreateSupplierCategoryDto) {
+  async create(dto: CreateSupplierCategoryDto,) {
     try {
       const company = await this.companyRepo.findOne({
         where: { id: dto.company_id, status: 1 },
@@ -48,8 +48,8 @@ export class SupplierCategoryService {
           category_name: true,
           description: true,
           is_active: true,
-          created_by: true,
-          created_date: true,
+          // created_by: true,
+          // created_date: true,
           company: {
             id: true,
             company_name: true,
@@ -73,8 +73,8 @@ export class SupplierCategoryService {
           category_name: true,
           description: true,
           is_active: true,
-          created_by: true,
-          created_date: true,
+          // created_by: true,
+          // created_date: true,
           company: {
             id: true,
             company_name: true,
