@@ -2,8 +2,6 @@ import { IsString, IsNotEmpty, IsNumber, IsEnum } from 'class-validator';
 import { AllowanceType } from '../allowance.entity';
 
 export class CreateAllowanceDto {
-  @IsNumber({}, { message: 'Allowance Option ID must be a number' })
-  allowanceOptionId: number;
 
   @IsString()
   @IsNotEmpty({ message: 'Title is required' })
@@ -14,4 +12,8 @@ export class CreateAllowanceDto {
 
   @IsNumber({}, { message: 'Amount must be a number' })
   amount: number;
+
+   @IsNumber()
+  @IsNotEmpty()
+  company_id: number; // yahan add karo
 }
