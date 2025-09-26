@@ -5,9 +5,13 @@ import {
   ManyToOne,
   JoinColumn,
   BeforeInsert,
+  OneToMany,
 } from 'typeorm';
 import { Company } from '../companies/company.entity';
 import { SupplierCategory } from '../supplier-category/supplier-category.entity';
+import { SupplierPayment } from '../supplier-payment/supplier-payment.entity';
+import { SupplierInvoice } from '../supplier-invoice/supplier-invoice.entity';
+import { SupplierAccount } from './supplier.supplier_account.entity';
 
 @Entity('supplier')
 export class Supplier {
@@ -21,6 +25,17 @@ export class Supplier {
     onDelete: 'CASCADE',
   })
   category: SupplierCategory;
+
+  @OneToMany(() => SupplierAccount, (account) => account.supplier)
+  accounts: SupplierAccount[];
+
+  // One supplier can have many payments
+  @OneToMany(() => SupplierPayment, (payment) => payment.supplier)
+  supplier_payments: SupplierPayment[];
+
+  // One supplier can have many invoices
+  @OneToMany(() => SupplierInvoice, (invoice) => invoice.supplier)
+  supplier_invoices: SupplierInvoice[];
 
   @Column()
   supplier_code: string;
