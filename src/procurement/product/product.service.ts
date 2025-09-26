@@ -118,6 +118,7 @@ async store(createProductDto: CreateProductDto) {
         return errorResponse('Failed to retrieve product', error.message);
       }
      }
+     
  async update(id: number, updateDto: UpdateProductDto) {
       try {
         const existing = await this.productRepo.findOne({ where: { id } });

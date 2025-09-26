@@ -3,29 +3,20 @@ import { IsNotEmpty, IsOptional, IsInt, IsBoolean, IsString } from 'class-valida
 export class CreateCategoryDto {
   @IsNotEmpty()
   @IsString()
-  category_Code: string;
+  category_name: string;
 
   @IsNotEmpty()
   @IsString()
-  category_name: string;
+  category_code: string;
 
   @IsOptional()
   @IsString()
   description?: string;
 
-  @IsOptional()
   @IsInt()
   company_id?: number;
-
-  @IsOptional()
+  
   @IsInt()
   branch_id: number;
 
-//   @IsOptional()
-//   @IsInt()
-//   parent_category_id?: number;
-
-  // @IsOptional()
-  // @IsInt()
-  // display_order?: number;
 }

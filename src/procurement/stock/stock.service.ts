@@ -43,6 +43,44 @@ export class StockService {
         return errorResponse('Failed to retrieve stock', error.message);
       }
     }
+      async findOne(id: number) {
+          try {
+            const stock = await this.stockRepo.findOneBy({ id });
+            if (!stock) {
+              return errorResponse(`stock #${id} not found`);
+            }
+        
+            return successResponse('stock retrieved successfully!', stock);
+          } catch (error) {
+            return errorResponse('Failed to retrieve stock', error.message);
+          }
+        }
+      async update(id: number, updateDto: UpdateStockDto) {
+          try {
+            const existing = await this.stockRepo.findOne({ where: { id } });
+            if (!existing) {
+              return errorResponse(`stock #${id} not found`);
+            }
+        
+            const stock = await this.stockRepo.save({ id, ...updateDto });
+            return successResponse('stock updated successfully!', stock);
+          } catch (error) {
+            return errorResponse('Failed to update stock', error.message);
+          }
+        }
+      async statusUpdate(id: number) {
+      try {
+        const stock = await this.stockRepo.findOne({ where: { id } });
+        if (!stock) throw new NotFoundException('stock not found');
+    
+        stock.status = stock.status === 0 ? 1 : 0;
+        const saved = await this.stockRepo.save(stock);
+    
+        return toggleStatusResponse('stock', saved.status);
+      } catch (err) {
+        return errorResponse('Something went wrong', err.message);
+      }
+        }
   
 
 }

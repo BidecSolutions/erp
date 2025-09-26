@@ -17,20 +17,19 @@ export class StockController {
       filter !== undefined ? Number(filter) : undefined,
     );
   }
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.stockService.findOne(+id);
+  }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.stockService.findOne(+id);
-  // }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateStockDto: UpdateStockDto) {
-  //   return this.stockService.update(+id, updateStockDto);
-  // // }
-
-  // @Get('toogleStatus/:id')
-  // statusChange(@Param('id', ParseIntPipe) id: number) {
-  //   return this.stockService.statusUpdate(id);
-  // }
- 
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateStockDto: UpdateStockDto) {
+    return this.stockService.update(+id, updateStockDto);
+  }
+  
+  @Get('toogleStatus/:id')
+  statusChange(@Param('id', ParseIntPipe) id: number) {
+    return this.stockService.statusUpdate(id);
+  }
+  
 }
