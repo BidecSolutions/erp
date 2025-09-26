@@ -344,6 +344,7 @@ export class EmployeeService {
     });
 
     return employees.map((emp) => ({
+      ...emp,
        department: emp.department?.name || null,
       designation: emp.designation?.name || null,
       documents: emp.documents || [],
