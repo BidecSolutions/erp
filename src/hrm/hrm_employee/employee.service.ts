@@ -340,47 +340,82 @@ export class EmployeeService {
 
   async findAll() {
     const employees = await this.employeeRepository.find({
-      relations: ["department", "designation", "documents", "bankDetails", "leaveSetup"],
+      relations: ["department", "designation", "documents", "bankDetails", "leaveSetup","allowances",],
     });
 
     return employees.map((emp) => ({
-      ...emp,
-      department: emp.department?.name || null,
+       department: emp.department?.name || null,
       designation: emp.designation?.name || null,
       documents: emp.documents || [],
       bankDetails: emp.bankDetails || [],
       leaveSetup: emp.leaveSetup || [],
-      // allowances: emp.allowances?.map(a => ({
-      //   id: a.id,
-      //   title: a.title,
-      //   type: a.type,
-      //   amount: a.amount,
-      // })) || [],
+       allowances: emp.allowances?.map(a => ({
+    id: a.id,
+    title: a.title,
+    type: a.type,
+    amount: a.amount,
+    company_id: a.company_id,
+  })) || [],
     }));
   }
 
-  async findOne(id: number) {
-    const emp = await this.employeeRepository.findOne({
-      where: { id },
-      relations: ["department", "designation", "documents", "bankDetails", "leaveSetup" ],
-    });
-    if (!emp) throw new NotFoundException(`Employee ID ${id} not found`);
+async findOne(id: number) {
+  const emp = await this.employeeRepository.findOne({
+    where: { id },
+    relations: ["department", "designation", "shift", "leaveSetup", "allowances", "documents", "bankDetails"],
+  });
 
-    return {
-      ...emp,
-      department: emp.department?.name || null,
-      designation: emp.designation?.name || null,
-      documents: emp.documents || [],
-      bankDetails: emp.bankDetails || [],
-      leaveSetup: emp.leaveSetup || [],
-      // allowances: emp.allowances?.map(a => ({
-      //   id: a.id,
-      //   title: a.title,
-      //   type: a.type,
-      //   amount: a.amount,
-      // })) || [],
-    };
+  if (!emp) throw new NotFoundException(`Employee ID ${id} not found`);
+
+  const data: any = {
+    id: emp.id,
+    name: emp.name,
+    phone: emp.phone,
+    gender: emp.gender,
+    email: emp.email,
+    password: emp.password,
+    is_system_user: emp.is_system_user,
+    address: emp.address,
+    dateOfBirth: emp.dateOfBirth,
+    department: emp.department?.name || null,
+    designation: emp.designation?.name || null,
+    dateOfJoining: emp.dateOfJoining,
+    employeeCode: emp.employeeCode,
+    hoursPerDay: emp.hoursPerDay,
+    daysPerWeek: emp.daysPerWeek,
+    fixedSalary: emp.fixedSalary,
+    shift: emp.shift?.name || null,
+    leaveSetup: emp.leaveSetup || null,
+  };
+
+  // Include dynamic fields BEFORE status
+  if (emp.documents?.length > 0) {
+    data.documents = emp.documents;
   }
+
+  if (emp.bankDetails?.length > 0) {
+    data.bankDetails = emp.bankDetails;
+  }
+
+  if (emp.allowances?.length > 0) {
+    data.allowances = emp.allowances.map(a => ({
+      id: a.id,
+      title: a.title,
+      type: a.type,
+      amount: a.amount,
+      company_id: a.company_id,
+    }));
+  }
+
+  // Status and timestamps at the end
+  data.status = emp.status;
+  data.created_at = emp.created_at;
+  data.updated_at = emp.updated_at;
+
+  return data;
+}
+
+
 
   async create(dto: CreateEmployeeDto, files?: { cv?: Express.Multer.File[], photo?: Express.Multer.File[] }) {
     const department = await this.departmentRepository.findOneBy({ id: dto.departmentId });
@@ -538,10 +573,14 @@ if (dto.allowance_ids?.length) {
 
     Object.assign(emp, dto);
 
-    if (!dto.is_system_user) {
-      emp.email = null;
-      emp.password = null;
-    }
+   if (dto.is_system_user !== undefined) {
+  emp.is_system_user = dto.is_system_user;
+  if (!dto.is_system_user) {
+    emp.email = null;
+    emp.password = null;
+  }
+}
+
 
     const saved = await this.employeeRepository.save(emp);
 
@@ -551,22 +590,41 @@ if (dto.allowance_ids?.length) {
 
     const fullEmp = await this.employeeRepository.findOne({
       where: { id: saved.id },
-      relations: ["department", "designation", "shift"],
+      relations: ["department", "designation", "shift" ,"leaveSetup", "allowances", ],
     });
 
     if (!fullEmp) throw new NotFoundException("Employee not found after save");
 
-    return {
-      ...saved,
-      department: fullEmp.department?.name,
-      designation: fullEmp.designation?.name,
-      shift: fullEmp.shift?.name,
-      // allowances: fullEmp.allowances?.map(a => ({
-      //   id: a.id,
-      //   title: a.title,
-      //   type: a.type,
-      //   amount: a.amount,
-      // })) || [],
+       return {
+     id: saved.id,
+  name: saved.name,
+  phone: saved.phone,
+  gender: saved.gender,
+  email: saved.email,
+  password: saved.password,
+  is_system_user: saved.is_system_user,
+  address: saved.address,
+  dateOfBirth: saved.dateOfBirth,
+  department: saved.department?.name,
+  designation: saved.designation?.name,
+  dateOfJoining: saved.dateOfJoining,
+  employeeCode: saved.employeeCode,
+  hoursPerDay: saved.hoursPerDay,
+  daysPerWeek: saved.daysPerWeek,
+  fixedSalary: saved.fixedSalary,
+  shift: saved.shift?.name,
+  leaveSetup: saved.leaveSetup,
+  allowances: saved.allowances?.map(a => ({
+    id: a.id,
+    title: a.title,
+    type: a.type,
+    amount: a.amount,
+    company_id: a.company_id,
+  })) || [],
+  status: saved.status,
+  created_at: saved.created_at,
+  updated_at: saved.updated_at,
+    
     };
   }
 
