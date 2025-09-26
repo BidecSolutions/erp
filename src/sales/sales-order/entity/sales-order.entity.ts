@@ -20,6 +20,8 @@ export class SalesOrder {
     cascade: true,
   })
   salesOrderDetails: SalesOrderDetail[];
+
+
   // ------------------------------------------------
 
   @Column()
@@ -109,11 +111,12 @@ export class SalesOrder {
   })
   status: number;
 
-  @Column({ type: 'date' })
+  @Column({ type: 'date', nullable: true })
   created_at: string;
 
-  @Column({ type: 'date' })
+  @Column({ type: 'date', nullable: true })
   updated_at: string;
+
 
   @BeforeInsert()
   setCreateDateParts() {

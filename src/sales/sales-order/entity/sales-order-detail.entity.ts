@@ -16,14 +16,12 @@ export class SalesOrderDetail {
   id: number;
 
 
+  
   @ManyToOne(() => SalesOrder, (order) => order.salesOrderDetails)
-@JoinColumn({ name: 'order_id' })
-salesOrder: SalesOrder;
+  @JoinColumn({ name: 'order_id' })
+  salesOrder: SalesOrder;
 
 
-  // @ManyToOne(() => SalesOrder, (order) => order.details, { onDelete: 'CASCADE' })
-  // @JoinColumn({ name: 'sale_order_id' })
-  // order: SalesOrder;
 
   @Column({ nullable: true })
   product_id: number;
@@ -76,11 +74,12 @@ salesOrder: SalesOrder;
   })
   status: number;
 
-  @Column({ type: 'date' })
+  @Column({ type: 'date', nullable: true })
   created_at: string;
 
-  @Column({ type: 'date' })
+  @Column({ type: 'date', nullable: true })
   updated_at: string;
+
 
   @BeforeInsert()
   setCreateDateParts() {

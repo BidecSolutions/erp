@@ -4,38 +4,37 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository  , DataSource} from 'typeorm';
+import { Repository, DataSource, Any } from 'typeorm';
 import { SalesOrder } from './entity/sales-order.entity';
 import { CreateSalesOrderDto, UpdateSalesOrderDto } from './dto/sales-order.dto';
-import { successResponse } from 'src/commonHelper/response.util';
+import { errorResponse, successResponse } from 'src/commonHelper/response.util';
 import { SalesOrderDetail } from './entity/sales-order-detail.entity';
-
-
-// 👇 dummy entities import karo agar exist hain
-// import { Company } from 'src/company/entity/company.entity';
-// import { Branch } from 'src/branch/entity/branch.entity';
-// import { Customer } from 'src/customer/entity/customer.entity';
-// import { SalesPerson } from 'src/sales-person/entity/sales-person.entity';
+import { Company } from 'src/Company/companies/company.entity';
+import { Branch } from 'src/Company/branch/branch.entity';
+import { Customer } from 'src/Company/customers/customer.entity';
 
 @Injectable()
 export class SalesOrderService {
   constructor(
-     @InjectRepository(SalesOrder)
-     private readonly orderRepo: Repository<SalesOrder>,
-     private dataSource: DataSource,
+    @InjectRepository(SalesOrder)
+    private readonly orderRepo: Repository<SalesOrder>,
+    private dataSource: DataSource,
 
-    // @InjectRepository(Company)
-    // private readonly companyRepo: Repository<Company>,
+    @InjectRepository(Company)
+    private readonly companyRepo: Repository<Company>,
 
-    // @InjectRepository(Branch)
-    // private readonly branchRepo: Repository<Branch>,
+        @InjectRepository(SalesOrderDetail)
+    private readonly detailRepo: Repository<SalesOrderDetail>,
 
-    // @InjectRepository(Customer)
-    // private readonly customerRepo: Repository<Customer>,
+    @InjectRepository(Branch)
+    private readonly branchRepo: Repository<Branch>,
+
+    @InjectRepository(Customer)
+    private readonly customerRepo: Repository<Customer>,
 
     // @InjectRepository(SalesPerson)
     // private readonly salesPersonRepo: Repository<SalesPerson>,
-  ) {}
+  ) { }
 
   // // ✅ CREATE
   // async create(dto: CreateSalesOrderDto) {
@@ -81,43 +80,93 @@ export class SalesOrderService {
   //   };
   // }
 
-async store(createDto: CreateSalesOrderDto) {
-  try {
-    return await this.dataSource.transaction(async (manager) => {
-      // Step 1: Create and save SalesOrder
-      const salesOrderRepo = manager.getRepository(SalesOrder);
-      const order = salesOrderRepo.create(createDto);
-      const savedSaleOrder = await salesOrderRepo.save(order);
+  //   async store(createDto: CreateSalesOrderDto) {
+  //     try {
+  //       return await this.dataSource.transaction(async (manager) => {
 
-      // Step 2: Save SalesOrderDetails if provided
-      if (createDto.salesOrderDetails && createDto.salesOrderDetails.length > 0) 
- {
-        const detailRepo = manager.getRepository(SalesOrderDetail);
-        const details = createDto.salesOrderDetails.map((detailDto) =>
-          detailRepo.create({
-            ...detailDto,
-            salesOrder: savedSaleOrder, 
-          }),
-        );
+  //         // Step 1: Create and save SalesOrder
+  //         const salesOrderRepo = manager.getRepository(SalesOrder);
+  //         const order = salesOrderRepo.create(createDto);
+  //         const savedSaleOrder = await salesOrderRepo.save(order);
+  //         let sales_order_details: any[] = [];
 
-        await detailRepo.save(details);
-      }
+  //         // Step 2: Save SalesOrderDetails if provided
+  //         if (createDto.salesOrderDetails && createDto.salesOrderDetails.length > 0) {
+  //           const detailRepo = manager.getRepository(SalesOrderDetail);
 
-      return successResponse('Sales order created successfully!', {
-        savedSaleOrder,
+  //           // const sales_order_details = createDto.salesOrderDetails.map((salesOrderDetails) =>
+  //           //   manager.getRepository(SalesOrderDetail).create({
+  //           //     ...salesOrderDetails,
+  //           //     salesOrder: savedSaleOrder,
+  //           //   }),
+  //           // );
+  //  sales_order_details = createDto.salesOrderDetails.map((detailDto) =>
+  //   detailRepo.create({
+  //     ...detailDto,
+  //     salesOrder: savedSaleOrder,
+  //   }),
+  // );
+  // await detailRepo.save(sales_order_details);
+
+
+
+  //           // await manager.getRepository(SalesOrderDetail).save(sales_order_details);
+  //         }
+
+  //         return successResponse('Sales order created successfully!', {
+  //   savedSaleOrder,
+  //   sales_order_details
+  // });
+
+  //       });
+  //     } catch (error) {
+  //       if (error.code === 'ER_DUP_ENTRY') {
+  //         throw new BadRequestException('Sales order already exists');
+  //       }
+  //       throw new BadRequestException(error.message || 'Failed to create sales order');
+  //     }
+  //   }
+  async store(createDto: CreateSalesOrderDto) {
+    try {
+      return await this.dataSource.transaction(async (manager) => {
+        // Step 1: Create and save SalesOrder
+        const salesOrderRepo = manager.getRepository(SalesOrder);
+        const order = salesOrderRepo.create(createDto);
+        const savedSaleOrder = await salesOrderRepo.save(order);
+
+        let sales_order_details: SalesOrderDetail[] = [];
+
+        // Step 2: Save SalesOrderDetails if provided
+        if (createDto.salesOrderDetails && createDto.salesOrderDetails.length > 0) {
+          const detailRepo = manager.getRepository(SalesOrderDetail);
+
+          sales_order_details = createDto.salesOrderDetails.map((detailDto) =>
+            detailRepo.create({
+              ...detailDto,
+              salesOrder: savedSaleOrder,  // ✅ relation set automatically
+            }),
+          );
+
+          await detailRepo.save(sales_order_details);
+        }
+
+        return successResponse('Sales order created successfully!', {
+          savedSaleOrder,
+          sales_order_details,
+        });
       });
-    });
-  } catch (error) {
-    if (error.code === 'ER_DUP_ENTRY') {
-      throw new BadRequestException('Sales order already exists');
+    } catch (error) {
+      if (error.code === 'ER_DUP_ENTRY') {
+        throw new BadRequestException('Sales order already exists');
+      }
+      throw new BadRequestException(error.message || 'Failed to create sales order');
     }
-    throw new BadRequestException(error.message || 'Failed to create sales order');
   }
-}
+
 
   async findAll() {
     const orders = await this.orderRepo.find({
-      relations: ['details'],
+      relations: ['salesOrderDetails'],
       order: { id: 'DESC' },
     });
 
@@ -130,7 +179,7 @@ async store(createDto: CreateSalesOrderDto) {
 
   async findOne(id: number) {
     const order = await this.orderRepo.findOne({
-      where: {  id },
+      where: { id },
     });
     if (!order) throw new NotFoundException(`Order with ID ${id} not found`);
 
@@ -141,50 +190,56 @@ async store(createDto: CreateSalesOrderDto) {
     };
   }
 
-  async update(id: number, dto: UpdateSalesOrderDto) {
-    const existing = await this.orderRepo.findOne({ where: { id: id } });
-    if (!existing) throw new NotFoundException(`Order with ID ${id} not found`);
 
-    // if (dto.company_id) {
-    //   const company = await this.companyRepo.findOne({
-    //     where: { company_id: dto.company_id },
-    //   });
-    //   if (!company) throw new BadRequestException('Invalid company_id');
-    // }
 
-    // if (dto.branch_id) {
-    //   const branch = await this.branchRepo.findOne({
-    //     where: { branch_id: dto.branch_id },
-    //   });
-    //   if (!branch) throw new BadRequestException('Invalid branch_id');
-    // }
+async update(id: number, updateDto: UpdateSalesOrderDto) {
+  try {
+    // Step 1: Find existing order
+    const existingOrder = await this.orderRepo.findOne({ where: { id } });
+    if (!existingOrder) {
+      return errorResponse(`Sale order #${id} not found`);
+    }
 
-    // if (dto.customer_id) {
-    //   const customer = await this.customerRepo.findOne({
-    //     where: { customer_id: dto.customer_id },
-    //   });
-    //   if (!customer) throw new BadRequestException('Invalid customer_id');
-    // }
+    // Step 2: Optional - validate foreign keys if needed
+    // Example: check company
+    if (updateDto.company_id) {
+      const companyExists = await this.companyRepo.findOne({ where: { id: updateDto.company_id } });
+      if (!companyExists) return errorResponse(`Company #${updateDto.company_id} not found`);
+    }
 
-    // if (dto.sales_person_id) {
-    //   const salesPerson = await this.salesPersonRepo.findOne({
-    //     where: { sales_person_id: dto.sales_person_id },
-    //   });
-    //   if (!salesPerson) throw new BadRequestException('Invalid sales_person_id');
-    // }
 
-    Object.assign(existing, dto, {
-      updated_at: new Date().toISOString().split('T')[0],
-    });
+    const saleorder =await this.orderRepo.save({ id, ...updateDto });
+    return successResponse('Sale order updated successfully!' , saleorder);
 
-    const updated = await this.orderRepo.save(existing);
+  //   // Step 3: Handle nested salesOrderDetails
+  //   if (updateDto.salesOrderDetails && updateDto.salesOrderDetails.length > 0) {
+  //     // Delete old details
+  // await this.detailRepo.delete({ order_id: id });
 
-    return {
-      success: true,
-      message: 'Order updated successfully',
-      data: updated,
-    };
+  //     // Prepare new details
+  //     const newDetails = updateDto.salesOrderDetails.map(detail => ({
+  //       ...detail,
+  //       order: { id }, // link detail to parent order
+  //     }));
+
+  //     // Save new details
+  //     await this.detailRepo.save(newDetails);
+
+  //     // Remove from updateDto to avoid TypeORM issues
+  //     delete updateDto.salesOrderDetails;
+  //   }
+
+    // Step 4: Update main sale order
+    const updatedOrder = await this.orderRepo.save({ id, ...updateDto });
+
+    return successResponse('Sale order updated successfully!', updatedOrder);
+
+  } catch (error) {
+    return errorResponse('Failed to update sale_order', error.message);
   }
+}
+
+
 
   async toggleStatus(id: number) {
     const existing = await this.orderRepo.findOne({ where: { id: id } });
