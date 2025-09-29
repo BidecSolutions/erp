@@ -15,10 +15,10 @@ export class userCompanyMapping {
     @Column({ type: 'int' })
     user_id: number;
 
-    @Column({ type: 'int' })
+    @Column({ type: 'int', nullable: true })
     company_id: number;
 
-    @Column({ type: 'json', nullable: true })
+    @Column({ type: 'json', nullable: true, default: '[]' })
     branch_id: number[];
 
     @Column({

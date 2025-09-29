@@ -1,11 +1,14 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UploadedFile, UseInterceptors, UseGuards } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { CompaniesService } from '../companies/companies.service';
 import { CreateCompanyDto } from '../companies/dto/create-company.dto';
 import { UpdateCompanyDto } from '../companies/dto/update-company.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
+
+@UseGuards(JwtAuthGuard)
 @Controller('companies')
 export class CompaniesController {
     constructor(private readonly companiesService: CompaniesService) { }

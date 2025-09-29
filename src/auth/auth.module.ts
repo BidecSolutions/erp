@@ -18,9 +18,11 @@ import { sidemunuRolesMapping } from 'src/entities/role-side-menu-mapping.entity
 import { Permission } from 'src/entities/Permission.entity';
 import { Role } from 'src/entities/role.entity';
 import { subSideMenuPermission } from 'src/entities/sub-side-menu-permission.entity';
+import { userCompanyMapping } from 'src/entities/user-company-mapping.entity';
+import { Branch } from 'src/Company/branch/branch.entity';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([subSideMenuPermission, Role, Permission, UserToken, User, userRoleMapping, sideMenus, subSideMenus, sidemunuRolesMapping]),
+    TypeOrmModule.forFeature([Branch, userCompanyMapping, subSideMenuPermission, Role, Permission, UserToken, User, userRoleMapping, sideMenus, subSideMenus, sidemunuRolesMapping]),
     UsersModule,
     PassportModule,
     JwtModule.register({

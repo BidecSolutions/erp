@@ -57,9 +57,6 @@ export class CompaniesService {
       });
 
       await this.ucm.save(userMapping);
-
-
-
       return { success: true, message: 'Company created successfully', data: savedCompany };
     }
     catch (error) {
