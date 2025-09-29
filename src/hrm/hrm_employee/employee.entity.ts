@@ -127,28 +127,7 @@ annualLeave: AnnualLeave;
 @JoinColumn({ name: 'user_id' })
 user: User;
 
-//  @ManyToOne(() => Role, { eager: true, nullable: true })
-//   @JoinColumn({ name: 'role_id' })
-//   role: Role | null;
 
-//   @Column({ name: 'role_id', nullable: true })
-//   role_id: number | null;
-
-//  // ✅ INSERT ke time
-//   @BeforeInsert()
-//   handleDefaultsBeforeInsert() {
-//     if (!this.is_system_user) {
-//       this.role_id = null;
-//     }
-//   }
-
-//   // ✅ UPDATE ke time
-//   @BeforeUpdate()
-//   handleDefaultsBeforeUpdate() {
-//     if (!this.is_system_user) {
-//       this.role_id = null;
-//     }
-//   }
  @Column({
             type: 'int',
             comment: '1 = active, 2 = inactive',
