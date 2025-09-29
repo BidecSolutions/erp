@@ -35,7 +35,8 @@ export const HRM = [
     AnnualLeaveModule,
     LeaveTypeModule,
     NotificationModule,
-     LeaveRequestModule,
-        UnpaidLeaveModule,
-        NotificationTypeModule,
+    LeaveRequestModule,
+    UnpaidLeaveModule,
+    NotificationTypeModule,
+    LeaveRequestModule,
 ]
