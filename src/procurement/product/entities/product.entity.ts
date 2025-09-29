@@ -3,7 +3,8 @@ import { Company } from 'src/Company/companies/company.entity';
 import { Brand } from 'src/procurement/brand/entities/brand.entity';
 import { Category } from 'src/procurement/categories/entities/category.entity';
 import { UnitOfMeasure } from 'src/procurement/unit_of_measure/entities/unit_of_measure.entity';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { SalesOrderDetail } from 'src/sales/sales-order/entity/sales-order-detail.entity';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 
 
 @Entity('products')
@@ -127,4 +128,10 @@ export class Product {
 
   @Column({ type: 'datetime', nullable: true })
   updated_date?: Date;
+
+ // ✅ Relation with SalesOrderDetail
+  @OneToMany(() => SalesOrderDetail, (detail) => detail.product, {
+    cascade: true,
+  })
+  salesOrderDetails: SalesOrderDetail[];
 }

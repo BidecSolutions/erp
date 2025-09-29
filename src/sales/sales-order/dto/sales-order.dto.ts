@@ -8,13 +8,19 @@ import {
   IsInt,
   IsNotEmpty,
   ValidateNested,
+  IsEnum,
 } from 'class-validator';
 import { CreateSalesOrderDetailDto } from './sales-order-detail.dto';
+import { SalesStatus } from 'src/sales/enums/sales-enums';
 
 export class CreateSalesOrderDto {
   @IsDateString()
   @IsNotEmpty()
   order_date: Date;
+
+  @IsEnum(SalesStatus)  // 👈 instead of IsString
+  @IsNotEmpty()
+  sales_status: SalesStatus;
 
   @IsString()
   @IsNotEmpty()

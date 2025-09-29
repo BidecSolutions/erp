@@ -9,6 +9,7 @@ import { CustomerInvoice } from '../customer-invoice/customer-invoice.entity';
 import { SupplierPayment } from '../supplier-payment/supplier-payment.entity';
 import { SupplierInvoice } from '../supplier-invoice/supplier-invoice.entity';
 import { ChartOfAccount } from '../chart-of-accounts/chart-of-account.entity';
+import { SalesOrder } from 'src/sales/sales-order/entity/sales-order.entity';
 
 @Entity('companies')
 export class Company {
@@ -96,6 +97,10 @@ export class Company {
 
   @Column({ type: 'date' })
   updated_at: string;
+
+  // 👇 Relation with sale-order
+  @OneToMany(() => SalesOrder, (salesOrder) => salesOrder.company)
+  salesOrders: SalesOrder[];
 
   // 👇 Relation with Branch
   @OneToMany(() => Branch, (branch) => branch.company)
