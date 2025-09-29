@@ -21,7 +21,7 @@ import { POS } from './pos/POS-module-file.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
-      type: 'mysql',
+      type: 'mysql', x
       host: 'localhost',
       port: 3306,
       username: 'root',
@@ -36,6 +36,7 @@ import { POS } from './pos/POS-module-file.module';
     ...companySetting,
     ...HRM,
     ...sales,
+    ...POS
 
   ],
   controllers: [AppController],
