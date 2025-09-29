@@ -158,6 +158,10 @@ async findOne(id: number) {
   
     emp.employeeCode = await this.generateEmployeeCode();
 
+  //      if (!emp.is_system_user) {
+  //   emp.role_id = null; // agar system user nahi hai to null
+  // }
+
     const saved = await this.employeeRepository.save(emp);
 
    // Handle system user creation
@@ -228,7 +232,7 @@ async findOne(id: number) {
   async update(id: number, dto: UpdateEmployeeDto, files?: { cv?: Express.Multer.File[], photo?: Express.Multer.File[] }) {
     const emp = await this.employeeRepository.findOne({
       where: { id },
-      relations: ["department", "designation", "shift", "bankDetails"],
+      relations: ["department", "designation", "shift", "bankDetails", ],
     });
     if (!emp) throw new NotFoundException(`Employee ID ${id} not found`);
 
@@ -275,6 +279,9 @@ if (dto.allowance_ids?.length) {
  // Update Employee fields
     Object.assign(emp, dto);
 
+  //      if (!emp.is_system_user) {
+  //   emp.role_id = null; // agar system user nahi hai to null
+  // }
  // Handle is_system_user change
     if (dto.is_system_user !== undefined) {
       emp.is_system_user = dto.is_system_user;
@@ -317,36 +324,40 @@ if (dto.allowance_ids?.length) {
     if (!fullEmp) throw new NotFoundException("Employee not found after save");
 
        return {
-     id: saved.id,
-  name: saved.name,
-  phone: saved.phone,
-  gender: saved.gender,
-  // email: saved.email,
-  // password: saved.password,
-  is_system_user: saved.is_system_user,
-  address: saved.address,
-  dateOfBirth: saved.dateOfBirth,
-  department: saved.department?.name,
-  designation: saved.designation?.name,
-  dateOfJoining: saved.dateOfJoining,
-  employeeCode: saved.employeeCode,
-  hoursPerDay: saved.hoursPerDay,
-  daysPerWeek: saved.daysPerWeek,
-  fixedSalary: saved.fixedSalary,
-  shift: saved.shift?.name,
-  annualLeave: saved.annualLeave,
-  allowances: saved.allowances?.map(a => ({
-    id: a.id,
-    title: a.title,
-    type: a.type,
-    amount: a.amount,
-    company_id: a.company_id,
-  })) || [],
-  status: saved.status,
-  created_at: saved.created_at,
-  updated_at: saved.updated_at,
-    
-    };
+    id: fullEmp.id,
+  name: fullEmp.name,
+  phone: fullEmp.phone,
+  gender: fullEmp.gender,
+  is_system_user: fullEmp.is_system_user,
+  address: fullEmp.address,
+  dateOfBirth: fullEmp.dateOfBirth,
+  department: fullEmp.department?.name,
+  designation: fullEmp.designation?.name,
+  dateOfJoining: fullEmp.dateOfJoining,
+  employeeCode: fullEmp.employeeCode,
+  hoursPerDay: fullEmp.hoursPerDay,
+  daysPerWeek: fullEmp.daysPerWeek,
+  fixedSalary: fullEmp.fixedSalary,
+  shift: fullEmp.shift?.name,
+  annualLeave: fullEmp.annualLeave
+    ? {
+        id: fullEmp.annualLeave.id,
+        name: fullEmp.annualLeave.name,
+        total_leave: fullEmp.annualLeave.total_leave,
+        status: fullEmp.annualLeave.status,
+      }
+    : null,
+allowances: fullEmp.allowances?.map(a => ({
+  id: a.id,
+  title: a.title,
+  type: a.type,
+  amount: a.amount,
+  company_id: a.company_id,
+})) || [],
+  status: fullEmp.status,
+  created_at: fullEmp.created_at,
+  updated_at: fullEmp.updated_at,
+};
   }
 
   async remove(id: number) {

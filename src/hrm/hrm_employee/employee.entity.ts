@@ -21,6 +21,7 @@ import { Allowance } from '../hrm_allowance/allowance.entity';
 import { AnnualLeave } from '../hrm_annual-leave/annual-leave.entity';
 import { LeaveRequest } from '../hrm_leave-request/leave-request.entity';
 import { User } from 'src/entities/user.entity';
+import { Role } from 'src/entities/role.entity';
 
 
 @Entity('hrm_employees')
@@ -106,12 +107,9 @@ export class Employee {
 @JoinColumn({ name: 'annual_leave_id' })
 annualLeave: AnnualLeave;
 
-// @ManyToMany(() => Allowance, { nullable: true })
-// @JoinTable({ name: 'allowances' }) // pivot table
-// allowances?: Allowance[];
+
  @Column("simple-array", { nullable: true })
   allowance_ids: number[];
-
   // Many-to-Many relation for fetching allowance data
   @ManyToMany(() => Allowance)
   @JoinTable({
@@ -128,6 +126,12 @@ annualLeave: AnnualLeave;
 @JoinColumn({ name: 'user_id' })
 user: User;
 
+// @ManyToOne(() => Role, { nullable: true })
+// @JoinColumn({ name: "role_id" })
+// role?: Role | null;
+
+// @Column({ nullable: true })
+// role_id?: number | null ;   
  @Column({
             type: 'int',
             comment: '1 = active, 2 = inactive',
