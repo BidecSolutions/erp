@@ -17,8 +17,12 @@ import { BankDetail } from '../hrm_bank-details/bank-detail.entity';
 import { Shift } from '../hrm_shift/shift.entity';
 import { Document } from '../hrm_document/document.entity';
 import { IsOptional } from 'class-validator';
-import { LeaveSetup } from '../hrm_leave-setup/leave-setup.entity';
 import { Allowance } from '../hrm_allowance/allowance.entity';
+import { AnnualLeave } from '../hrm_annual-leave/annual-leave.entity';
+import { LeaveRequest } from '../hrm_leave-request/leave-request.entity';
+import { User } from 'src/entities/user.entity';
+import { Role } from 'src/entities/role.entity';
+
 
 @Entity('hrm_employees')
 export class Employee {
@@ -35,11 +39,11 @@ export class Employee {
   @Column()
   gender: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true, unique: true })
-  email: string | null;
+  // @Column({ type: 'varchar', length: 255, nullable: true, unique: true })
+  // email: string | null;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  password: string | null;
+  // @Column({ type: 'varchar', length: 255, nullable: true })
+  // password: string | null;
 
   // NEW column: is_system_user
   @Column({ name: 'is_system_user', type: 'boolean', default: false })
@@ -99,27 +103,36 @@ export class Employee {
   @OneToOne(() => BankDetail, (bankdetail) => bankdetail.employee)
   bankDetails: BankDetail[];
 
-@ManyToOne(() => LeaveSetup, (leaveSetup) => leaveSetup.employees, { nullable: true })
-@JoinColumn({ name: 'leave_setup_id' })
-leaveSetup: LeaveSetup;
+@ManyToOne(() => AnnualLeave, (annualLeave) => annualLeave.employees, { nullable: true })
+@JoinColumn({ name: 'annual_leave_id' })
+annualLeave: AnnualLeave;
 
-// @ManyToMany(() => Allowance, { nullable: true })
-// @JoinTable({ name: 'allowances' }) // pivot table
-// allowances?: Allowance[];
+
  @Column("simple-array", { nullable: true })
   allowance_ids: number[];
-
   // Many-to-Many relation for fetching allowance data
   @ManyToMany(() => Allowance)
   @JoinTable({
-    name: "employee_allowances",
+    name: "hrm_employee_allowances",
     joinColumn: { name: "employee_id", referencedColumnName: "id" },
     inverseJoinColumn: { name: "allowance_id", referencedColumnName: "id" },
   })
   allowances: Allowance[];
 
+  @OneToMany(() => LeaveRequest, (leaveRequest) => leaveRequest.employee)
+  leaveRequests: LeaveRequest[];
 
-     @Column({
+@OneToOne(() => User, (user) => user.employee, { cascade: true, onDelete: 'SET NULL' })
+@JoinColumn({ name: 'user_id' })
+user: User;
+
+// @ManyToOne(() => Role, { nullable: true })
+// @JoinColumn({ name: "role_id" })
+// role?: Role | null;
+
+// @Column({ nullable: true })
+// role_id?: number | null ;   
+ @Column({
             type: 'int',
             comment: '1 = active, 2 = inactive',
             default: 1

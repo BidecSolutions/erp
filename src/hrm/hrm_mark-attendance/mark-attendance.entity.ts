@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, BeforeInsert } from 'typeorm';
 import { Employee } from '../hrm_employee/employee.entity';
 
 
@@ -38,6 +38,17 @@ earlyLeaving: string | null;
 
 @Column({ type: 'varchar', length: 10, nullable: true })
 overtime: string | null;
-
-
+  
+      @Column({ type: 'date' })
+      created_at: string;
+  
+      @Column({ type: 'date' })
+      updated_at: string;
+  
+      @BeforeInsert()
+      setDefaults() {
+          const now = new Date();
+          this.created_at = now.toISOString().split('T')[0];
+          this.updated_at = now.toISOString().split('T')[0];
+      }
 }

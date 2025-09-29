@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { LeaveSetupService } from './leave-setup.service';
+import { LeaveTypeService } from './leave-type.service';
 
-describe('LeaveSetupService', () => {
-  let service: LeaveSetupService;
+describe('LeaveTypeService', () => {
+  let service: LeaveTypeService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [LeaveSetupService],
+      providers: [LeaveTypeService],
     }).compile();
 
-    service = module.get<LeaveSetupService>(LeaveSetupService);
+    service = module.get<LeaveTypeService>(LeaveTypeService);
   });
 
   it('should be defined', () => {
