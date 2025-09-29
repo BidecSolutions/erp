@@ -7,7 +7,7 @@ export class CreateAnnualLeaveDto {
   name: string;
 
   @IsInt()
-  @Min(0)
+ @Min(1, { message: 'Total leave must be at least 1' })
   @IsNotEmpty()
   total_leave: number;
 }
