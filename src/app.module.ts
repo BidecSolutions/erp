@@ -21,7 +21,7 @@ import { POS } from './pos/POS-module-file.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
-      type: 'mysql', x
+      type: 'mysql',
       host: 'localhost',
       port: 3306,
       username: 'root',
