@@ -9,6 +9,7 @@ import {
   BeforeInsert,
   ManyToMany,
   JoinTable,
+  BeforeUpdate,
 } from 'typeorm';
 import { Department } from '../hrm_department/department.entity';
 import { Designation } from '../hrm_designation/designation.entity';
@@ -126,12 +127,28 @@ annualLeave: AnnualLeave;
 @JoinColumn({ name: 'user_id' })
 user: User;
 
-// @ManyToOne(() => Role, { nullable: true })
-// @JoinColumn({ name: "role_id" })
-// role?: Role | null;
+//  @ManyToOne(() => Role, { eager: true, nullable: true })
+//   @JoinColumn({ name: 'role_id' })
+//   role: Role | null;
 
-// @Column({ nullable: true })
-// role_id?: number | null ;   
+//   @Column({ name: 'role_id', nullable: true })
+//   role_id: number | null;
+
+//  // ✅ INSERT ke time
+//   @BeforeInsert()
+//   handleDefaultsBeforeInsert() {
+//     if (!this.is_system_user) {
+//       this.role_id = null;
+//     }
+//   }
+
+//   // ✅ UPDATE ke time
+//   @BeforeUpdate()
+//   handleDefaultsBeforeUpdate() {
+//     if (!this.is_system_user) {
+//       this.role_id = null;
+//     }
+//   }
  @Column({
             type: 'int',
             comment: '1 = active, 2 = inactive',

@@ -15,6 +15,7 @@ import { Allowance } from "../hrm_allowance/allowance.entity";
 import { AnnualLeave } from "../hrm_annual-leave/annual-leave.entity";
 import { User } from "src/entities/user.entity";
 import * as bcrypt from 'bcryptjs';
+// import { Role } from "src/entities/role.entity";
 
 @Injectable()
 export class EmployeeService {
@@ -31,7 +32,8 @@ export class EmployeeService {
     @InjectRepository(AnnualLeave) private annualLeaveRepo: Repository<AnnualLeave>,
     @InjectRepository(BankDetail) private readonly bankDetailRepo: Repository<BankDetail>,
     @InjectRepository(Allowance) private readonly allowanceRepo: Repository<Allowance>,
-    @InjectRepository(User) private readonly userRepository: Repository<User>
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    // @InjectRepository(Role) private readonly roleRepository: Repository<Role>
   ) {}
 
   private async generateEmployeeCode(): Promise<string> {
@@ -158,10 +160,6 @@ async findOne(id: number) {
   
     emp.employeeCode = await this.generateEmployeeCode();
 
-  //      if (!emp.is_system_user) {
-  //   emp.role_id = null; // agar system user nahi hai to null
-  // }
-
     const saved = await this.employeeRepository.save(emp);
 
    // Handle system user creation
@@ -176,6 +174,7 @@ async findOne(id: number) {
       });
       await this.userRepository.save(user);
     }
+
 
     // Save allowances
   if (dto.allowance_ids?.length) {
@@ -279,9 +278,6 @@ if (dto.allowance_ids?.length) {
  // Update Employee fields
     Object.assign(emp, dto);
 
-  //      if (!emp.is_system_user) {
-  //   emp.role_id = null; // agar system user nahi hai to null
-  // }
  // Handle is_system_user change
     if (dto.is_system_user !== undefined) {
       emp.is_system_user = dto.is_system_user;
@@ -304,6 +300,7 @@ if (dto.allowance_ids?.length) {
         await this.userRepository.remove(user);
       }
     }
+ 
 
 
     const saved = await this.employeeRepository.save(emp);
