@@ -29,9 +29,11 @@ export class CompaniesService {
 
   async create(dto: CreateCompanyDto) {
     try {
+      //company add
       const company = this.companyRepo.create(dto);
       const savedCompany = await this.companyRepo.save(company);
 
+      //user add
       const hashedPassword = await bcrypt.hash(dto.password, 10);
       const userObject = this.userRepo.create({
         name: dto.company_name,
@@ -40,12 +42,23 @@ export class CompaniesService {
       })
       const saveUser = await this.userRepo.save(userObject);
 
+      //user role add
+      const userRoleMapping = this.userRoleMappingRepo.create({
+        user_id: saveUser.id,
+        roll_id: 2
+      });
+
+      await this.userRoleMappingRepo.save(userRoleMapping);
+
+      //user company Mapping
       const userMapping = this.ucm.create({
         user_id: saveUser.id,
         company_id: savedCompany.id
       });
 
       await this.ucm.save(userMapping);
+
+
 
       return { success: true, message: 'Company created successfully', data: savedCompany };
     }

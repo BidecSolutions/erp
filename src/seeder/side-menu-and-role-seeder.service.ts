@@ -33,6 +33,11 @@ export class sideMenuAndRoleSeederService {
                 name: "Company",
             },
 
+            {
+                id: 2,
+                name: "Branches",
+            },
+
         ];
 
         const subSideMenu: Partial<subSideMenus>[] = [
@@ -41,6 +46,13 @@ export class sideMenuAndRoleSeederService {
                 id: 1,
                 name: "Register new Company",
                 menu_id: 1,
+                link: "auth/login"
+            },
+
+            {
+                id: 2,
+                name: "Add New Brach",
+                menu_id: 2,
                 link: "auth/login"
             },
         ];
@@ -62,6 +74,25 @@ export class sideMenuAndRoleSeederService {
                 id: 3,
                 name: "Delete",
                 sub_menu_id: 1,
+            },
+
+            //branches
+
+            {
+                id: 4,
+                name: "Create",
+                sub_menu_id: 2,
+            },
+
+            {
+                id: 5,
+                name: "Update",
+                sub_menu_id: 2,
+            },
+            {
+                id: 6,
+                name: "Delete",
+                sub_menu_id: 2,
             },
 
 

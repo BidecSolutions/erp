@@ -42,12 +42,12 @@ export class userRoles {
 
                 ],
             },
-            // {
-            //     id: 2,
-            //     role_name: 'Admin ',
-            //     created_date: formattedDate,
-            //     created_time: now.toTimeString().split(' ')[0],
-            // },
+            {
+                id: 2,
+                role_name: 'Admin ',
+                created_date: formattedDate,
+                created_time: now.toTimeString().split(' ')[0],
+            },
             // //HR Manager
             // {
             //     id: 3,
