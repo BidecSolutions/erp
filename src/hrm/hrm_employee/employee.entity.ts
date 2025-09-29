@@ -130,7 +130,7 @@ user: User;
 
  @Column({
             type: 'int',
-            comment: '1 = active, 2 = inactive',
+            comment: '0 = inactive, 1 = active',
             default: 1
         })
         status: number;
@@ -147,5 +147,7 @@ user: User;
             this.created_at = now.toISOString().split('T')[0];
             this.updated_at = now.toISOString().split('T')[0];
         }
+
+
 
 }

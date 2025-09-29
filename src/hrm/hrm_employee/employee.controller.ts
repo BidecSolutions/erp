@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   UseInterceptors,
   UploadedFiles,
+  Query,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -47,10 +48,12 @@ export class EmployeeController {
     return this.employeeService.create(dto, files);
   }
 
-  @Get('list')
-  findAll() {
-    return this.employeeService.findAll();
-  }
+ @Get('list')
+findAll(@Query('status') status?: string) {
+  // 🔹 query param se status ko number me convert kar rahe
+  const filterStatus = status !== undefined ? Number(status) : undefined;
+  return this.employeeService.findAll(filterStatus);
+}
 
   @Get(':id/get')
   findOne(@Param('id', ParseIntPipe) id: number) {
@@ -87,4 +90,10 @@ export class EmployeeController {
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.employeeService.remove(id);
   }
+
+  @Get('toogleStatus/:id')
+    statusChange(@Param('id', ParseIntPipe) id: number){
+      return this.employeeService.statusUpdate(id);
+    }
+  
 }

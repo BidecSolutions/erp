@@ -37,6 +37,14 @@ export class DocumentService {
     return this.docRepo.find({ where: { employeeId } });
   }
 
+async updateStatusForMany(documents: Document[], status: number) {
+  if (!documents || documents.length === 0) return;
+  
+  for (const doc of documents) {
+    doc.status = status;
+  }
 
+  await this.docRepo.save(documents); // save updated status
+}
   
 }
