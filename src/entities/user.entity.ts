@@ -38,6 +38,11 @@ export class User {
   @Column({ length: 255, nullable: true })
   dob: string;
 
+  // @Column('json', { nullable: true })
+  // branch_id: string[];
+
+
+
   @Column({ type: 'date' })
   created_at: string;
 
