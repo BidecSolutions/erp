@@ -3,12 +3,12 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
-  CreateDateColumn,
-  UpdateDateColumn,
   BeforeInsert,
+  JoinColumn,
 } from 'typeorm';
 import { Employee } from '../hrm_employee/employee.entity';
 import { LeaveType } from '../hrm_leave-type/leave-type.entity';
+import { AnnualLeave } from '../hrm_annual-leave/annual-leave.entity';
 
 export enum LeaveStatus {
   PENDING = 1,
@@ -41,10 +41,14 @@ export class LeaveRequest {
 
   @Column({
     type: 'int',
-     comment: '1 = pending, 2 = approved, 3 = reject',
     default: LeaveStatus.PENDING,
+    comment: '1=pending, 2=approved, 3=rejected',
   })
-  leave_status: LeaveStatus; 
+  leave_status: LeaveStatus;
+  
+//   @ManyToOne(() => AnnualLeave, (annualLeave) => annualLeave.employees)
+// @JoinColumn({ name: 'annual_leave_id' })
+// annualLeave: AnnualLeave;
 
   @Column({
                type: 'int',

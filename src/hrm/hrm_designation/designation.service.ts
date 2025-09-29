@@ -11,30 +11,60 @@ export class DesignationService {
   constructor(
     @InjectRepository(Designation)
     private designationRepository: Repository<Designation>,
+
     @InjectRepository(Department)
     private departmentRepo: Repository<Department>,
   ) {}
 
-  async create(dto: CreateDesignationDto): Promise<Designation> {
+  async create(dto: CreateDesignationDto): Promise<any> {
     const department = await this.departmentRepo.findOne({ where: { id: dto.departmentId } });
     if (!department) throw new NotFoundException(`Department with ID ${dto.departmentId} not found`);
 
-    const designation = this.designationRepository.create({ name: dto.name, department });
-    return await this.designationRepository.save(designation);
+    const designation = this.designationRepository.create({
+      name: dto.name,
+      department,
+    });
+    const saved = await this.designationRepository.save(designation);
+
+    return {
+      id: saved.id,
+      name: saved.name,
+      department: department.name, // sirf name
+    };
   }
 
-  async findAll(): Promise<Designation[]> {
-    return await this.designationRepository.find();
+  async findAll(): Promise<any[]> {
+    const designations = await this.designationRepository.find({
+      relations: ['department'],
+    });
+
+    return designations.map(d => ({
+      id: d.id,
+      name: d.name,
+      department: d.department?.name, // sirf name
+    }));
   }
 
-  async findOne(id: number): Promise<Designation> {
-    const designation = await this.designationRepository.findOne({ where: { id } });
+  async findOne(id: number): Promise<any> {
+    const designation = await this.designationRepository.findOne({
+      where: { id },
+      relations: ['department'],
+    });
     if (!designation) throw new NotFoundException(`Designation with ID ${id} not found`);
-    return designation;
+
+    return {
+      id: designation.id,
+      name: designation.name,
+      department: designation.department?.name, // sirf name
+    };
   }
 
-  async update(id: number, dto: UpdateDesignationDto): Promise<Designation> {
-    const designation = await this.findOne(id);
+  async update(id: number, dto: UpdateDesignationDto): Promise<any> {
+    const designation = await this.designationRepository.findOne({
+      where: { id },
+      relations: ['department'],
+    });
+    if (!designation) throw new NotFoundException(`Designation with ID ${id} not found`);
 
     if (dto.departmentId) {
       const department = await this.departmentRepo.findOne({ where: { id: dto.departmentId } });
@@ -46,12 +76,20 @@ export class DesignationService {
       designation.name = dto.name;
     }
 
-    return await this.designationRepository.save(designation);
+    const updated = await this.designationRepository.save(designation);
+
+    return {
+      id: updated.id,
+      name: updated.name,
+      department: updated.department?.name, // sirf name
+    };
   }
 
   async remove(id: number): Promise<{ message: string }> {
-    const designation = await this.findOne(id);
+    const designation = await this.designationRepository.findOne({ where: { id } });
+    if (!designation) throw new NotFoundException(`Designation with ID ${id} not found`);
     await this.designationRepository.remove(designation);
+
     return { message: `Designation with ID ${id} deleted successfully` };
   }
 }

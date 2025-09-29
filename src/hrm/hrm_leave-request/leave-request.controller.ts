@@ -31,4 +31,15 @@ export class LeaveRequestController {
   remove(@Param('id') id: number) {
     return this.service.remove(+id);
   }
+
+  @Put(':id/approve')
+approve(@Param('id') id: number) {
+  return this.service.approveLeaveRequest(+id);
+}
+
+@Put(':id/reject')
+reject(@Param('id') id: number, @Body('reason') reason: string) {
+  return this.service.rejectLeaveRequest(+id, reason);
+}
+
 }

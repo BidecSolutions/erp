@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, Put } from '@nestjs/common';
 import { LeaveTypeService } from './leave-type.service';
 import { CreateLeaveTypeDto } from './dto/create-leave-type.dto';
 import { UpdateLeaveTypeDto } from './dto/update-leave-type.dto';
@@ -22,7 +22,7 @@ export class LeaveTypeController {
     return this.leaveTypeService.findOne(+id);
   }
 
-  @Patch(':id/update')
+  @Put(':id/update')
   update(@Param('id') id: number, @Body() dto: UpdateLeaveTypeDto) {
     return this.leaveTypeService.update(+id, dto);
   }

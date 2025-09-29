@@ -16,7 +16,6 @@ import { HRM } from './hrm/hrm-module-list.entity';
 import { sideMenuAndRoleSeederService } from './seeder/side-menu-and-role-seeder.service';
 import { subSideMenuPermission } from './entities/sub-side-menu-permission.entity';
 import { sales } from './sales/sales-module-list.module';
-import { LeaveRequestModule } from './hrm/hrm_leave-request/leave-request.module';
 import { POS } from './pos/POS-module-file.module';
 
 @Module({
@@ -37,8 +36,7 @@ import { POS } from './pos/POS-module-file.module';
     ...companySetting,
     ...HRM,
     ...sales,
-    ...POS,
-    LeaveRequestModule,
+
   ],
   controllers: [AppController],
   providers: [AppService, registerUser, userRoles, sideMenuAndRoleSeederService],

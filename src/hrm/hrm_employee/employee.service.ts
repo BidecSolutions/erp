@@ -15,8 +15,6 @@ import { Allowance } from "../hrm_allowance/allowance.entity";
 import { AnnualLeave } from "../hrm_annual-leave/annual-leave.entity";
 import { User } from "src/entities/user.entity";
 import * as bcrypt from 'bcryptjs';
-// import { Role } from "src/entities/role.entity";
-
 @Injectable()
 export class EmployeeService {
   constructor(
@@ -33,7 +31,6 @@ export class EmployeeService {
     @InjectRepository(BankDetail) private readonly bankDetailRepo: Repository<BankDetail>,
     @InjectRepository(Allowance) private readonly allowanceRepo: Repository<Allowance>,
     @InjectRepository(User) private readonly userRepository: Repository<User>,
-    // @InjectRepository(Role) private readonly roleRepository: Repository<Role>
   ) {}
 
   private async generateEmployeeCode(): Promise<string> {

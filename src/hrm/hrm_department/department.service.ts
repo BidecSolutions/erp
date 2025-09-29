@@ -60,28 +60,28 @@ export class DepartmentService {
     };
   }
 
-  async update(id: number, dto: UpdateDepartmentDto): Promise<any> {
-    const department = await this.findOne(id);
+ async update(id: number, dto: UpdateDepartmentDto): Promise<any> {
+  const department = await this.departmentRepository.findOneBy({ id });
+  if (!department) throw new NotFoundException(`Department with ID ${id} not found`);
 
-    if (dto.name) department.name = dto.name;
+  if (dto.name) department.name = dto.name;
 
-    if (dto.company_Id) {
-      const company = await this.companyRepo.findOneBy({ id: dto.company_Id });
-      if (!company) throw new NotFoundException('Company not found');
-      department.company_id = company.id; // sirf ID store
-    }
-
-    const updatedDept = await this.departmentRepository.save(department);
-
-    const company = await this.companyRepo.findOneBy({ id: updatedDept.company_id });
-
-    return {
-      id: updatedDept.id,
-      name: updatedDept.name,
-      company: company?.company_name, // sirf name
-      status: updatedDept.status,
-    };
+  if (dto.company_Id) {
+    const company = await this.companyRepo.findOneBy({ id: dto.company_Id });
+    if (!company) throw new NotFoundException('Company not found');
+    department.company = company; // relation assign
   }
+
+  const updatedDept = await this.departmentRepository.save(department);
+
+  return {
+    id: updatedDept.id,
+    name: updatedDept.name,
+    company: updatedDept.company?.company_name,
+    status: updatedDept.status,
+  };
+}
+
 
   async remove(id: number): Promise<{ message: string }> {
     const department = await this.departmentRepository.findOne({
