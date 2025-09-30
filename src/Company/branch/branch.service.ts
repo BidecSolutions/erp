@@ -39,7 +39,7 @@ export class BranchService {
 
             let updatedBranches: number[] = Array.isArray(findBranch.branch_id) ? [...findBranch.branch_id] : [];
             updatedBranches.push(savedBranch.id);
-            console.log(updatedBranches);
+
 
             await this.ucm.update(
                 { company_id: dto.companyId },

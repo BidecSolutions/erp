@@ -18,7 +18,12 @@ export class userCompanyMapping {
     @Column({ type: 'int', nullable: true })
     company_id: number;
 
-    @Column({ type: 'json', nullable: true, default: '[]' })
+    @Column({
+        type: 'json',
+        nullable: true,
+        default: () => '(JSON_ARRAY())',
+    })
+
     branch_id: number[];
 
     @Column({
@@ -39,5 +44,6 @@ export class userCompanyMapping {
         const now = new Date();
         this.created_at = now.toISOString().split('T')[0];
         this.updated_at = now.toISOString().split('T')[0];
+
     }
 }
