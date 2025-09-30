@@ -142,8 +142,8 @@ export class CreateEmployeeDto {
 
   @IsOptional()
   @Type(() => Number)
-  @IsInt({ message: 'leave_setup_id must be an integer number' })
-  annual_leave_id: number;
+  @IsInt({ message: 'annual_leave_id must be an integer number' })
+  annual_leave_id?: number;
 
 
   @IsOptional()
@@ -158,11 +158,11 @@ export class CreateEmployeeDto {
   role_id?: number;
 
 
-  @IsArray()
-  @ArrayNotEmpty()
-  @IsInt({ each: true })
-  @Type(() => Number)
-  branch_id: number[];
+@IsOptional()
+@IsArray()
+@Type(() => Number)
+@IsNumber({}, { each: true })
+branch_ids?: number[];
 
 
 }

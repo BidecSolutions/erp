@@ -23,6 +23,7 @@ import { AnnualLeave } from '../hrm_annual-leave/annual-leave.entity';
 import { LeaveRequest } from '../hrm_leave-request/leave-request.entity';
 import { User } from 'src/entities/user.entity';
 import { Role } from 'src/entities/role.entity';
+import { Branch } from 'src/Company/branch/branch.entity';
 
 
 @Entity('hrm_employees')
@@ -119,6 +120,15 @@ export class Employee {
     inverseJoinColumn: { name: "allowance_id", referencedColumnName: "id" },
   })
   allowances: Allowance[];
+
+  
+@ManyToMany(() => Branch)
+@JoinTable({
+  name: "hrm_employee_branches",   // junction table ka naam
+  joinColumn: { name: "employee_id", referencedColumnName: "id" },
+  inverseJoinColumn: { name: "branch_id", referencedColumnName: "id" },
+})
+branches: Branch[];
 
   @OneToMany(() => LeaveRequest, (leaveRequest) => leaveRequest.employee)
   leaveRequests: LeaveRequest[];

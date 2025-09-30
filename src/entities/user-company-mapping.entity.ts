@@ -18,7 +18,7 @@ export class userCompanyMapping {
     @Column({ type: 'int', nullable: true })
     company_id: number;
 
-    @Column({ type: 'json', nullable: true, default: '[]' })
+    @Column({ type: 'json', nullable: true})
     branch_id: number[];
 
     @Column({
