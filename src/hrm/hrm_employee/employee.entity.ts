@@ -140,7 +140,7 @@ branches: Branch[];
 
   @Column({
     type: 'int',
-    comment: '1 = active, 2 = inactive',
+    comment: '0 = inactive, 1 = active',
     default: 1
   })
   status: number;
