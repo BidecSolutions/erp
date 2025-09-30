@@ -13,15 +13,17 @@ import { Allowance } from '../hrm_allowance/allowance.entity';
 import { AnnualLeave } from '../hrm_annual-leave/annual-leave.entity';
 import { User } from 'src/entities/user.entity';
 import { Role } from 'src/entities/role.entity';
+import { userRoleMapping } from 'src/entities/user-role-mapping.entity';
+import { userCompanyMapping } from 'src/entities/user-company-mapping.entity';
 // import { LeaveModule } from '../hrm_leave/leave.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Employee, Department, Designation, Shift,AnnualLeave, BankDetail,Allowance,User,Role]),
-    BankDetailModule ,
+    TypeOrmModule.forFeature([userRoleMapping, userCompanyMapping, Employee, Department, Designation, Shift, AnnualLeave, BankDetail, Allowance, User, Role]),
+    BankDetailModule,
     DocumentModule,
   ],
   controllers: [EmployeeController],
   providers: [EmployeeService],
 })
-export class EmployeeModule {}
+export class EmployeeModule { }

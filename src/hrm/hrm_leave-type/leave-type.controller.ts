@@ -1,11 +1,14 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, Put, UseGuards } from '@nestjs/common';
 import { LeaveTypeService } from './leave-type.service';
 import { CreateLeaveTypeDto } from './dto/create-leave-type.dto';
 import { UpdateLeaveTypeDto } from './dto/update-leave-type.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
+
+UseGuards(JwtAuthGuard)
 @Controller('leave-type')
 export class LeaveTypeController {
-  constructor(private readonly leaveTypeService: LeaveTypeService) {}
+  constructor(private readonly leaveTypeService: LeaveTypeService) { }
 
   @Post('create')
   create(@Body() dto: CreateLeaveTypeDto) {
