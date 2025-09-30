@@ -16,6 +16,8 @@ import { sidemunuRolesMapping } from 'src/entities/role-side-menu-mapping.entity
 import { Permission } from 'src/entities/Permission.entity';
 import { subSideMenuPermission } from 'src/entities/sub-side-menu-permission.entity';
 import { session } from 'passport';
+import { userCompanyMapping } from 'src/entities/user-company-mapping.entity';
+import { Branch } from 'src/Company/branch/branch.entity';
 @Injectable()
 export class AuthService {
   constructor(
@@ -48,6 +50,12 @@ export class AuthService {
 
     @InjectRepository(subSideMenuPermission)
     private subMenuPermRepository: Repository<subSideMenuPermission>,
+
+    @InjectRepository(Branch)
+    private branches: Repository<Branch>,
+
+    @InjectRepository(userCompanyMapping)
+    private userCompanyMap: Repository<userCompanyMapping>,
 
   ) { }
 
@@ -105,6 +113,7 @@ export class AuthService {
       .select(['r.id as id', 'r.role_name as role_name', 'urm.roll_id as roll_id'])
       .where('urm.user_id = :userId', { userId: user.id })
       .getRawOne();
+    const branches = await this.fetchUserBranches(user.id);
     const userDetails = {
       id: user.id,
       name: user.name,
@@ -155,15 +164,16 @@ export class AuthService {
         }),
       );
 
+
+
       return {
         access_token: accessToken,
         user: userDetails,
         menus: menuTrees,
+        branches
       };
     }
     const userPerms = await this.permissionRepository.findBy({ user_id: user.id });
-
-    console.log('User Permissions:', userPerms);
 
     const menuIds = [...new Set(userPerms.map((p) => p.menu_id))];
     const menus = await this.sideMenuRepository.findBy({ id: In(menuIds) });
@@ -184,7 +194,6 @@ export class AuthService {
               where: { sub_menu_id: sm.id },
             });
 
-            // Keep only the permissions that match user's allowed list
             const allowedPerms = perms.filter((p) =>
               userPerms.some(
                 (up) =>
@@ -217,7 +226,21 @@ export class AuthService {
       access_token: accessToken,
       user: userDetails,
       menus: menuTree,
+      branches
     };
+  }
+
+  async fetchUserBranches(userId: number) {
+    //here
+    const branches = await this.userCompanyMap.findOne({ where: { user_id: userId } })
+    let allBranches: Branch[] = [];
+    if (branches && Array.isArray(branches.branch_id)) {
+      allBranches = await this.branches.find({
+        where: { id: In(branches.branch_id), is_active: 1 },
+        select: ({ id: true, branch_name: true })
+      });
+    }
+    return allBranches
   }
 
 
