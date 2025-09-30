@@ -6,7 +6,7 @@ export class NotificationType {
   id: number;
 
   @Column()
-  type: string; // e.g. leave_approved, leave_rejected
+  type: string; 
 
     
        @Column({
