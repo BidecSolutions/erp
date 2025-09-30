@@ -84,8 +84,9 @@ export class Employee {
   fixedSalary?: number;
 
 
-  @Column({ type: 'json', nullable: true, default: '[]' })
-  branch_id: number[];
+// @Column({ type: 'simple-json', nullable: true })
+// branch_id: number[];
+
 
   @OneToMany(() => Attendance, (markattendance) => markattendance.employee)
   markattendance: Attendance[];
