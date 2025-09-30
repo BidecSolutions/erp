@@ -20,6 +20,9 @@ import { userCompanyMapping } from "src/entities/user-company-mapping.entity";
 import { errorResponse, toggleStatusResponse } from "src/commonHelper/response.util";
 @Injectable()
 export class EmployeeService {
+  statusUpdate(id: number) {
+    throw new Error('Method not implemented.');
+  }
   constructor(
     @InjectRepository(Employee)
     private employeeRepository: Repository<Employee>,
@@ -52,7 +55,7 @@ export class EmployeeService {
     return `EMP-${String(newId).padStart(3, "0")}`;
   }
 
-  async findAll() {
+  async findAll(filterStatus: number | undefined) {
     const employees = await this.employeeRepository.find({
       relations: ["department", "designation", "documents", "bankDetails",
         "annualLeave",
