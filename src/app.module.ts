@@ -26,7 +26,7 @@ import { POS } from './pos/POS-module-file.module';
       port: 3306,
       username: 'root',
       password: '',
-      database: 'bidec_erp1',
+      database: 'bidec_erp',
       autoLoadEntities: true,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
