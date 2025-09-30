@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Customer } from './customer.entity';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { Company } from '../companies/company.entity';
 import { CustomerCategory } from '../customer-categories/customer-category.entity';
+import { CustomerAccount } from './customer.customer_account.entity';
 
 @Injectable()
 export class CustomerService {
@@ -16,6 +17,8 @@ export class CustomerService {
         private companyRepo: Repository<Company>,
         @InjectRepository(CustomerCategory)
         private categoryRepo: Repository<CustomerCategory>,
+        @InjectRepository(CustomerAccount)
+        private customerAccountRepo: Repository<CustomerAccount>,
     ) { }
 
     async create(dto: CreateCustomerDto) {
@@ -44,7 +47,22 @@ export class CustomerService {
             });
 
             const saved = await this.customerRepo.save(customer);
-            return { success: true, message: 'Customer created successfully', data: saved };
+
+            // ✅ Create default customer_account with amount = 0
+            const account = this.customerAccountRepo.create({
+                customer: { id: saved.id } as Customer,
+                amount: 0,
+            });
+            const savedAccount = await this.customerAccountRepo.save(account);
+            return {
+                success: true, message: 'Customer created successfully', data: {
+                    ...saved,
+                    account: {
+                        id: savedAccount.id,
+                        amount: savedAccount.amount,
+                    },
+                },
+            };
         } catch (error) {
             return { success: false, message: 'Failed to create customer', error };
         }

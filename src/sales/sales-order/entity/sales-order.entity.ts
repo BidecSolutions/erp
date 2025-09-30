@@ -9,6 +9,11 @@ import {
   OneToMany,
 } from 'typeorm';
 import { SalesOrderDetail } from './sales-order-detail.entity';
+import { Company } from 'src/Company/companies/company.entity';
+import { Branch } from 'src/Company/branch/branch.entity';
+import { Customer } from 'src/Company/customers/customer.entity';
+import { CustomerInvoice } from 'src/Company/customer-invoice/customer-invoice.entity';
+import { SalesStatus } from 'src/sales/enums/sales-enums';
 
 @Entity('sales_orders')
 export class SalesOrder {
@@ -17,12 +22,34 @@ export class SalesOrder {
 
   // ------------------ RELATIONS ------------------
   @OneToMany(() => SalesOrderDetail, (detail) => detail.salesOrder, {
-    cascade: true,
+    
   })
   salesOrderDetails: SalesOrderDetail[];
 
+  @OneToMany(() => CustomerInvoice, (invoice) => invoice.salesOrder)
+  customerInvoices: CustomerInvoice[];
+
+  @ManyToOne(() => Company, (company) => company.id, { onDelete: 'CASCADE', eager: true })
+  @JoinColumn({ name: 'company_id' })
+  company: Company;
+
+  @ManyToOne(() => Branch, (branch) => branch.id, { onDelete: 'CASCADE', eager: true })
+  @JoinColumn({ name: 'branch_id' })
+  branch: Branch;
+
+  @ManyToOne(() => Customer, (customer) => customer.id, { onDelete: 'CASCADE', eager: true })
+  @JoinColumn({ name: 'customer_id' })
+  customer: Customer;
+
 
   // ------------------------------------------------
+
+  @Column({
+    type: 'enum',
+    enum: SalesStatus,
+  })
+  sales_status: SalesStatus;
+  
 
   @Column()
   company_id: number;

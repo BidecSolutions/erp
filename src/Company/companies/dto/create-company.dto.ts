@@ -2,14 +2,25 @@ import { IsNotEmpty, IsOptional } from 'class-validator';
 export class CreateCompanyDto {
   @IsNotEmpty()
   company_name: string;
+
+  @IsNotEmpty()
+  email: string;
+
+  @IsNotEmpty()
+  password: string;
+
   @IsOptional()
   legal_name?: string;
+
   @IsOptional()
   address_line1: string;
+
   @IsOptional()
   address_line2?: string;
+
   @IsOptional()
   city: string;
+
   @IsOptional()
   state: string;
   @IsOptional()
@@ -20,8 +31,7 @@ export class CreateCompanyDto {
   phone?: string;
   @IsOptional()
   mobile?: string;
-  @IsOptional()
-  email: string;
+
   @IsOptional()
   website?: string;
   @IsOptional()
@@ -40,5 +50,5 @@ export class CreateCompanyDto {
   fiscal_year_start?: string;
   @IsOptional()
   time_zone?: string;
-  
+
 }

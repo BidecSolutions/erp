@@ -1,3 +1,5 @@
+import { Branch } from 'src/Company/branch/branch.entity';
+import { Company } from 'src/Company/companies/company.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -15,15 +17,15 @@ export class Category {
 
   @Column({ name: 'company_id', nullable: false })
     company_id:number;
-    // @ManyToOne(() => Branch)
-    // @JoinColumn({name : 'branch_id'})
-    // comapany: Comapany
+    @ManyToOne(() => Company)
+    @JoinColumn({name : 'company_id'})
+    Company: Company
 
    @Column({ name: 'branch_id', nullable: false })
     branch_id:number;
-    // @ManyToOne(() => Branch)
-    // @JoinColumn({name : 'branch_id'})
-    // branch: Branch
+    @ManyToOne(() => Branch)
+    @JoinColumn({name : 'branch_id'})
+    branch: Branch
 
   @Column({ name: 'category_code', length: 50 ,  unique: true  })
   category_code: string;
@@ -36,9 +38,6 @@ export class Category {
 
   @Column({ name: 'status', type: 'tinyint', default: 1 })
   status: number;
-
-//   @Column({ name: 'display_order', nullable: true })
-//   display_order: number;
 
   @Column({ name: 'created_by', nullable: true })
   created_by: number;

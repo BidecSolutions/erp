@@ -4,6 +4,13 @@ import { Customer } from '../customers/customer.entity';
 import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert, BeforeUpdate, OneToMany } from 'typeorm';
 import { SupplierCategory } from '../supplier-category/supplier-category.entity';
 import { Supplier } from '../supplier/supplier.entity';
+import { CustomerPayment } from '../customer-payment/customer-payment.entity';
+import { CustomerInvoice } from '../customer-invoice/customer-invoice.entity';
+import { SupplierPayment } from '../supplier-payment/supplier-payment.entity';
+import { SupplierInvoice } from '../supplier-invoice/supplier-invoice.entity';
+import { ChartOfAccount } from '../chart-of-accounts/chart-of-account.entity';
+import { SystemConfiguration } from '../system_configuration/system_configuration.entity';
+import { SalesOrder } from 'src/sales/sales-order/entity/sales-order.entity';
 
 @Entity('companies')
 export class Company {
@@ -92,6 +99,10 @@ export class Company {
   @Column({ type: 'date' })
   updated_at: string;
 
+  // 👇 Relation with sale-order
+  @OneToMany(() => SalesOrder, (salesOrder) => salesOrder.company)
+  salesOrders: SalesOrder[];
+
   // 👇 Relation with Branch
   @OneToMany(() => Branch, (branch) => branch.company)
   branches: Branch[];
@@ -111,6 +122,30 @@ export class Company {
   // Reverse relation for supplier categories
   @OneToMany(() => SupplierCategory, (supplierCategory) => supplierCategory.company)
   supplierCategories: SupplierCategory[];
+
+  // One company can have many customer payments
+  @OneToMany(() => CustomerPayment, (payment) => payment.company)
+  customer_payments: CustomerPayment[];
+
+  // One company can have many customer invoices
+  @OneToMany(() => CustomerInvoice, (invoice) => invoice.company)
+  customer_invoices: CustomerInvoice[];
+
+  // One company can have many supplier payments
+  @OneToMany(() => SupplierPayment, (payment) => payment.company)
+  supplier_payments: SupplierPayment[];
+
+  // One company can have many supplier invoices
+  @OneToMany(() => SupplierInvoice, (invoice) => invoice.company)
+  supplier_invoices: SupplierInvoice[];
+
+  // One company can have many chart of accounts
+  @OneToMany(() => ChartOfAccount, (chart) => chart.company)
+  chartOfAccounts: ChartOfAccount[];
+
+  // One company can have many system configurations
+  @OneToMany(() => SystemConfiguration, (config) => config.company)
+  systemConfigurations: SystemConfiguration[];
 
   @BeforeInsert()
   setCreateDate() {

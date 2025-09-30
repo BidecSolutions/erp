@@ -11,5 +11,6 @@ import { productVariant } from './entities/variant.entity';
   imports: [TypeOrmModule.forFeature([Product, Category, Brand, UnitOfMeasure, productVariant])],
   controllers: [ProductController],
   providers: [ProductService],
+  exports: [ProductService],
 })
 export class ProductModule { }

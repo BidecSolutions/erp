@@ -1,7 +1,10 @@
+import { Branch } from 'src/Company/branch/branch.entity';
+import { Company } from 'src/Company/companies/company.entity';
 import { Brand } from 'src/procurement/brand/entities/brand.entity';
 import { Category } from 'src/procurement/categories/entities/category.entity';
 import { UnitOfMeasure } from 'src/procurement/unit_of_measure/entities/unit_of_measure.entity';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { SalesOrderDetail } from 'src/sales/sales-order/entity/sales-order-detail.entity';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 
 
 @Entity('products')
@@ -26,6 +29,18 @@ export class Product {
   @ManyToOne(() => UnitOfMeasure)
   @JoinColumn({ name: 'uom_id' })
   uom: UnitOfMeasure;
+
+  @Column()
+  company_id:number;
+  @ManyToOne(() => Company)
+  @JoinColumn({name : 'company_id'})
+  company: Company
+
+  @Column()
+  branch_id:number;
+  @ManyToOne(() => Branch)
+  @JoinColumn({name : 'branch_id'})
+  branch: Branch
 
   @Column({ length: 50 })
   sku: string;
@@ -99,17 +114,8 @@ export class Product {
   @Column({ length: 255, nullable: true })
   product_image_path?: string;
 
-  @Column({ name: 'company_id', nullable: false })
-  company_id:number;
-  // @ManyToOne(() => Branch)
-  // @JoinColumn({name : 'branch_id'})
-  // comapany: Comapany
 
-  @Column({ name: 'branch_id', nullable: false })
-  branch_id:number;
-  // @ManyToOne(() => Branch)
-  // @JoinColumn({name : 'branch_id'})
-  // branch: Branch
+
   
   @Column({ nullable: true })
   created_by?: number;
@@ -122,4 +128,10 @@ export class Product {
 
   @Column({ type: 'datetime', nullable: true })
   updated_date?: Date;
+
+ // ✅ Relation with SalesOrderDetail
+  @OneToMany(() => SalesOrderDetail, (detail) => detail.product, {
+    cascade: true,
+  })
+  salesOrderDetails: SalesOrderDetail[];
 }

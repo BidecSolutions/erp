@@ -21,11 +21,9 @@ export class CreateStockDto {
   @Min(0)
   reorder_quantity: number;
 
-    @IsOptional()
     @IsInt()
     company_id?: number;
 
-    @IsOptional()
     @IsInt()
     branch_id?: number;
   

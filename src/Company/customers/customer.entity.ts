@@ -5,9 +5,14 @@ import {
   ManyToOne,
   BeforeInsert,
   BeforeUpdate,
+  OneToMany,
 } from 'typeorm';
 import { Company } from '../companies/company.entity';
 import { CustomerCategory } from '../customer-categories/customer-category.entity';
+import { CustomerPayment } from '../customer-payment/customer-payment.entity';
+import { CustomerInvoice } from '../customer-invoice/customer-invoice.entity';
+import { CustomerAccount } from './customer.customer_account.entity';
+import { SalesOrder } from 'src/sales/sales-order/entity/sales-order.entity';
 
 @Entity()
 export class Customer {
@@ -21,6 +26,21 @@ export class Customer {
     onDelete: 'CASCADE',
   })
   category_customer: CustomerCategory;
+
+  @OneToMany(() => CustomerAccount, (account) => account.customer)
+  accounts: CustomerAccount[];
+
+  // One customer can have many payments
+  @OneToMany(() => CustomerPayment, (payment) => payment.customer)
+  customer_payments: CustomerPayment[];
+
+  // One customer can have many invoices
+  @OneToMany(() => CustomerInvoice, (invoice) => invoice.customer)
+  customer_invoices: CustomerInvoice[];
+
+  // 👇 Relation with sale-order
+  @OneToMany(() => SalesOrder, (salesOrder) => salesOrder.customer)
+  salesOrders: SalesOrder[];
 
   @Column()
   customer_code: string;
@@ -106,7 +126,7 @@ export class Customer {
   @Column({ type: 'smallint', default: 1, comment: '1=active, 2=inactive' })
   is_active: number;
 
-  @Column()
+  @Column({nullable:true})
   created_by: number;
 
   @Column({ type: 'date' })

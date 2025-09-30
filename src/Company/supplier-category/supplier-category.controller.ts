@@ -1,11 +1,14 @@
-import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { SupplierCategoryService } from './supplier-category.service';
 import { CreateSupplierCategoryDto } from './dto/create-supplier-category.dto';
 import { UpdateSupplierCategoryDto } from './dto/update-supplier-category.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
+
+@UseGuards(JwtAuthGuard)
 @Controller('supplier-categories')
 export class SupplierCategoryController {
-  constructor(private readonly supplierCategoryService: SupplierCategoryService) {}
+  constructor(private readonly supplierCategoryService: SupplierCategoryService) { }
 
   @Post('create')
   async create(@Body() dto: CreateSupplierCategoryDto) {
@@ -32,3 +35,5 @@ export class SupplierCategoryController {
     return this.supplierCategoryService.remove(Number(id));
   }
 }
+
+

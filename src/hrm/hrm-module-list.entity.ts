@@ -19,7 +19,6 @@ import { ShiftModule } from "./hrm_shift/shift.module";
 import { UnpaidLeaveModule } from "./hrm_unpaid-leave/unpaid-leave.module";
 
 export const HRM = [
-
     DepartmentModule,
     DesignationModule,
     EmployeeModule,
@@ -36,7 +35,8 @@ export const HRM = [
     AnnualLeaveModule,
     LeaveTypeModule,
     NotificationModule,
-     LeaveRequestModule,
-        UnpaidLeaveModule,
-        NotificationTypeModule,
+    LeaveRequestModule,
+    UnpaidLeaveModule,
+    NotificationTypeModule,
+    LeaveRequestModule,
 ]

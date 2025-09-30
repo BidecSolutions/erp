@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   UseInterceptors,
   UploadedFiles,
+  UseGuards,
   Query,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -18,10 +19,13 @@ import { EmployeeService } from './employee.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { JwtBranchAuth } from 'src/auth/jwt-branch.guard';
 
+
+@UseGuards(JwtBranchAuth)
 @Controller('employee')
 export class EmployeeController {
-  constructor(private readonly employeeService: EmployeeService) {}
+  constructor(private readonly employeeService: EmployeeService) { }
 
   @Post('create')
   @UseInterceptors(
@@ -48,12 +52,10 @@ export class EmployeeController {
     return this.employeeService.create(dto, files);
   }
 
- @Get('list')
-findAll(@Query('status') status?: string) {
-  // 🔹 query param se status ko number me convert kar rahe
-  const filterStatus = status !== undefined ? Number(status) : undefined;
-  return this.employeeService.findAll(filterStatus);
-}
+  // @Get('list')
+  // findAll() {
+  //   return this.employeeService.findAll();
+  // }
 
   @Get(':id/get')
   findOne(@Param('id', ParseIntPipe) id: number) {
@@ -90,10 +92,4 @@ findAll(@Query('status') status?: string) {
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.employeeService.remove(id);
   }
-
-  @Get('toogleStatus/:id')
-    statusChange(@Param('id', ParseIntPipe) id: number){
-      return this.employeeService.statusUpdate(id);
-    }
-  
 }

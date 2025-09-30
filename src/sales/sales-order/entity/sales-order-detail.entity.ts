@@ -1,4 +1,5 @@
 
+import { Product } from 'src/procurement/product/entities/product.entity';
 import { SalesOrder } from 'src/sales/sales-order/entity/sales-order.entity';
 import {
   Entity,
@@ -22,9 +23,12 @@ export class SalesOrderDetail {
   salesOrder: SalesOrder;
 
 
-
-  @Column({ nullable: true })
-  product_id: number;
+  // Product relation
+  @ManyToOne(() => Product, (product) => product.salesOrderDetails, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'product_id' })
+  product: Product;
 
   @Column({ type: 'text', nullable: true })
   description: string;

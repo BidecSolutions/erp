@@ -1,11 +1,14 @@
- import { Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { DesignationService } from './designation.service';
 import { CreateDesignationDto } from './dto/create-designation.dto';
 import { UpdateDesignationDto } from './dto/update-designation.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
+
+UseGuards(JwtAuthGuard)
 @Controller('designations')
 export class DesignationController {
-  constructor(private readonly designationService: DesignationService) {}
+  constructor(private readonly designationService: DesignationService) { }
 
   @Get('list')
   findAll() {

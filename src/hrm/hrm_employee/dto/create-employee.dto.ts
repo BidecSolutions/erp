@@ -13,6 +13,7 @@ import {
   ValidateIf,
   IsBoolean,
   IsInt,
+  ArrayNotEmpty,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { CreateBankDetailDto } from 'src/hrm/hrm_bank-details/dto/create-bank-details.dto';
@@ -32,14 +33,14 @@ export class CreateEmployeeDto {
   @IsNotEmpty({ message: 'Gender is required' })
   gender: string;
 
-@ValidateIf(o => o.is_system_user === true)
-@IsEmail()
-email?: string;
 
-@ValidateIf(o => o.is_system_user === true)
-@IsString()
-@Length(6, 100)
-password?: string;
+  @IsEmail()
+  email?: string;
+
+
+  @IsString()
+  @Length(6, 100)
+  password?: string;
 
   @IsString()
   @IsNotEmpty({ message: 'Address is required' })
@@ -129,26 +130,39 @@ password?: string;
   @Type(() => Number)
   shiftId: number;
 
-  // ✅ is_system_user flag
-  @Transform(({ value }) => value === 'true' || value === true)
-  @IsBoolean()
-  is_system_user: boolean;
 
-@IsOptional()
- @Type(() => Number)
+  @IsBoolean()
+  @Transform(({ value }) => {
+    if (value === undefined || value === null) return false; // default
+    if (value === 'true' || value === true) return true;
+    if (value === 'false' || value === false) return false;
+    return false; // fallback
+  })
+  is_system_user: boolean = false; // default value
+
+  @IsOptional()
+  @Type(() => Number)
   @IsInt({ message: 'leave_setup_id must be an integer number' })
   annual_leave_id: number;
 
 
- @IsOptional()
+  @IsOptional()
   @IsArray()
-   @Type(() => Number)
+  @Type(() => Number)
   @IsNumber({}, { each: true })
   allowance_ids?: number[];
-  
-@IsOptional()
-@IsNumber()
-@Type(() => Number)
-role_id?: number; 
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  role_id?: number;
+
+
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsInt({ each: true })
+  @Type(() => Number)
+  branch_id: number[];
+
 
 }
