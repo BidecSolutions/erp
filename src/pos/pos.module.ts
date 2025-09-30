@@ -8,6 +8,8 @@ import { SalesOrderDetail } from 'src/sales/sales-order/entity/sales-order-detai
 
 import { ProductModule } from 'src/procurement/product/product.module';
 import { CustomerModule } from 'src/Company/customers/customer.module';
+import { Company } from 'src/Company/companies/company.entity';
+import { Customer } from 'src/Company/customers/customer.entity';
 
 @Module({
   imports: [ProductModule,
@@ -16,6 +18,8 @@ import { CustomerModule } from 'src/Company/customers/customer.module';
       StockAdjustment,
       SalesOrder,
       SalesOrderDetail,
+      Company,
+      Customer,
     ]),
   ],
   providers: [PosService],

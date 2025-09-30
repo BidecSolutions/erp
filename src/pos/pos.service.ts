@@ -7,6 +7,8 @@ import { SalesOrder } from 'src/sales/sales-order/entity/sales-order.entity';
 import { SalesOrderDetail } from 'src/sales/sales-order/entity/sales-order-detail.entity';
 import { CreatePosDto } from './dto/create-pos.dto';
 import { CustomerService } from 'src/Company/customers/customer.service';
+import { Company } from 'src/Company/companies/company.entity';
+import { Customer } from 'src/Company/customers/customer.entity';
 
 @Injectable()
 export class PosService {
@@ -19,6 +21,10 @@ export class PosService {
         private readonly salesOrderRepo: Repository<SalesOrder>,
         @InjectRepository(SalesOrderDetail)
         private readonly salesOrderDetailRepo: Repository<SalesOrderDetail>,
+        @InjectRepository(Company)
+        private readonly companyRepo: Repository<Company>,
+        @InjectRepository(Customer)
+        private readonly customerRepo: Repository<Customer>,
     ) { }
 
     async getAllProducts() {
@@ -26,7 +32,6 @@ export class PosService {
             const result = await this.productService.findAll();
             return { success: true, message: 'Products retrieved successfully', data: result };
         } catch (error) {
-            console.error(error);
             return { success: false, message: 'Failed to retrieve products' };
         }
     }
@@ -36,16 +41,32 @@ export class PosService {
             const result = await this.customerService.findAll();
             return { success: true, message: 'Customers retrieved successfully', data: result };
         } catch (error) {
-            console.error(error);
             return { success: false, message: 'Failed to retrieve customers' };
         }
     }
 
     async createOrder(dto: CreatePosDto) {
+        // Validate company_id if provided
+        // let company: Company | null = null;
+        // if (dto.company_id) {
+        //     company = await this.companyRepo.findOne({ where: { id: dto.company_id } });
+        //     if (!company) {
+        //         return { success: false, message: `Company ID ${dto.company_id} not found` };
+        //     }
+        // }
+
+        // // Validate customer_id if provided
+        // let customer: Customer | null = null;
+        // if (dto.customer_id) {
+        //     customer = await this.customerRepo.findOne({ where: { id: dto.customer_id } });
+        //     if (!customer) {
+        //         return { success: false, message: `Customer ID ${dto.customer_id} not found` };
+        //     }
+        // }
+
         // Step 1: Create SaleOrder
         const order = this.salesOrderRepo.create({
             ...dto,
-            order_no: `SO-${Date.now()}`,
             order_date: new Date(),
         });
         const savedOrder = await this.salesOrderRepo.save(order);
@@ -69,13 +90,13 @@ export class PosService {
             await this.stockRepo.save(stock);
 
             // Save SaleOrderDetail
-            // const detail = this.salesOrderDetailRepo.create({
-            //     salesOrder: savedOrder,//savedOrder.id
-            //     product_id: item.product_id,
-            //     quantity: item.quantity,
-            //     unit_price: item.unit_price,
-            // });
-            // await this.salesOrderDetailRepo.save(detail);
+            const detail = this.salesOrderDetailRepo.create({
+                salesOrder: { id: savedOrder.id },//savedOrder.id
+                product: { id: item.product_id },
+                quantity: item.quantity,
+                unit_price: item.unit_price,
+            });
+            await this.salesOrderDetailRepo.save(detail);
         }
 
         return { message: 'Order created successfully', order_id: savedOrder.id };
