@@ -106,7 +106,6 @@ export class AuthService {
     const payload = { email: user.email, sub: user.id };
     const accessToken = this.jwtService.sign(payload);
 
-    // 🔹 Get role
     const roles = await this.usersRoleRepository
       .createQueryBuilder('urm')
       .innerJoin('roles', 'r', 'urm.roll_id = r.id')
@@ -163,8 +162,6 @@ export class AuthService {
           };
         }),
       );
-
-
 
       return {
         access_token: accessToken,
