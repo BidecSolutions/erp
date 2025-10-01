@@ -4,21 +4,65 @@ import { Repository } from 'typeorm';
 import { Company } from '../companies/company.entity';
 import { CreateCompanyDto } from '../companies/dto/create-company.dto';
 import { UpdateCompanyDto } from '../companies/dto/update-company.dto';
+import { userCompanyMapping } from 'src/entities/user-company-mapping.entity';
+import { User } from 'src/entities/user.entity';
+import { userRoleMapping } from 'src/entities/user-role-mapping.entity';
+import * as bcrypt from 'bcryptjs';
+
 
 @Injectable()
 export class CompaniesService {
   constructor(
     @InjectRepository(Company)
     private companyRepo: Repository<Company>,
+
+    @InjectRepository(userCompanyMapping)
+    private ucm: Repository<userCompanyMapping>,
+
+    @InjectRepository(User)
+    private userRepo: Repository<User>,
+
+    @InjectRepository(userRoleMapping)
+    private userRoleMappingRepo: Repository<userRoleMapping>,
+
   ) { }
 
   async create(dto: CreateCompanyDto) {
     try {
+      //company add
       const company = this.companyRepo.create(dto);
       const savedCompany = await this.companyRepo.save(company);
+
+      //user add
+      const hashedPassword = await bcrypt.hash(dto.password, 10);
+      const userObject = this.userRepo.create({
+        name: dto.company_name,
+        email: dto.email,
+        password: hashedPassword,
+      })
+      const saveUser = await this.userRepo.save(userObject);
+
+      //user role add
+      const userRoleMapping = this.userRoleMappingRepo.create({
+        user_id: saveUser.id,
+        roll_id: 2
+      });
+
+      await this.userRoleMappingRepo.save(userRoleMapping);
+
+
+      //user company Mapping
+      const userMapping = this.ucm.create({
+        user_id: saveUser.id,
+        company_id: savedCompany.id,
+        branch_id: []
+      });
+
+      await this.ucm.save(userMapping);
       return { success: true, message: 'Company created successfully', data: savedCompany };
-    } catch (error) {
-      return { success: false, message: 'Failed to create company' };
+    }
+    catch (error) {
+      return { success: false, message: error.message };
     }
   }
 

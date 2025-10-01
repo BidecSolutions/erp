@@ -1,11 +1,14 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UploadedFile, UseInterceptors, UseGuards } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { CompaniesService } from '../companies/companies.service';
 import { CreateCompanyDto } from '../companies/dto/create-company.dto';
 import { UpdateCompanyDto } from '../companies/dto/update-company.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
+
+@UseGuards(JwtAuthGuard)
 @Controller('companies')
 export class CompaniesController {
     constructor(private readonly companiesService: CompaniesService) { }
@@ -14,7 +17,7 @@ export class CompaniesController {
     @UseInterceptors(
         FileInterceptor('company_logo', {
             storage: diskStorage({
-                destination: 'companies/uploads',
+                destination: 'src/uploads',
                 filename: (req, file, callback) => {
                     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
                     const ext = extname(file.originalname);
@@ -24,7 +27,10 @@ export class CompaniesController {
         }),
     )
     create(@Body() dto: CreateCompanyDto, @UploadedFile() file: Express.Multer.File) {
-        if (file) dto['company_logo_path'] = file.path;
+        if (!file) {
+            return { success: false, message: 'Company logo is required!' };
+        }
+         dto['company_logo_path'] = file.path;
         return this.companiesService.create(dto);
     }
 

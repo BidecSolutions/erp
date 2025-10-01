@@ -1,11 +1,14 @@
-import { Controller, Post, Get, Put, Delete, Param, Body } from '@nestjs/common';
+import { Controller, Post, Get, Put, Delete, Param, Body, UseGuards } from '@nestjs/common';
 import { AllowanceService } from './allowance.service';
 import { CreateAllowanceDto } from './dto/create-allowance.dto';
 import { UpdateAllowanceDto } from './dto/update-allowance.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
+
+UseGuards(JwtAuthGuard)
 @Controller('allowance')
 export class AllowanceController {
-  constructor(private readonly allowanceService: AllowanceService) {}
+  constructor(private readonly allowanceService: AllowanceService) { }
 
   @Post('create')
   create(@Body() dto: CreateAllowanceDto) {

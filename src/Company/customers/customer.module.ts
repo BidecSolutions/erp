@@ -11,6 +11,7 @@ import { CustomerAccount } from './customer.customer_account.entity';
   imports: [TypeOrmModule.forFeature([Customer, Company, CustomerCategory,CustomerAccount])],
   providers: [CustomerService],
   controllers: [CustomerController],
+  exports: [CustomerService], 
 })
 export class CustomerModule { }
   

@@ -15,6 +15,9 @@ import { subSideMenus } from 'src/entities/sub-side-menu.entity';
 import { sidemunuRolesMapping } from 'src/entities/role-side-menu-mapping.entity';
 import { Permission } from 'src/entities/Permission.entity';
 import { subSideMenuPermission } from 'src/entities/sub-side-menu-permission.entity';
+import { session } from 'passport';
+import { userCompanyMapping } from 'src/entities/user-company-mapping.entity';
+import { Branch } from 'src/Company/branch/branch.entity';
 @Injectable()
 export class AuthService {
   constructor(
@@ -47,6 +50,12 @@ export class AuthService {
 
     @InjectRepository(subSideMenuPermission)
     private subMenuPermRepository: Repository<subSideMenuPermission>,
+
+    @InjectRepository(Branch)
+    private branches: Repository<Branch>,
+
+    @InjectRepository(userCompanyMapping)
+    private userCompanyMap: Repository<userCompanyMapping>,
 
   ) { }
 
@@ -97,13 +106,14 @@ export class AuthService {
     const payload = { email: user.email, sub: user.id };
     const accessToken = this.jwtService.sign(payload);
 
-    // 🔹 Get role
     const roles = await this.usersRoleRepository
       .createQueryBuilder('urm')
       .innerJoin('roles', 'r', 'urm.roll_id = r.id')
       .select(['r.id as id', 'r.role_name as role_name', 'urm.roll_id as roll_id'])
       .where('urm.user_id = :userId', { userId: user.id })
       .getRawOne();
+
+    const branches = await this.fetchUserBranches(user.id);
 
     const userDetails = {
       id: user.id,
@@ -117,62 +127,35 @@ export class AuthService {
       role: roles ? roles.role_name : 'No Role',
       role_id: roles ? roles.id : 'No ID',
     };
+
+    // 🚀 Menus fetch depending on role
+    let allMenus: any;
     if (roles?.roll_id == 1 || roles?.roll_id == 2) {
-      const allMenus = await this.sideMenuRepository.find();
+      if (roles?.roll_id == 2) {
+        allMenus = await this.sideMenuRepository.find({
+          where: { id: Not(1) },
+          order: { periority: 'ASC' },
+        });
+      } else {
+        allMenus = await this.sideMenuRepository.find({
+          order: { periority: 'ASC' },
+        });
+      }
+    } else {
+      const userPerms = await this.permissionRepository.findBy({ user_id: user.id });
+      const menuIds = [...new Set(userPerms.map((p) => p.menu_id))];
 
-      const menuTrees = await Promise.all(
-        allMenus.map(async (menu) => {
-          const subMenus = await this.subSideMenuRepository.find({
-            where: { menu_id: menu.id },
-          });
-
-          const subMenusWithPerms = await Promise.all(
-            subMenus.map(async (sm) => {
-              const perms = await this.subMenuPermRepository.find({
-                where: { sub_menu_id: sm.id },
-              });
-
-              return {
-                id: sm.id,
-                name: sm.name,
-                link: sm.link,
-                permissions: perms.map((p) => ({
-                  id: p.id,
-                  name: p.name,
-                })),
-              };
-            }),
-          );
-
-          return {
-            id: menu.id,
-            name: menu.name,
-            subMenus: subMenusWithPerms,
-          };
-        }),
-      );
-
-      return {
-        access_token: accessToken,
-        user: userDetails,
-        menus: menuTrees,
-      };
+      allMenus = await this.sideMenuRepository.find({
+        where: { id: In(menuIds) },
+        order: { periority: 'ASC' },
+      });
     }
-    const userPerms = await this.permissionRepository.findBy({ user_id: user.id });
 
-    console.log('User Permissions:', userPerms);
-
-    const menuIds = [...new Set(userPerms.map((p) => p.menu_id))];
-    const menus = await this.sideMenuRepository.findBy({ id: In(menuIds) });
-
-    const menuTree = await Promise.all(
-      menus.map(async (menu) => {
-        const allowedSubIds = userPerms
-          .filter((p) => p.menu_id === menu.id)
-          .map((p) => p.sub_menu_id);
-
+    // 🚀 Build menu trees
+    const menuTrees = await Promise.all(
+      allMenus.map(async (menu) => {
         const subMenus = await this.subSideMenuRepository.find({
-          where: { menu_id: menu.id, id: In(allowedSubIds) },
+          where: { menu_id: menu.id },
         });
 
         const subMenusWithPerms = await Promise.all(
@@ -181,20 +164,11 @@ export class AuthService {
               where: { sub_menu_id: sm.id },
             });
 
-            // Keep only the permissions that match user's allowed list
-            const allowedPerms = perms.filter((p) =>
-              userPerms.some(
-                (up) =>
-                  up.sub_menu_id === sm.id &&
-                  up.module_permission?.includes(p.name),
-              ),
-            );
-
             return {
               id: sm.id,
               name: sm.name,
               link: sm.link,
-              permissions: allowedPerms.map((p) => ({
+              permissions: perms.map((p) => ({
                 id: p.id,
                 name: p.name,
               })),
@@ -205,18 +179,47 @@ export class AuthService {
         return {
           id: menu.id,
           name: menu.name,
+          key_name: menu.key_name ?? 'Others', // group key
           subMenus: subMenusWithPerms,
         };
       }),
     );
 
+    // 🚀 Group menus by key_name
+    const groupedMenus = menuTrees.reduce((groups, menu) => {
+      const key = menu.key_name || 'Others';
+      if (!groups[key]) {
+        groups[key] = [];
+      }
+      groups[key].push({
+        id: menu.id,
+        name: menu.name,
+        subMenus: menu.subMenus,
+      });
+      return groups;
+    }, {});
+
     return {
       access_token: accessToken,
       user: userDetails,
-      menus: menuTree,
+      menus: groupedMenus,
+      branches,
     };
   }
 
+
+  async fetchUserBranches(userId: number) {
+    //here
+    const branches = await this.userCompanyMap.findOne({ where: { user_id: userId } })
+    let allBranches: Branch[] = [];
+    if (branches && Array.isArray(branches.branch_id)) {
+      allBranches = await this.branches.find({
+        where: { id: In(branches.branch_id), is_active: 1 },
+        select: ({ id: true, branch_name: true })
+      });
+    }
+    return allBranches
+  }
 
 
   async userTokenValidation(token) {
@@ -296,87 +299,6 @@ export class AuthService {
   }
 
 
-  // async updateMenu(body: any) {
-  //   const menu = await this.sideMenuRepository.findOne({ where: { id: body.menu_id } });
-  //   if (!menu) throw new NotFoundException('Menu not found');
-
-  //   menu.name = body.name ?? menu.name;
-  //   menu.status = body.status ?? menu.status;
-  //   await this.sideMenuRepository.save(menu);
-
-  //   // 2. handle subMenus
-  //   const existingSubMenus = await this.subMenuRepo.find({ where: { menu_id: menuId } });
-
-  //   // IDs sent from client
-  //   const incomingSubMenuIds = dto.subMenus.filter((sm) => sm.id).map((sm) => sm.id);
-
-  //   // remove missing subMenus
-  //   const subMenusToRemove = existingSubMenus.filter(
-  //     (esm) => !incomingSubMenuIds.includes(esm.id),
-  //   );
-  //   if (subMenusToRemove.length > 0) {
-  //     await this.subMenuRepo.remove(subMenusToRemove);
-  //     await this.permRepo.delete({ sub_menu_id: In(subMenusToRemove.map((s) => s.id)) });
-  //   }
-
-  //   // insert/update subMenus + permissions
-  //   for (const sm of dto.subMenus) {
-  //     let subMenu: SubSideMenu;
-
-  //     if (sm.id) {
-  //       // update existing submenu
-  //       subMenu = await this.subMenuRepo.findOne({ where: { id: sm.id, menu_id: menuId } });
-  //       if (!subMenu) throw new NotFoundException(`SubMenu ${sm.id} not found`);
-
-  //       subMenu.name = sm.name ?? subMenu.name;
-  //       subMenu.link = sm.link ?? subMenu.link;
-  //       subMenu.status = sm.status ?? subMenu.status;
-  //       await this.subMenuRepo.save(subMenu);
-  //     } else {
-  //       // create new submenu
-  //       subMenu = this.subMenuRepo.create({
-  //         name: sm.name,
-  //         link: sm.link,
-  //         status: sm.status ?? 1,
-  //         menu_id: menuId,
-  //       });
-  //       subMenu = await this.subMenuRepo.save(subMenu);
-  //     }
-
-  //     // handle permissions
-  //     const existingPerms = await this.permRepo.find({ where: { sub_menu_id: subMenu.id } });
-  //     const incomingPermIds = sm.permissions.filter((p) => p.id).map((p) => p.id);
-
-  //     // remove missing perms
-  //     const permsToRemove = existingPerms.filter((ep) => !incomingPermIds.includes(ep.id));
-  //     if (permsToRemove.length > 0) {
-  //       await this.permRepo.remove(permsToRemove);
-  //     }
-
-  //     // insert/update perms
-  //     for (const p of sm.permissions) {
-  //       if (p.id) {
-  //         const perm = await this.permRepo.findOne({ where: { id: p.id, sub_menu_id: subMenu.id } });
-  //         if (!perm) throw new NotFoundException(`Permission ${p.id} not found`);
-  //         perm.name = p.name ?? perm.name;
-  //         perm.status = p.status ?? perm.status;
-  //         await this.permRepo.save(perm);
-  //       } else {
-  //         const newPerm = this.permRepo.create({
-  //           name: p.name,
-  //           status: p.status ?? 1,
-  //           sub_menu_id: subMenu.id,
-  //         });
-  //         await this.permRepo.save(newPerm);
-  //       }
-  //     }
-  //   }
-
-  //   return { message: 'Menu updated successfully' };
-  // }
-
-
-
   async createMenuOrSubMenus(body: any) {
     // 1. create the menu
     const menu = this.sideMenuRepository.create({
@@ -404,54 +326,6 @@ export class AuthService {
     }
     return { message: 'Menu created successfully', id: savedMenu.id };
   }
-
-
-
-
-  // async createMenuOrSubMenus(body: any,) {
-  //   let savedMenu: sideMenus | null = null;
-  //   let subMenus: subSideMenus[] = [];
-
-  //   try {
-  //     if (body.sideMenu) {
-  //       const newMenu = this.sideMenuRepository.create({
-  //         name: body.sideMenu.name,
-  //       });
-  //       savedMenu = await this.sideMenuRepository.save(newMenu);
-
-  //       if (!savedMenu) {
-  //         throw new BadRequestException('Cannot create role mappings: savedMenu is null');
-  //       }
-  //     }
-
-  //     if (body.subMenus && Array.isArray(body.subMenus) && body.subMenus.length > 0) {
-  //       const menuId = savedMenu ? savedMenu.id : body.menu_id;
-
-  //       if (!menuId) {
-  //         throw new BadRequestException(
-  //           'menu_id is required when creating subMenus without a new sideMenu',
-  //         );
-  //       }
-
-  //       const subMenuEntities = body.subMenus.map((sub: any) =>
-  //         this.subSideMenuRepository.create({
-  //           name: sub.name,
-  //           menu_id: menuId,
-  //           link: sub.link,
-  //         }),
-  //       );
-
-  //       subMenus = await this.subSideMenuRepository.save(subMenuEntities);
-  //     }
-  //     return [];
-  //   }
-
-  //   catch (error) {
-  //     throw new NotFoundException('Error creating menu or sub-menus: ' + error.message);
-  //   }
-
-  // }
-
   async createRoles(body: any) {
     try {
       if (!body.permission || !Array.isArray(body.permission) || body.permission.length === 0) {

@@ -1,7 +1,8 @@
 // src/users/entities/user.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BeforeInsert, ManyToMany, JoinTable } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BeforeInsert, ManyToMany, JoinTable, OneToOne } from 'typeorm';
 import { Role } from './role.entity';
 import { Permission } from './Permission.entity';
+import { Employee } from 'src/hrm/hrm_employee/employee.entity';
 
 @Entity()
 export class User {
@@ -11,7 +12,10 @@ export class User {
   // @Column({ type: 'int', nullable: true, default: 2, comment: '1 = Admin, 2 User' })
   // type: number;;
 
-  @Column({ length: 255 })
+  @OneToOne(() => Employee, (employee) => employee.user)
+employee: Employee;
+
+  @Column({ length: 255,  })
   name: string;
 
   @Column({ length: 255, unique: true })
@@ -37,6 +41,11 @@ export class User {
 
   @Column({ length: 255, nullable: true })
   dob: string;
+
+  // @Column('json', { nullable: true })
+  // branch_id: string[];
+
+
 
   @Column({ type: 'date' })
   created_at: string;

@@ -5,12 +5,18 @@ import { Branch } from '../branch/branch.entity';
 import { CreateBranchDto } from '../branch/dto/create-branch.dto';
 import { UpdateBranchDto } from '../branch/dto/update-branch.dto';
 import { Company } from '../companies/company.entity';
+import { userCompanyMapping } from 'src/entities/user-company-mapping.entity';
 
 @Injectable()
 export class BranchService {
     constructor(
-        @InjectRepository(Branch) private branchRepo: Repository<Branch>,
-        @InjectRepository(Company) private companyRepo: Repository<Company>,
+        @InjectRepository(Branch)
+        private branchRepo: Repository<Branch>,
+        @InjectRepository(Company)
+        private companyRepo: Repository<Company>,
+        @InjectRepository(userCompanyMapping)
+        private ucm: Repository<userCompanyMapping>,
+
     ) { }
 
     async create(dto: CreateBranchDto) {
@@ -23,8 +29,22 @@ export class BranchService {
                 company: { id: dto.companyId } as Company,
                 is_active: 1,
             });
-
             const savedBranch = await this.branchRepo.save(branch);
+
+            const findBranch = await this.ucm.findOne({ where: { company_id: dto.companyId } });
+
+            if (!findBranch) {
+                throw new Error('Company mapping not found');
+            }
+
+            let updatedBranches: number[] = Array.isArray(findBranch.branch_id) ? [...findBranch.branch_id] : [];
+            updatedBranches.push(savedBranch.id);
+
+
+            await this.ucm.update(
+                { company_id: dto.companyId },
+                { branch_id: updatedBranches }
+            );
             return { success: true, message: 'Branch created successfully', data: savedBranch };
         } catch (error) {
             return { success: false, message: 'Failed to create branch' };

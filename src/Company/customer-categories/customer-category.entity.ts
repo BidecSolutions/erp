@@ -19,7 +19,6 @@ export class CustomerCategory {
   })
   company: Company;
 
-
   @OneToMany(() => Customer, (customer) => customer.category_customer)
   customers: Customer[];
 

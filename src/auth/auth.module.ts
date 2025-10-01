@@ -18,9 +18,13 @@ import { sidemunuRolesMapping } from 'src/entities/role-side-menu-mapping.entity
 import { Permission } from 'src/entities/Permission.entity';
 import { Role } from 'src/entities/role.entity';
 import { subSideMenuPermission } from 'src/entities/sub-side-menu-permission.entity';
+import { userCompanyMapping } from 'src/entities/user-company-mapping.entity';
+import { Branch } from 'src/Company/branch/branch.entity';
+import { BranchStrategy } from './branch.strategy';
+import { JwtBranchAuth } from './jwt-branch.guard';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([subSideMenuPermission, Role, Permission, UserToken, User, userRoleMapping, sideMenus, subSideMenus, sidemunuRolesMapping]),
+    TypeOrmModule.forFeature([Branch, userCompanyMapping, subSideMenuPermission, Role, Permission, UserToken, User, userRoleMapping, sideMenus, subSideMenus, sidemunuRolesMapping]),
     UsersModule,
     PassportModule,
     JwtModule.register({
@@ -28,7 +32,7 @@ import { subSideMenuPermission } from 'src/entities/sub-side-menu-permission.ent
       signOptions: { expiresIn: '1d' },
     }),
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy, MailService],
+  providers: [AuthService, LocalStrategy, JwtStrategy, MailService, BranchStrategy, JwtBranchAuth],
   controllers: [AuthController],
 })
 export class AuthModule { }

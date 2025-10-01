@@ -13,6 +13,8 @@ import {
   ValidateIf,
   IsBoolean,
   IsInt,
+  ArrayNotEmpty,
+  ArrayMaxSize,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { CreateBankDetailDto } from 'src/hrm/hrm_bank-details/dto/create-bank-details.dto';
@@ -32,18 +34,14 @@ export class CreateEmployeeDto {
   @IsNotEmpty({ message: 'Gender is required' })
   gender: string;
 
-  // ✅ validate email only when is_system_user === true
-  @ValidateIf((o) => o.is_system_user === true)
-  @IsEmail({}, { message: 'Invalid email format' })
-  @IsNotEmpty({ message: 'Email is required for system users' })
-  email?: string | null;
 
-  // ✅ validate password only when is_system_user === true
-  @ValidateIf((o) => o.is_system_user === true)
+  @IsEmail()
+  email?: string;
+
+
   @IsString()
-  @IsNotEmpty({ message: 'Password is required for system users' })
   @Length(6, 100)
-  password?: string | null;
+  password?: string;
 
   @IsString()
   @IsNotEmpty({ message: 'Address is required' })
@@ -73,13 +71,22 @@ export class CreateEmployeeDto {
   @IsNotEmpty({ message: 'Date of joining is required' })
   dateOfJoining: string;
 
-  @IsOptional()
-  @IsString()
-  cv?: string;
+   @IsOptional()
+  @IsString({ message: 'CV must be a valid string (file name)' })
+  cv?: string; // file name after upload
 
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'Photo must be a valid string (file name)' })
   photo?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Academic Transcript must be a valid string (file name)' })
+  academic_transcript?: string;
+
+  @IsOptional()
+  @IsArray({ message: 'Identity Card must be an array of file names' })
+  @ArrayMaxSize(2, { message: 'Identity Card can have maximum 2 files (front and back)' })
+  identity_card?: string[]
 
   // ✅ Multiple bank details allowed
   @IsOptional()
@@ -133,23 +140,39 @@ export class CreateEmployeeDto {
   @Type(() => Number)
   shiftId: number;
 
-  // ✅ is_system_user flag
-  @Transform(({ value }) => value === 'true' || value === true)
+
   @IsBoolean()
-  is_system_user: boolean;
+  @Transform(({ value }) => {
+    if (value === undefined || value === null) return false; // default
+    if (value === 'true' || value === true) return true;
+    if (value === 'false' || value === false) return false;
+    return false; // fallback
+  })
+  is_system_user: boolean = false; // default value
 
-@IsOptional()
- @Type(() => Number)
-  @IsInt({ message: 'leave_setup_id must be an integer number' })
-  leave_setup_id: number;
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt({ message: 'annual_leave_id must be an integer number' })
+  annual_leave_id?: number;
 
 
- @IsOptional()
+  @IsOptional()
   @IsArray()
-   @Type(() => Number)
+  @Type(() => Number)
   @IsNumber({}, { each: true })
   allowance_ids?: number[];
 
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  role_id?: number;
+
+
+@IsOptional()
+@IsArray()
+@Type(() => Number)
+@IsNumber({}, { each: true })
+branch_ids?: number[];
 
 
 }
