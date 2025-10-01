@@ -9,22 +9,22 @@ export class BankDetail {
   @Column()
   employeeId?: number;
 
-  @Column()
+  @Column({nullable: true})
   accountHolderName?: string;
 
-  @Column()
+  @Column({nullable: true})
   accountNumber?: string;
 
-  @Column()
+  @Column({nullable: true})
   bankName?: string;
 
-  @Column()
+  @Column({nullable: true})
   bankIdentifierCode?: string;
 
-  @Column()
+  @Column({nullable: true})
   branchLocation?: string;
 
-  @Column()
+  @Column({nullable: true})
   taxPayerId?: string;
 
   @ManyToOne(() => Employee, (employee) => employee.bankDetails, { onDelete: 'CASCADE' })

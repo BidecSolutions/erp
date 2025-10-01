@@ -1,8 +1,13 @@
-import { IsString, Length, IsInt } from 'class-validator';
+import { IsString, Length, IsInt, IsNumber, IsNotEmpty } from 'class-validator';
 
 export class CreateDepartmentDto {
   @IsString({ message: 'Department name must be a string' })
   @Length(3, 50, { message: 'Department name must be between 3 and 50 characters' })
   name: string;
+
+  
+     @IsNumber()
+    @IsNotEmpty()
+    company_id: number; // yahan add karo
 
 }

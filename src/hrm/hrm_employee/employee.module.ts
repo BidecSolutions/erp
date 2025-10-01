@@ -9,11 +9,13 @@ import { BankDetail } from '../hrm_bank-details/bank-detail.entity';
 import { BankDetailModule } from '../hrm_bank-details/bank-details.module';
 import { Shift } from '../hrm_shift/shift.entity';
 import { DocumentModule } from '../hrm_document/document.module';
+import { LeaveSetup } from '../hrm_leave-setup/leave-setup.entity';
+import { Allowance } from '../hrm_allowance/allowance.entity';
 // import { LeaveModule } from '../hrm_leave/leave.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Employee, Department, Designation, Shift]),
+    TypeOrmModule.forFeature([Employee, Department, Designation, Shift,LeaveSetup, BankDetail,Allowance]),
     BankDetailModule ,
     DocumentModule,
     // LeaveModule

@@ -13,6 +13,9 @@ import { sidemunuRolesMapping } from './entities/role-side-menu-mapping.entity';
 import { companySetting } from './Company/company-module-file.module';
 import { procurement } from './procurement/procurement-module-list.module';
 import { HRM } from './hrm/hrm-module-list.entity';
+import { sideMenuAndRoleSeederService } from './seeder/side-menu-and-role-seeder.service';
+import { subSideMenuPermission } from './entities/sub-side-menu-permission.entity';
+import { sales } from './sales/sales-module-list.module';
 
 @Module({
   imports: [
@@ -27,22 +30,25 @@ import { HRM } from './hrm/hrm-module-list.entity';
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
     }),
-    TypeOrmModule.forFeature([User, Role, userRoleMapping, sideMenus, subSideMenus, sidemunuRolesMapping]),
+    TypeOrmModule.forFeature([subSideMenuPermission, User, Role, userRoleMapping, sideMenus, subSideMenus, sidemunuRolesMapping]),
     ...procurement,
     ...companySetting,
-    ...HRM
+    ...HRM,
+    ...sales
   ],
   controllers: [AppController],
-  providers: [AppService, registerUser, userRoles],
+  providers: [AppService, registerUser, userRoles, sideMenuAndRoleSeederService],
 })
 export class AppModule implements OnModuleInit {
   constructor(
     private readonly registration: registerUser,
-    private readonly userRole: userRoles
+    private readonly userRole: userRoles,
+    private readonly menus: sideMenuAndRoleSeederService
 
   ) { }
   async onModuleInit() {
     await this.registration.run()
     await this.userRole.run()
+    await this.menus.run()
   }
 }

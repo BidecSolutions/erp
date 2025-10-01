@@ -6,6 +6,9 @@ import {
   JoinColumn,
   OneToMany,
   OneToOne,
+  BeforeInsert,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { Department } from '../hrm_department/department.entity';
 import { Designation } from '../hrm_designation/designation.entity';
@@ -14,7 +17,8 @@ import { BankDetail } from '../hrm_bank-details/bank-detail.entity';
 import { Shift } from '../hrm_shift/shift.entity';
 import { Document } from '../hrm_document/document.entity';
 import { IsOptional } from 'class-validator';
-// import { Leave } from '../hrm_leave/leave.entity';
+import { LeaveSetup } from '../hrm_leave-setup/leave-setup.entity';
+import { Allowance } from '../hrm_allowance/allowance.entity';
 
 @Entity('hrm_employees')
 export class Employee {
@@ -32,10 +36,10 @@ export class Employee {
   gender: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true, unique: true })
-  email?: string;
+  email: string | null;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  password?: string;
+  password: string | null;
 
   // NEW column: is_system_user
   @Column({ name: 'is_system_user', type: 'boolean', default: false })
@@ -95,10 +99,44 @@ export class Employee {
   @OneToOne(() => BankDetail, (bankdetail) => bankdetail.employee)
   bankDetails: BankDetail[];
 
-  // @ManyToOne(() => Leave, (leave) => leave.employees, { nullable: true })
-  // @JoinColumn({ name: 'leaveId' })
-  // leave?: Leave;
+@ManyToOne(() => LeaveSetup, (leaveSetup) => leaveSetup.employees, { nullable: true })
+@JoinColumn({ name: 'leave_setup_id' })
+leaveSetup: LeaveSetup;
 
-  // @Column({ nullable: true })
-  // leaveId?: number;
+// @ManyToMany(() => Allowance, { nullable: true })
+// @JoinTable({ name: 'allowances' }) // pivot table
+// allowances?: Allowance[];
+ @Column("simple-array", { nullable: true })
+  allowance_ids: number[];
+
+  // Many-to-Many relation for fetching allowance data
+  @ManyToMany(() => Allowance)
+  @JoinTable({
+    name: "employee_allowances",
+    joinColumn: { name: "employee_id", referencedColumnName: "id" },
+    inverseJoinColumn: { name: "allowance_id", referencedColumnName: "id" },
+  })
+  allowances: Allowance[];
+
+
+     @Column({
+            type: 'int',
+            comment: '1 = active, 2 = inactive',
+            default: 1
+        })
+        status: number;
+    
+        @Column({ type: 'date' })
+        created_at: string;
+    
+        @Column({ type: 'date' })
+        updated_at: string;
+    
+        @BeforeInsert()
+        setDefaults() {
+            const now = new Date();
+            this.created_at = now.toISOString().split('T')[0];
+            this.updated_at = now.toISOString().split('T')[0];
+        }
+
 }

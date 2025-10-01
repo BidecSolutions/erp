@@ -28,10 +28,10 @@ export class sidemunuRolesMapping {
     })
     status: number;
 
-    @Column({ type: 'date' })
+    @Column({ type: 'date', nullable: true })
     created_date: string;
 
-    @Column({ type: 'time' })
+    @Column({ type: 'time', nullable: true })
     created_time: string;
 
     @BeforeInsert()

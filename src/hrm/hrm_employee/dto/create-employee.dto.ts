@@ -12,6 +12,7 @@ import {
   IsArray,
   ValidateIf,
   IsBoolean,
+  IsInt,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { CreateBankDetailDto } from 'src/hrm/hrm_bank-details/dto/create-bank-details.dto';
@@ -35,14 +36,14 @@ export class CreateEmployeeDto {
   @ValidateIf((o) => o.is_system_user === true)
   @IsEmail({}, { message: 'Invalid email format' })
   @IsNotEmpty({ message: 'Email is required for system users' })
-  email?: string;
+  email?: string | null;
 
   // ✅ validate password only when is_system_user === true
   @ValidateIf((o) => o.is_system_user === true)
   @IsString()
   @IsNotEmpty({ message: 'Password is required for system users' })
   @Length(6, 100)
-  password?: string;
+  password?: string | null;
 
   @IsString()
   @IsNotEmpty({ message: 'Address is required' })
@@ -137,9 +138,18 @@ export class CreateEmployeeDto {
   @IsBoolean()
   is_system_user: boolean;
 
-  @IsOptional()
-@IsNumber()
-@Type(() => Number)
-leaveId?: number;
+@IsOptional()
+ @Type(() => Number)
+  @IsInt({ message: 'leave_setup_id must be an integer number' })
+  leave_setup_id: number;
+
+
+ @IsOptional()
+  @IsArray()
+   @Type(() => Number)
+  @IsNumber({}, { each: true })
+  allowance_ids?: number[];
+
+
 
 }

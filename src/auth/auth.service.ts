@@ -475,8 +475,6 @@ export class AuthService {
     return await this.usersRoles.find({ where: { status: body.status, id: Not(In([1, 2])), } });
   }
 
-
-
   async getSubMenusByRoles(body: any) {
     const roleId = body.role_id;
     if (!roleId) {
