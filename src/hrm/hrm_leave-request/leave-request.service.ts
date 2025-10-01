@@ -134,7 +134,7 @@ return this.formatResponse(savedWithRelations);
   }
   
 async approveLeaveRequest(id: number) {
-  // 🔹 Find leave request with employee relation
+  // Find leave request with employee relation
   const leaveRequest = await this.leaveRequestRepository.findOne({
     where: { id },
     relations: ['employee', 'leaveType'],
@@ -142,7 +142,7 @@ async approveLeaveRequest(id: number) {
 
   if (!leaveRequest) throw new NotFoundException(`Leave Request ID ${id} not found`);
 
-  // 🔹 Load employee with annualLeave relation
+  // Load employee with annualLeave relation
   const employee = await this.employeeRepository.findOne({
     where: { id: leaveRequest.employee!.id },
     relations: ['annualLeave'],
@@ -158,7 +158,7 @@ if (!employee!.annualLeave) {
 }
 
 
-  // 🔹 Calculate already used leaves
+  //  Calculate already used leaves
   const usedLeaves = await this.leaveRequestRepository
   .createQueryBuilder('lr')
   .where('lr.employeeId = :empId', { empId: employee.id })

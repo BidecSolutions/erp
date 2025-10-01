@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  UploadedFiles,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository, In } from "typeorm";
@@ -179,7 +180,13 @@ export class EmployeeService {
 
   async create(
     dto: CreateEmployeeDto,
-    files?: { cv?: Express.Multer.File[]; photo?: Express.Multer.File[] }
+    @UploadedFiles()
+files: {
+  cv?: Express.Multer.File[];
+  photo?: Express.Multer.File[];
+  academic_transcript?: Express.Multer.File[];
+  identity_card?: Express.Multer.File[];
+},
   ) {
     try {
       const department = await this.departmentRepository.findOneBy({
@@ -199,6 +206,15 @@ export class EmployeeService {
       if (!department) throw new NotFoundException("Department not found");
       if (!designation) throw new NotFoundException("Designation not found");
       if (!shift) throw new NotFoundException("Shift not found");
+      if (!files?.cv) {
+    throw new BadRequestException('CV is required');
+  }
+  if (!files?.photo) {
+    throw new BadRequestException('Photo is required');
+  }
+  if (!files?.identity_card || files.identity_card.length < 2) {
+    throw new BadRequestException('Identity Card front and back are required');
+  }
 
       const emp = this.employeeRepository.create({
         ...dto,
@@ -206,6 +222,10 @@ export class EmployeeService {
         designation,
         shift,
         ...(annualLeave ? { annualLeave } : {}),
+   cv: files.cv?.[0]?.filename ?? (() => { throw new BadRequestException('CV is required'); })(),
+  photo: files.photo?.[0]?.filename ?? (() => { throw new BadRequestException('Photo is required'); })(),
+  identity_card: files.identity_card?.map(f => f.filename) ?? (() => { throw new BadRequestException('Identity Card (front & back) are required'); })(),
+  academic_transcript: files.academic_transcript?.[0]?.filename ?? null, // optionalz
       });
 
       emp.is_system_user = dto.is_system_user ?? false;
@@ -315,6 +335,7 @@ export class EmployeeService {
         daysPerWeek: saved.daysPerWeek,
         fixedSalary: saved.fixedSalary,
         shift: saved.shift?.name,
+        
         annualLeave: saved.annualLeave
           ? {
               id: saved.annualLeave.id,

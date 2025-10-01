@@ -60,6 +60,20 @@ export class Employee {
   })
   locationType?: 'residential' | 'postal' | 'work address';
 
+  // 🔹 Required files
+  @Column({ nullable: false })
+  cv: string;
+
+  @Column({ nullable: false })
+  photo: string;
+
+  @Column("simple-array", { nullable: false }) 
+  identity_card: string[];
+
+@Column({ type: 'text', nullable: true })
+academic_transcript: string | null;
+
+
   @ManyToOne(() => Department, { nullable: false })
   @JoinColumn({ name: 'departmentId' })
   department: Department;
@@ -133,7 +147,7 @@ branches: Branch[];
   @OneToMany(() => LeaveRequest, (leaveRequest) => leaveRequest.employee)
   leaveRequests: LeaveRequest[];
 
-  @OneToOne(() => User, (user) => user.employee, { cascade: true, onDelete: 'SET NULL' })
+  @OneToOne(() => User, (user) => user.employee, {  onDelete: 'SET NULL' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 

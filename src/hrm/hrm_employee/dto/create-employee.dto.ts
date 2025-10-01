@@ -71,22 +71,25 @@ export class CreateEmployeeDto {
   @IsNotEmpty({ message: 'Date of joining is required' })
   dateOfJoining: string;
 
-   @IsOptional()
-  @IsString({ message: 'CV must be a valid string (file name)' })
-  cv?: string; // file name after upload
+  
+  //   @IsString({ message: 'CV must be a valid string (file name)' })
+  //   @IsNotEmpty({ message: 'CV is required' })
+  // cv?: string; // file name after upload
 
-  @IsOptional()
-  @IsString({ message: 'Photo must be a valid string (file name)' })
-  photo?: string;
+ 
+  // @IsString({ message: 'Photo must be a valid string (file name)' })
+  //     @IsNotEmpty({ message: 'Photo is required' })
+  // photo?: string;
 
-  @IsOptional()
-  @IsString({ message: 'Academic Transcript must be a valid string (file name)' })
-  academic_transcript?: string;
+  
+  // @IsString({ message: 'Academic Transcript must be a valid string (file name)' })
+  //    @IsNotEmpty({ message: 'Academic Transcript is required' })
+  // academic_transcript?: string;
 
-  @IsOptional()
-  @IsArray({ message: 'Identity Card must be an array of file names' })
-  @ArrayMaxSize(2, { message: 'Identity Card can have maximum 2 files (front and back)' })
-  identity_card?: string[]
+  // @IsOptional()
+  // @IsArray({ message: 'Identity Card must be an array of file names' })
+  // @ArrayMaxSize(2, { message: 'Identity Card can have maximum 2 files (front and back)' })
+  // identity_card?: string[]
 
   // ✅ Multiple bank details allowed
   @IsOptional()
