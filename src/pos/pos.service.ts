@@ -10,6 +10,8 @@ import { CustomerService } from 'src/Company/customers/customer.service';
 import { Company } from 'src/Company/companies/company.entity';
 import { Customer } from 'src/Company/customers/customer.entity';
 import { Branch } from 'src/Company/branch/branch.entity';
+import { Product } from 'src/procurement/product/entities/product.entity';
+import { CustomerAccount } from 'src/Company/customers/customer.customer_account.entity';
 
 @Injectable()
 export class PosService {
@@ -27,14 +29,39 @@ export class PosService {
         private readonly companyRepo: Repository<Company>,
         @InjectRepository(Customer)
         private readonly customerRepo: Repository<Customer>,
+
+
+        @InjectRepository(CustomerAccount)
+        private readonly customerAccountRepo: Repository<CustomerAccount>,
+        @InjectRepository(Product)
+        private readonly productRepo: Repository<Product>,
+
     ) { }
 
     async getAllProducts() {
         try {
             const result = await this.productService.findAll();
-            return { success: true, message: 'Products retrieved successfully', data: result };
+
+            if (!result.success || !('data' in result)) {
+                return { success: false, message: 'No products found' };
+            }
+
+            const { product } = result.data; // ✅ Safe now
+
+            const product_with_stock = await Promise.all(
+                product.map(async (p) => {
+                    const stock = await this.stockRepo.findOne({
+                        where: { product: { id: p.id } },
+                        select: { quantity: true, id: true } // Select only necessary fields
+                    });
+                    return { ...p, stock };
+                })
+            );
+
+            return { product_with_stock };
+
         } catch (error) {
-            return { success: false, message: 'Failed to retrieve products' };
+            return { success: false, message: 'Failed to retrieve products', error };
         }
     }
 
@@ -51,6 +78,7 @@ export class PosService {
         try {
             return await this.dataSource.transaction(async (manager) => {
                 let totalAmount = 0;
+
                 const stockMap = new Map<number, StockAdjustment>();
 
                 // Step 1: Validate stock once & keep in map
@@ -87,14 +115,22 @@ export class PosService {
                     stock.quantity -= item.quantity;
                     await manager.save(stock);
 
-                    const lineAmount = item.quantity * item.unit_price;
-                    totalAmount += lineAmount;
+
+                    const product_price = await this.productRepo.findOne({
+                        where: { id: item.product_id },
+                        select: { unit_price: true, id: true },
+                    });
+
+                    const product_unit_price = product_price?.unit_price ?? 0;
+
+                    const lineAmount = item.quantity * product_unit_price;
+                    totalAmount += Math.round(lineAmount);
 
                     const detail = manager.create(SalesOrderDetail, {
                         salesOrder: { id: savedOrder.id },
                         product: { id: item.product_id },
                         quantity: item.quantity,
-                        unit_price: item.unit_price,
+                        unit_price: product_unit_price,
                     });
                     await manager.save(detail);
                 }
@@ -102,6 +138,24 @@ export class PosService {
                 // Step 4: Update total amount
                 savedOrder.total_amount = totalAmount;
                 await manager.save(savedOrder);
+                if (dto.customer_id) {
+                    console.log('Updating customer account for customer ID:', dto.customer_id);
+
+                    const customerAccount = await this.customerAccountRepo.findOne({
+                        where: { customer: { id: dto.customer_id } }
+                    });
+
+                    const customerAmountExist = customerAccount?.amount || 0;
+                    let newAmount = customerAmountExist + totalAmount;
+
+                    newAmount = Math.round(newAmount);
+
+                    await this.customerAccountRepo.update(
+                        { customer: { id: dto.customer_id } },
+                        { amount: newAmount }
+                    );
+                }
+
 
                 return {
                     success: true,
@@ -111,11 +165,35 @@ export class PosService {
                 };
             });
         } catch (error) {
-            return {
-                success: false,
-                message: error.message || 'Failed to create order',
-            };
+                return {
+                    success: false,
+                    message: error.message || 'Failed to create order',
+                };
+            }
         }
+
+    async getInstantProducts() {
+            try {
+                const result = await this.productService.findInstantProduct();
+
+                if (!result || result.length === 0) {
+                    return { success: false, message: 'No products found' };
+                }
+                const product_with_stock = await Promise.all(
+                    result.map(async (p) => {
+                        const stock = await this.stockRepo.findOne({
+                            where: { product: { id: p.id } },
+                            select: { quantity: true, id: true },
+                        });
+                        return { ...p, stock };
+                    })
+                );
+
+                return { success: true, data: product_with_stock };
+            } catch (error) {
+                return { success: false, message: 'Failed to retrieve instant products', error };
+            }
+        }
+
     }
-}
 

@@ -10,6 +10,8 @@ import { ProductModule } from 'src/procurement/product/product.module';
 import { CustomerModule } from 'src/Company/customers/customer.module';
 import { Company } from 'src/Company/companies/company.entity';
 import { Customer } from 'src/Company/customers/customer.entity';
+import { Product } from 'src/procurement/product/entities/product.entity';
+import { CustomerAccount } from 'src/Company/customers/customer.customer_account.entity';
 
 @Module({
   imports: [ProductModule,
@@ -20,6 +22,7 @@ import { Customer } from 'src/Company/customers/customer.entity';
       SalesOrderDetail,
       Company,
       Customer,
+      Product,CustomerAccount
     ]),
   ],
   providers: [PosService],
