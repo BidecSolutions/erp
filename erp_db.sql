@@ -1634,8 +1634,8 @@ CREATE TABLE `TAX_TYPES` (
   `tax_name` varchar(255) NOT NULL,
   `tax_type` varchar(50) DEFAULT NULL,
   `tax_rate` decimal(5,2) DEFAULT NULL,
-  `calculation_method` varchar(50) DEFAULT NULL,
-  `is_compound` tinyint(1) DEFAULT 0,
+  -- `calculation_method` varchar(50) DEFAULT NULL,
+  -- `is_compound` tinyint(1) DEFAULT 0,
   `is_active` tinyint(1) DEFAULT 1,
   `created_by` int(11) DEFAULT NULL,
   `created_date` datetime DEFAULT NULL

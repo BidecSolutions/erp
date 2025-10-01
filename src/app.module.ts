@@ -34,10 +34,11 @@ import { sales } from './sales/sales-module-list.module';
     ...procurement,
     ...companySetting,
     ...HRM,
-    ...sales
+    ...sales,
+    
   ],
   controllers: [AppController],
-  providers: [AppService, registerUser, userRoles, sideMenuAndRoleSeederService],
+  providers: [AppService, registerUser, userRoles, sideMenuAndRoleSeederService, ],
 })
 export class AppModule implements OnModuleInit {
   constructor(

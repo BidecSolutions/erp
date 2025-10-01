@@ -10,6 +10,7 @@ import { SupplierPayment } from '../supplier-payment/supplier-payment.entity';
 import { SupplierInvoice } from '../supplier-invoice/supplier-invoice.entity';
 import { ChartOfAccount } from '../chart-of-accounts/chart-of-account.entity';
 import { SalesOrder } from 'src/sales/sales-order/entity/sales-order.entity';
+import { TaxType } from 'src/sales/tax-type/entity/tax-type.entity';
 
 @Entity('companies')
 export class Company {
@@ -141,6 +142,10 @@ export class Company {
   // One company can have many chart of accounts
   @OneToMany(() => ChartOfAccount, (chart) => chart.company)
   chartOfAccounts: ChartOfAccount[];
+
+  // One company can have many customer tax-type
+  @OneToMany(() => TaxType, (taxType) => taxType.company)
+  taxTypes: TaxType[];
 
   @BeforeInsert()
   setCreateDate() {

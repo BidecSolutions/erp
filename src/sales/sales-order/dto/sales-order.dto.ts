@@ -38,25 +38,12 @@ export class CreateSalesOrderDto {
   @IsOptional()
   order_priority?: string;
 
-  @IsNumber()
-  @IsNotEmpty()
-  subtotal: number;
 
-  @IsNumber()
-  @IsOptional()
-  tax_amount?: number;
-
-  @IsNumber()
-  @IsOptional()
-  discount_amount?: number;
 
   @IsNumber()
   @IsOptional()
   shipping_charges?: number;
 
-  @IsNumber()
-  @IsNotEmpty()
-  total_amount: number;
 
   @IsString()
   @IsNotEmpty()
