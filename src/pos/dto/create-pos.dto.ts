@@ -1,4 +1,4 @@
-import { IsArray, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreatePosDto {
   @IsOptional()
@@ -7,8 +7,15 @@ export class CreatePosDto {
   @IsOptional()
   customer_id?: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   sale_person_id: number;
+
+  @IsNotEmpty()
+  branch_id: number;
+
+  @IsOptional()
+  @IsString()
+  order_no: string;
 
   @IsArray()
   order_details: {
