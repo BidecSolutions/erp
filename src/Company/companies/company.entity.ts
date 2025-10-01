@@ -20,7 +20,7 @@ export class Company {
   @Column()
   company_name: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: false })
   company_logo_path: string;
 
   @Column({ nullable: true })
