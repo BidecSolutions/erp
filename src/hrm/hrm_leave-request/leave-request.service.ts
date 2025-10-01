@@ -4,12 +4,13 @@ import { Repository } from 'typeorm';
 import { LeaveRequest, LeaveStatus } from './leave-request.entity';
 import { CreateLeaveRequestDto } from './dto/create-leave-request.dto';
 import { UpdateLeaveRequestDto } from './dto/update-leave-request.dto';
-import { Employee } from '../hrm_employee/employee.entity';
+import { Employee, EmployeeType } from '../hrm_employee/employee.entity';
 import { LeaveType } from '../hrm_leave-type/leave-type.entity';
 import { Notification } from '../hrm_notification/notification.entity';
 import { AnnualLeave } from '../hrm_annual-leave/annual-leave.entity';
 import { UnpaidLeave } from '../hrm_unpaid-leave/unpaid-leave.entity';
 import { NotificationService } from '../hrm_notification/notification.service';
+import { ProbationSetting } from '../hrm_probation-setting/probation-setting.entity';
 
 @Injectable()
 export class LeaveRequestService {
@@ -30,7 +31,8 @@ export class LeaveRequestService {
     private unpaidLeaveRepository: Repository<UnpaidLeave>, // 👈 ye inject
 
     private readonly notificationService: NotificationService,
-
+@InjectRepository(ProbationSetting)  // ← add this
+    private readonly probationSettingRepo: Repository<ProbationSetting>, // ← add this
   ) {}
 
   // 🔹 Helper: format response
@@ -134,68 +136,70 @@ return this.formatResponse(savedWithRelations);
   }
   
 async approveLeaveRequest(id: number) {
-  // Find leave request with employee relation
+  // 🔹 Fetch leave request with leaveType
   const leaveRequest = await this.leaveRequestRepository.findOne({
     where: { id },
-    relations: ['employee', 'leaveType'],
+    relations: ['leaveType'], // 'employee' hataya
   });
 
   if (!leaveRequest) throw new NotFoundException(`Leave Request ID ${id} not found`);
+  if (leaveRequest.leave_status !== LeaveStatus.PENDING) {
+    throw new BadRequestException('This leave request has already been processed.');
+  }
 
-  // Load employee with annualLeave relation
+  // 🔹 Fetch employee with annualLeave
   const employee = await this.employeeRepository.findOne({
     where: { id: leaveRequest.employee!.id },
     relations: ['annualLeave'],
   });
-
-
-    if (leaveRequest.leave_status !== LeaveStatus.PENDING) {
-    throw new BadRequestException('This leave request has already been processed.');
-  }
   if (!employee) throw new NotFoundException('Employee not found');
-if (!employee!.annualLeave) {
-  throw new BadRequestException('Annual leave not assigned to this employee');
-}
 
+  let availableLeaves = 0;
 
-  //  Calculate already used leaves
-  const usedLeaves = await this.leaveRequestRepository
-  .createQueryBuilder('lr')
-  .where('lr.employeeId = :empId', { empId: employee.id })
-  .andWhere('lr.leave_status = :status', { status: LeaveStatus.APPROVED })
-  .select('SUM(lr.number_of_leave)', 'total')
-  .getRawOne();
+  if (employee.emp_type === EmployeeType.PERMANENT) {
+    // 🔹 Permanent: use annualLeave
+    if (!employee.annualLeave) throw new BadRequestException('Annual leave not assigned to this employee');
+    
+    const usedLeaves = await this.leaveRequestRepository
+      .createQueryBuilder('lr')
+      .where('lr.employeeId = :empId', { empId: employee.id })
+      .andWhere('lr.leave_status = :status', { status: LeaveStatus.APPROVED })
+      .select('SUM(lr.number_of_leave)', 'total')
+      .getRawOne();
+    
+    const totalUsed = Number(usedLeaves.total) || 0;
+    availableLeaves = employee.annualLeave.total_leave - totalUsed;
 
-const totalUsed = Number(usedLeaves.total) || 0;
-const availableLeaves = employee.annualLeave.total_leave - totalUsed;
-const requested = leaveRequest.number_of_leave;
+  } else if (employee.emp_type === EmployeeType.PROBATION) {
+    // 🔹 Probation: use ProbationSetting
+    const probationSetting = await this.probationSettingRepo.findOneBy({ id: employee.probation_setting_id });
+    if (!probationSetting) throw new BadRequestException('Probation leave setting not assigned to this employee');
 
-if(requested <= availableLeaves) {
-    // fully paid leave
-} else {
-    // partially paid + unpaid
-    const paidDays = availableLeaves;
-    const unpaidDays = requested - availableLeaves;
-}
+    // Total leave for probation employee
+    availableLeaves = probationSetting.leave_days || 0;
+  }
 
+  const requested = leaveRequest.number_of_leave;
 
-  if (leaveRequest.number_of_leave <= availableLeaves) {
+  if (requested <= availableLeaves) {
     // 🔹 Enough leave → approve
     leaveRequest.leave_status = LeaveStatus.APPROVED;
     await this.leaveRequestRepository.save(leaveRequest);
 
-  await this.notificationService.create({
-  emp_id: employee.id,
-  message: `Your leave request (${leaveRequest.number_of_leave} days) has been approved.`,
-  notification_type_id: 1, // ye must, 1 = leave
-});
+    await this.notificationService.create({
+      emp_id: employee.id,
+      message: `Your leave request (${requested} days) has been approved.`,
+      notification_type_id: 1,
+    });
+
   } else {
-    // 🔹 Partial leave → approve paid + create unpaid leave
-    const unpaidDays = leaveRequest.number_of_leave - availableLeaves;
+    // 🔹 Partial or exceed → approve for available + unpaid for extra
+    const unpaidDays = requested - availableLeaves;
 
     leaveRequest.leave_status = LeaveStatus.APPROVED;
     await this.leaveRequestRepository.save(leaveRequest);
 
+    // 🔹 Create unpaid leave record
     await this.unpaidLeaveRepository.save({
       employee: employee,
       leaveRequest: leaveRequest,
@@ -205,12 +209,11 @@ if(requested <= availableLeaves) {
       updated_at: new Date().toISOString().split('T')[0],
     });
 
-  await this.notificationService.create({
-  emp_id: employee.id,
-  message: `Your leave request (${leaveRequest.number_of_leave} days) has been approved.`,
-  notification_type_id: 1, // 1 = leave
-});
-
+    await this.notificationService.create({
+      emp_id: employee.id,
+      message: `Your leave request (${requested} days) has been approved. ${unpaidDays} day(s) will be unpaid.`,
+      notification_type_id: 1,
+    });
   }
 
   return { success: true, status: 'approved' };
@@ -218,6 +221,7 @@ if(requested <= availableLeaves) {
 
 
 async rejectLeaveRequest(id: number, reason: string) {
+  // 🔹 Fetch leave request with employee
   const leaveRequest = await this.leaveRequestRepository.findOne({
     where: { id },
     relations: ['employee'],

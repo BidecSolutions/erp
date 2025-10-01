@@ -122,10 +122,12 @@ findAll(@Query('status') status?: string) {
   @Put(':id/update')
   @UseInterceptors(
     FileFieldsInterceptor(
-      [
-        { name: 'cv', maxCount: 1 },
-        { name: 'photo', maxCount: 1 },
-      ],
+     [
+  { name: 'cv', maxCount: 1 },
+  { name: 'photo', maxCount: 1 },
+  { name: 'academic_transcript', maxCount: 1 },
+  { name: 'identity_card', maxCount: 2 },
+],
       {
         storage: diskStorage({
           destination: './uploads/employees',

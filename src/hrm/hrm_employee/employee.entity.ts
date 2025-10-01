@@ -24,8 +24,12 @@ import { LeaveRequest } from '../hrm_leave-request/leave-request.entity';
 import { User } from 'src/entities/user.entity';
 import { Role } from 'src/entities/role.entity';
 import { Branch } from 'src/Company/branch/branch.entity';
+import { ProbationSetting } from '../hrm_probation-setting/probation-setting.entity';
 
-
+export enum EmployeeType {
+  PROBATION = 'PROBATION',
+  PERMANENT = 'PERMANENT',
+}
 @Entity('hrm_employees')
 export class Employee {
   @PrimaryGeneratedColumn()
@@ -116,7 +120,7 @@ academic_transcript: string | null;
   documents: Document[];
 
   // Bank Details
-  @OneToOne(() => BankDetail, (bankdetail) => bankdetail.employee)
+  @OneToMany(() => BankDetail, (bankdetail) => bankdetail.employee)
   bankDetails: BankDetail[];
 
   @ManyToOne(() => AnnualLeave, (annualLeave) => annualLeave.employees, { nullable: true })
@@ -147,9 +151,19 @@ branches: Branch[];
   @OneToMany(() => LeaveRequest, (leaveRequest) => leaveRequest.employee)
   leaveRequests: LeaveRequest[];
 
-  @OneToOne(() => User, (user) => user.employee, {  onDelete: 'SET NULL' })
+  @OneToOne(() => User, (user) => user.employee, { cascade:true,  onDelete: 'SET NULL' })
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+@ManyToOne(() => ProbationSetting, { nullable: true })
+@JoinColumn({ name: 'probation_setting_id' })
+probationSetting?: ProbationSetting;
+
+@Column({ type: 'int', nullable: true })
+probation_setting_id?: number;
+
+@Column({ type: 'enum', enum: EmployeeType, default: EmployeeType.PROBATION })
+emp_type: EmployeeType;
 
 
   @Column({

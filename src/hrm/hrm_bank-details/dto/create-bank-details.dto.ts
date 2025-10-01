@@ -1,7 +1,13 @@
-import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsString, IsNotEmpty, IsOptional, IsNumber } from 'class-validator';
 
 export class CreateBankDetailDto {
   
+ @IsOptional()
+  @Type(() => Number) // <-- converts string to number
+  @IsNumber()
+  id?: number;
+
   @IsOptional()
   @IsString()
   accountHolderName?: string;

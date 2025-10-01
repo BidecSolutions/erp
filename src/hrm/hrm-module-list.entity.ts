@@ -15,6 +15,7 @@ import { AttendanceModule } from "./hrm_mark-attendance/mark-attendance.module";
 import { NotificationTypeModule } from "./hrm_notification-type/notification-type.module";
 import { NotificationModule } from "./hrm_notification/notification.module";
 import { PaysliptypeModule } from "./hrm_paysliptype/paysliptype.module";
+import { ProbationSettingModule } from "./hrm_probation-setting/probation-setting.module";
 import { ShiftModule } from "./hrm_shift/shift.module";
 import { UnpaidLeaveModule } from "./hrm_unpaid-leave/unpaid-leave.module";
 
@@ -39,4 +40,5 @@ export const HRM = [
     UnpaidLeaveModule,
     NotificationTypeModule,
     LeaveRequestModule,
+     ProbationSettingModule
 ]
