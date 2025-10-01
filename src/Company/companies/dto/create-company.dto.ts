@@ -9,7 +9,7 @@ export class CreateCompanyDto {
   @IsNotEmpty()
   password: string;
 
-  @IsOptional() // because controller sets this later
+  @IsOptional() // because controller sets this later  dfssdsdfs
   @IsString()
   company_logo_path: string;
 
