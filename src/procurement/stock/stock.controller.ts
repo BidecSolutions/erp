@@ -9,7 +9,7 @@ export class StockController {
 
   @Post('store')
   create(@Body() createStockDto: CreateStockDto) {
-    return this.stockService.create(createStockDto);
+    return this.stockService.store(createStockDto);
   }
   @Get('list')
   findAll(@Query('filter') filter?: string) {

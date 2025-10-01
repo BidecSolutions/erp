@@ -12,7 +12,6 @@ export class SupplierCategory {
   })
   company: Company;
 
-  // One category has many suppliers
   @OneToMany(() => Supplier, (supplier) => supplier.category)
   suppliers: Supplier[];
 
@@ -28,7 +27,7 @@ export class SupplierCategory {
   @Column({ type: 'smallint', default: 1, comment: '1 = active, 2 = inactive' })
   is_active: number;
 
-  @Column()
+  @Column({ nullable: true })
   created_by: number;
 
   @Column({ type: 'date' })

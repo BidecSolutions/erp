@@ -10,26 +10,27 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDa
 export class StockMovement {
   @PrimaryGeneratedColumn()
   id: number;
-  
 
-    @Column()
-    product_id:number;
-    @ManyToOne(() => Product)
-    @JoinColumn({name : 'product_id'})
-  product: Product;   // ⚡ should be lowercase "product"
 
-        @Column()
-    from_warehouse_id:number;
-    @ManyToOne(() => Warehouse)
-    @JoinColumn({ name: 'from_warehouse_id' })
-    fromWarehouse: Warehouse;
+  @Column()
+  product_id: number;
+  @ManyToOne(() => Product)
+  @JoinColumn({ name: 'product_id' })
+  product: Product;
 
-            @Column()
-    to_warehouse_id:number;
-    @ManyToOne(() => Warehouse)
-    @JoinColumn({ name: 'to_warehouse_id' })
-    toWarehouse: Warehouse;
+  @Column({ nullable: true })
+  from_warehouse_id: number;
 
+  @ManyToOne(() => Warehouse)
+  @JoinColumn({ name: 'from_warehouse_id' })
+  fromWarehouse: Warehouse;
+
+  @Column({ nullable: true })
+  to_warehouse_id: number;
+
+  @ManyToOne(() => Warehouse)
+  @JoinColumn({ name: 'to_warehouse_id' })
+  toWarehouse: Warehouse;
 
   @Column({ type: 'int' })
   quantity: number;
@@ -38,27 +39,27 @@ export class StockMovement {
   reference_type: string;   // e.g. PO, SALE, RETURN
 
   @Column({
-  type: 'enum',
-  enum: MovementType,
-  default: MovementType.PENDING, // default value
-})
-movement_type: MovementType;
+    type: 'enum',
+    enum: MovementType,
+    default: MovementType.PENDING, // default value
+  })
+  movement_type: MovementType;
 
   @Column({ type: 'varchar', length: 100, nullable: true })
-  reference_number: string;   
+  reference_number: string;
 
-    @Column({ name: 'company_id', nullable: false })
+  @Column({ name: 'company_id', nullable: false })
   company_id: number;
 
   @ManyToOne(() => Company)
-  @JoinColumn({ name : 'company_id' })
+  @JoinColumn({ name: 'company_id' })
   company: Company;
 
   @Column({ name: 'branch_id', nullable: false })
   branch_id: number;
 
   @ManyToOne(() => Branch)
-  @JoinColumn({ name : 'branch_id' })
+  @JoinColumn({ name: 'branch_id' })
   branch: Branch;
 
   @Column({ name: 'created_by', type: 'int', nullable: true })

@@ -1,8 +1,9 @@
-import { pr_status } from "src/procurement/common/pr_enums";
-import { PrimaryGeneratedColumn ,Column ,Entity ,CreateDateColumn , UpdateDateColumn} from "typeorm";
+import { Branch } from "src/Company/branch/branch.entity";
+import { Company } from "src/Company/companies/company.entity";
+import { PurchaseRequestStatus, PurchaseRequestType } from "src/procurement/enums/purchase-request.enum";
+import { PrimaryGeneratedColumn ,Column ,Entity ,CreateDateColumn , UpdateDateColumn, ManyToOne, JoinColumn} from "typeorm";
 
-
-@Entity('pro_purchase_request')
+@Entity('purchase_request')
 export class PurchaseRequest {
 
    @PrimaryGeneratedColumn()
@@ -11,27 +12,52 @@ export class PurchaseRequest {
     @Column()
     user_id: number;
 
-    @Column()
-    pr_type : number //local , imported
+    @Column({
+    type: 'enum',
+    enum: PurchaseRequestType,
+    })
+    pr_type: PurchaseRequestType;
 
     @Column()
-    location: string //store_location
+    company_id: number;
+    @ManyToOne(() => Company)
+    @JoinColumn({ name: 'company_id' })
+    comapany: Company
+
+    @Column()
+    branch_id: number;
+    @ManyToOne(() => Branch)
+    @JoinColumn({ name: 'branch_id' })
+    branch: Branch
 
     @Column({
     type: 'enum',
-    enum: pr_status,
-    default: pr_status.Draft, // default value
+    enum: PurchaseRequestStatus,
+    default: PurchaseRequestStatus.PENDING, // default value
     })
-    status: pr_status;
+    pr_status: PurchaseRequestStatus;
 
     @Column()
     remarks:string;
 
-    @CreateDateColumn({ type: 'timestamp' })
-    created_at: Date;
+    @Column()
+    module_type:number
 
-    @UpdateDateColumn({ type: 'timestamp' })
-    updated_at: Date;
+    
+    @Column({ type: 'int', default: 1 })
+    status: number;
+    
+   @Column({ name: 'created_by', type: 'int', nullable: true })
+   created_by?: number;
+
+  @CreateDateColumn({ name: 'created_date', type: 'timestamp' })
+  created_date: Date;
+
+  @Column({ name: 'updated_by', type: 'int', nullable: true })
+  updated_by?: number;
+
+  @UpdateDateColumn({ name: 'updated_date', type: 'timestamp', nullable: true })
+  updated_date?: Date;
 
 
 }

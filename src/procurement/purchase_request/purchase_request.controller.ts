@@ -1,20 +1,27 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Query } from '@nestjs/common';
 import { PurchaseRequestService } from './purchase_request.service';
 import { CreatePurchaseRequestDto } from './dto/create-purchase_request.dto';
 import { UpdatePurchaseRequestDto } from './dto/update-purchase_request.dto';
 
 @Controller('purchase-request')
 export class PurchaseRequestController {
-  constructor(private readonly purchaseRequestService: PurchaseRequestService) {}
+  constructor(private readonly purchaseRequestService: PurchaseRequestService) { }
 
-  @Post()
-  create(@Body() createPurchaseRequestDto: CreatePurchaseRequestDto) {
-    return this.purchaseRequestService.create(createPurchaseRequestDto);
+   @Get('create')
+  fetch() {
+    return this.purchaseRequestService.create();
   }
 
-  @Get()
-  findAll() {
-    return this.purchaseRequestService.findAll();
+  @Post('store')
+  store(@Body() createPurchaseRequestDto: CreatePurchaseRequestDto) {
+    return this.purchaseRequestService.store(createPurchaseRequestDto);
+  }
+
+  @Get('list')
+  findAll(@Query('filter') filter?: string) {
+    return this.purchaseRequestService.findAll(
+      filter !== undefined ? Number(filter) : undefined,
+    );
   }
 
   @Get(':id')
@@ -27,8 +34,17 @@ export class PurchaseRequestController {
     return this.purchaseRequestService.update(+id, updatePurchaseRequestDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.purchaseRequestService.remove(+id);
+  @Get('toogleStatus/:id')
+  statusChange(@Param('id', ParseIntPipe) id: number) {
+    return this.purchaseRequestService.statusUpdate(id);
+  }
+
+
+  @Post('approve')
+  async approvePurchaseReq(
+    @Param('id') id: number,
+  ) {
+    return this.purchaseRequestService.approvePr(id);
+
   }
 }

@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { UpdateStockDto } from './dto/update-stock.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { Repository } from 'typeorm';
+import { IsNull, Repository ,DataSource } from 'typeorm';
 import { errorResponse, successResponse, toggleStatusResponse } from 'src/commonHelper/response.util';
 import { CreateStockDto } from './dto/create-stock.dto';
 import { Stock } from './entities/stock.entity';
@@ -11,21 +11,62 @@ import { Stock } from './entities/stock.entity';
 export class StockService {
   constructor(
       @InjectRepository(Stock)
-    private readonly stockRepo: Repository<Stock>) {}
+    private readonly stockRepo: Repository<Stock>,
+    private readonly dataSource: DataSource,
+  ) {}
     
-  async create(createDto: CreateStockDto)  {
-      try {
-        const stock = this.stockRepo.create(createDto);
-        await this.stockRepo.save(stock);
-        return successResponse('stock created successfully!', stock);
-        
-      } catch (error) {
-          if (error.code === 'ER_DUP_ENTRY') {
-          throw new BadRequestException('stock already exists');
+async store(dto: CreateStockDto) {
+  try {
+    return await this.dataSource.transaction(async (manager) => {
+      const stockRepo = manager.getRepository(Stock);
+
+      const stocksToSave: Stock[] = [];
+
+      for (const product of dto.products) {
+        let stock = await stockRepo.findOne({
+          where: {
+            product_id: product.product_id,
+            warehouse_id: dto.warehouse_id,
+            company_id: dto.company_id,
+            branch_id: dto.branch_id,
+            // variant_id null ho to IsNull() use karna
+            variant_id: product.variant_id ?? IsNull(),
+          },
+        });
+
+        if (stock) {
+          // ✅ update existing stock
+          stock.quantity_on_hand += product.quantity_on_hand;
+          stock.reorder_level = product.reorder_level ?? stock.reorder_level;
+          stock.reorder_quantity = product.reorder_quantity ?? stock.reorder_quantity;
+        } else {
+          // ✅ create new stock
+          stock = stockRepo.create({
+            product_id: product.product_id,
+            variant_id: product.variant_id ?? null,
+            quantity_on_hand: product.quantity_on_hand,
+            reorder_level: product.reorder_level ?? 0,
+            reorder_quantity: product.reorder_quantity ?? 0,
+            warehouse_id: dto.warehouse_id,
+            company_id: dto.company_id,
+            branch_id: dto.branch_id,
+
+          });
         }
-        throw new BadRequestException(error.message || 'Failed to create stock');
+
+        stocksToSave.push(stock);
       }
-    }
+
+      // ✅ Save all stocks in one go
+      const savedStocks = await stockRepo.save(stocksToSave);
+
+      return successResponse('Stock craeted successfully!', savedStocks);
+    });
+  } catch (error) {
+    throw new BadRequestException(error.message || 'Failed to save stock');
+  }
+}
+
   async findAll(filter?: number) {
       try {
         const where: any = {};
