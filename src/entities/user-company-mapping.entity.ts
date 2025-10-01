@@ -19,7 +19,7 @@ export class userCompanyMapping {
     company_id: number;
 
     @Column({ type: 'json' })
-    branch_id: number[] | null;
+    branch_id: number[];
 
     @Column({
         type: 'int',
