@@ -37,7 +37,6 @@ import { POS } from './pos/POS-module-file.module';
     ...HRM,
     ...sales,
     ...POS
-
   ],
   controllers: [AppController],
   providers: [AppService, registerUser, userRoles, sideMenuAndRoleSeederService],

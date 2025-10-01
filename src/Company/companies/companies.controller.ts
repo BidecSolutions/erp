@@ -17,7 +17,7 @@ export class CompaniesController {
     @UseInterceptors(
         FileInterceptor('company_logo', {
             storage: diskStorage({
-                destination: 'companies/uploads',
+                destination: 'src/uploads',
                 filename: (req, file, callback) => {
                     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
                     const ext = extname(file.originalname);
