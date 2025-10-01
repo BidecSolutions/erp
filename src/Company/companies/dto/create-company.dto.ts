@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 export class CreateCompanyDto {
   @IsNotEmpty()
   company_name: string;
@@ -9,10 +9,14 @@ export class CreateCompanyDto {
   @IsNotEmpty()
   password: string;
 
+  @IsOptional() // because controller sets this later
+  @IsString()
+  company_logo_path: string;
+
   @IsOptional()
   legal_name?: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   address_line1: string;
 
   @IsOptional()
@@ -27,18 +31,18 @@ export class CreateCompanyDto {
   country: string;
   @IsOptional()
   postal_code: string;
-  @IsOptional()
+  @IsNotEmpty()
   phone?: string;
   @IsOptional()
   mobile?: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   website?: string;
   @IsOptional()
   tax_id?: string;
   @IsOptional()
   registration_no?: string;
-  @IsOptional()
+  @IsNotEmpty()
   license_no?: string;
   @IsOptional()
   incorporation_date?: string;
