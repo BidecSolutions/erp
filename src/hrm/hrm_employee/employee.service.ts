@@ -1,5 +1,8 @@
-
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository, In } from "typeorm";
 import { Employee } from "./employee.entity";
@@ -14,10 +17,14 @@ import { DocumentService } from "../hrm_document/document.service";
 import { Allowance } from "../hrm_allowance/allowance.entity";
 import { AnnualLeave } from "../hrm_annual-leave/annual-leave.entity";
 import { User } from "src/entities/user.entity";
-import * as bcrypt from 'bcryptjs';
+import * as bcrypt from "bcryptjs";
 import { userRoleMapping } from "src/entities/user-role-mapping.entity";
 import { userCompanyMapping } from "src/entities/user-company-mapping.entity";
-import { errorResponse, toggleStatusResponse } from "src/commonHelper/response.util";
+import {
+  errorResponse,
+  toggleStatusResponse,
+} from "src/commonHelper/response.util";
+import { Branch } from "src/Company/branch/branch.entity";
 @Injectable()
 export class EmployeeService {
   constructor(
@@ -30,17 +37,20 @@ export class EmployeeService {
     private readonly bankDetailService: BankDetailService,
     @InjectRepository(Shift) private shiftRepository: Repository<Shift>,
     private readonly documentService: DocumentService,
-    @InjectRepository(AnnualLeave) private annualLeaveRepo: Repository<AnnualLeave>,
-    @InjectRepository(BankDetail) private readonly bankDetailRepo: Repository<BankDetail>,
-    @InjectRepository(Allowance) private readonly allowanceRepo: Repository<Allowance>,
+    @InjectRepository(AnnualLeave)
+    private annualLeaveRepo: Repository<AnnualLeave>,
+    @InjectRepository(BankDetail)
+    private readonly bankDetailRepo: Repository<BankDetail>,
+    @InjectRepository(Allowance)
+    private readonly allowanceRepo: Repository<Allowance>,
+    @InjectRepository(Branch) private readonly branchRepo: Repository<Branch>,
     @InjectRepository(User) private readonly userRepository: Repository<User>,
 
     @InjectRepository(userRoleMapping)
     private usersRoleRepository: Repository<userRoleMapping>,
 
     @InjectRepository(userCompanyMapping)
-    private readonly companyMaping: Repository<userCompanyMapping>,
-
+    private readonly companyMaping: Repository<userCompanyMapping>
   ) { }
 
   private async generateEmployeeCode(): Promise<string> {
@@ -52,11 +62,20 @@ export class EmployeeService {
     return `EMP-${String(newId).padStart(3, "0")}`;
   }
 
-  async findAll(filterStatus: number | undefined) {
+  async findAll(filterStatus?: number) {
+    const status = filterStatus !== undefined ? filterStatus : 1;
     const employees = await this.employeeRepository.find({
-      relations: ["department", "designation", "documents", "bankDetails",
+      where: { status },
+      relations: [
+        "department",
+        "designation",
+        "documents",
+        "bankDetails",
         "annualLeave",
-        "allowances", "shift"],
+        "allowances",
+        "shift",
+        "branches",
+      ],
     });
 
     return employees.map((emp) => ({
@@ -81,13 +100,20 @@ export class EmployeeService {
       documents: emp.documents || [],
       bankDetails: emp.bankDetails || [],
       annualLeave: emp.annualLeave || [],
-      allowances: emp.allowances?.map(a => ({
-        id: a.id,
-        title: a.title,
-        type: a.type,
-        amount: a.amount,
-        company_id: a.company_id,
+      allowances:
+        emp.allowances?.map((a) => ({
+          id: a.id,
+          title: a.title,
+          type: a.type,
+          amount: a.amount,
+          company_id: a.company_id,
+          status: a.status,
+        })) || [],
+      branches: emp.branches?.map(b => ({
+        id: b.id,
+        name: b.branch_name,
       })) || [],
+      status: emp.status,
     }));
   }
 
@@ -102,6 +128,7 @@ export class EmployeeService {
         "allowances",
         "documents",
         "bankDetails",
+        "branches",
       ],
     });
 
@@ -129,12 +156,17 @@ export class EmployeeService {
       documents: emp.documents || [],
       bankDetails: emp.bankDetails || [],
       annualLeave: emp.annualLeave || [],
-      allowances: emp.allowances?.map(a => ({
-        id: a.id,
-        title: a.title,
-        type: a.type,
-        amount: a.amount,
-        company_id: a.company_id,
+      allowances:
+        emp.allowances?.map((a) => ({
+          id: a.id,
+          title: a.title,
+          type: a.type,
+          amount: a.amount,
+          company_id: a.company_id,
+        })) || [],
+      branches: emp.branches?.map(b => ({
+        id: b.id,
+        name: b.branch_name,
       })) || [],
       status: emp.status,
       created_at: emp.created_at,
@@ -142,27 +174,35 @@ export class EmployeeService {
     };
   }
 
-
-
-  async create(dto: CreateEmployeeDto, files?: { cv?: Express.Multer.File[], photo?: Express.Multer.File[] }) {
+  async create(
+    dto: CreateEmployeeDto,
+    files?: { cv?: Express.Multer.File[]; photo?: Express.Multer.File[] }
+  ) {
     try {
-
-      const department = await this.departmentRepository.findOneBy({ id: dto.departmentId });
-      const designation = await this.designationRepository.findOneBy({ id: dto.designationId });
+      const department = await this.departmentRepository.findOneBy({
+        id: dto.departmentId,
+      });
+      const designation = await this.designationRepository.findOneBy({
+        id: dto.designationId,
+      });
       const shift = await this.shiftRepository.findOneBy({ id: dto.shiftId });
-      const annualLeave = await this.annualLeaveRepo.findOneBy({ id: dto.annual_leave_id });
-
+      let annualLeave: AnnualLeave | null = null;
+      if (dto.annual_leave_id) {
+        annualLeave = await this.annualLeaveRepo.findOneBy({
+          id: dto.annual_leave_id,
+        });
+        if (!annualLeave) throw new NotFoundException("Annual Leave not found");
+      }
       if (!department) throw new NotFoundException("Department not found");
       if (!designation) throw new NotFoundException("Designation not found");
       if (!shift) throw new NotFoundException("Shift not found");
-      if (!annualLeave) throw new NotFoundException("Annual Leave not found");
 
       const emp = this.employeeRepository.create({
         ...dto,
         department,
         designation,
         shift,
-        annualLeave,
+        ...(annualLeave ? { annualLeave } : {}),
       });
 
       emp.is_system_user = dto.is_system_user ?? false;
@@ -170,18 +210,23 @@ export class EmployeeService {
       emp.employeeCode = await this.generateEmployeeCode();
 
       if (dto.is_system_user) {
-
-        console.log("system user")
+        console.log("system user");
         if (!dto.email || !dto.password) {
-          throw new BadRequestException('Email and password are required');
+          throw new BadRequestException("Email and password are required");
         }
         if (!dto.role_id) {
-          throw new BadRequestException('Please select a user role in the system');
+          throw new BadRequestException(
+            "Please select a user role in the system"
+          );
         }
 
-        const findEmail = await this.userRepository.findOne({ where: { email: dto.email } });
+        const findEmail = await this.userRepository.findOne({
+          where: { email: dto.email },
+        });
         if (findEmail) {
-          throw new BadRequestException('Email already exists, please enter a unique one');
+          throw new BadRequestException(
+            "Email already exists, please enter a unique one"
+          );
         }
       }
 
@@ -189,29 +234,31 @@ export class EmployeeService {
 
       // create System User
       if (saved.is_system_user) {
-
-        console.log("system user")
-        const hashedPassword = await bcrypt.hash(dto.password ?? '123456789', 10);
+        console.log("system user");
+        const hashedPassword = await bcrypt.hash(
+          dto.password ?? "123456789",
+          10
+        );
         const user = this.userRepository.create({
           name: saved.name,
           email: dto.email,
           password: hashedPassword,
-          employee: saved
+          employee: saved,
         });
         const userid = await this.userRepository.save(user);
 
-        //create User Role 
+        //create User Role
         const userRole = this.usersRoleRepository.create({
           user_id: userid.id,
-          roll_id: dto.role_id
-        })
+          roll_id: dto.role_id,
+        });
         await this.usersRoleRepository.save(userRole);
 
         //user company and branch Mapping
         const companyMapping = this.companyMaping.create({
           user_id: userid.id,
-          branch_id: dto.branch_id ? (Array.isArray(dto.branch_id) ? dto.branch_id : [dto.branch_id]) : [],
-        })
+          // branch_id: dto.branch_id ? (Array.isArray(dto.branch_id) ? dto.branch_id : [dto.branch_id]) : [],
+        });
         await this.companyMaping.save(companyMapping);
       }
 
@@ -219,7 +266,9 @@ export class EmployeeService {
 
       // Save allowances
       if (dto.allowance_ids?.length) {
-        const allowances = await this.allowanceRepo.find({ where: { id: In(dto.allowance_ids) } });
+        const allowances = await this.allowanceRepo.find({
+          where: { id: In(dto.allowance_ids) },
+        });
         if (allowances.length !== dto.allowance_ids.length) {
           throw new NotFoundException("Some allowances not found");
         }
@@ -227,6 +276,17 @@ export class EmployeeService {
         await this.employeeRepository.save(saved);
       }
 
+      // Save branches
+      if (dto.branch_ids?.length) {
+        const branches = await this.branchRepo.find({
+          where: { id: In(dto.branch_ids) },
+        });
+        if (branches.length !== dto.branch_ids.length) {
+          throw new NotFoundException("Some branches not found");
+        }
+        saved.branches = branches;
+        await this.employeeRepository.save(saved);
+      }
       // Save documents
       if (files && Object.keys(files).length > 0) {
         await this.documentService.createMany(saved.id, files);
@@ -254,40 +314,58 @@ export class EmployeeService {
         daysPerWeek: saved.daysPerWeek,
         fixedSalary: saved.fixedSalary,
         shift: saved.shift?.name,
-        annualLeave: saved.annualLeave,
-        allowances: saved.allowances?.map(a => ({
+        annualLeave: saved.annualLeave
+          ? {
+            id: saved.annualLeave.id,
+            name: saved.annualLeave.name,
+            total_leave: saved.annualLeave.total_leave,
+            status: saved.annualLeave.status,
+          }
+          : null,
+        allowances: saved.allowances?.map((a) => ({
           id: a.id,
           title: a.title,
           type: a.type,
           amount: a.amount,
           company_id: a.company_id,
+        })),
+        branches: saved.branches?.map(b => ({
+          id: b.id,
+          name: b.branch_name,
         })) || [],
         status: saved.status,
         created_at: saved.created_at,
         updated_at: saved.updated_at,
-
       };
     } catch (e) {
       throw new BadRequestException(e.message);
     }
   }
 
-  async update(id: number, dto: UpdateEmployeeDto, files?: { cv?: Express.Multer.File[], photo?: Express.Multer.File[] }) {
+  async update(
+    id: number,
+    dto: UpdateEmployeeDto,
+    files?: { cv?: Express.Multer.File[]; photo?: Express.Multer.File[] }
+  ) {
     const emp = await this.employeeRepository.findOne({
       where: { id },
-      relations: ["department", "designation", "shift", "bankDetails",],
+      relations: ["department", "designation", "shift", "bankDetails"],
     });
     if (!emp) throw new NotFoundException(`Employee ID ${id} not found`);
 
     // Update relations
     if (dto.departmentId) {
-      const department = await this.departmentRepository.findOneBy({ id: dto.departmentId });
+      const department = await this.departmentRepository.findOneBy({
+        id: dto.departmentId,
+      });
       if (!department) throw new NotFoundException("Department not found");
       emp.department = department;
     }
 
     if (dto.designationId) {
-      const designation = await this.designationRepository.findOneBy({ id: dto.designationId });
+      const designation = await this.designationRepository.findOneBy({
+        id: dto.designationId,
+      });
       if (!designation) throw new NotFoundException("Designation not found");
       emp.designation = designation;
     }
@@ -299,7 +377,9 @@ export class EmployeeService {
     }
 
     if (dto.annual_leave_id) {
-      const annualLeave = await this.annualLeaveRepo.findOneBy({ id: dto.annual_leave_id });
+      const annualLeave = await this.annualLeaveRepo.findOneBy({
+        id: dto.annual_leave_id,
+      });
       if (!annualLeave) throw new NotFoundException("Annual Leave not found");
       emp.annualLeave = annualLeave;
     }
@@ -314,9 +394,21 @@ export class EmployeeService {
       }
     }
     if (dto.allowance_ids?.length) {
-      const allowances = await this.allowanceRepo.find({ where: { id: In(dto.allowance_ids) } });
-      if (allowances.length !== dto.allowance_ids.length) throw new NotFoundException("Some allowances not found");
+      const allowances = await this.allowanceRepo.find({
+        where: { id: In(dto.allowance_ids) },
+      });
+      if (allowances.length !== dto.allowance_ids.length)
+        throw new NotFoundException("Some allowances not found");
       emp.allowances = allowances;
+    }
+
+    if (dto.branch_ids?.length) {
+      const branches = await this.branchRepo.find({
+        where: { id: In(dto.branch_ids) },
+      });
+      if (branches.length !== dto.branch_ids.length)
+        throw new NotFoundException("Some branches not found");
+      emp.branches = branches;
     }
 
     // Update Employee fields
@@ -326,17 +418,22 @@ export class EmployeeService {
     if (dto.is_system_user !== undefined) {
       emp.is_system_user = dto.is_system_user;
 
-      const user = await this.userRepository.findOne({ where: { employee: { id: emp.id } } });
+      const user = await this.userRepository.findOne({
+        where: { employee: { id: emp.id } },
+      });
 
       if (emp.is_system_user && !user) {
         // Create User if not exists
-        if (!dto.email || !dto.password) throw new NotFoundException("Email and password required for system user");
+        if (!dto.email || !dto.password)
+          throw new NotFoundException(
+            "Email and password required for system user"
+          );
         const hashedPassword = await bcrypt.hash(dto.password, 10);
         const newUser = this.userRepository.create({
           name: emp.name,
           email: dto.email,
           password: hashedPassword,
-          employee: emp
+          employee: emp,
         });
         await this.userRepository.save(newUser);
       } else if (!emp.is_system_user && user) {
@@ -345,10 +442,7 @@ export class EmployeeService {
       }
     }
 
-
-
     const saved = await this.employeeRepository.save(emp);
-
 
     // Documents
     if (files && Object.keys(files).length > 0) {
@@ -357,9 +451,14 @@ export class EmployeeService {
 
     const fullEmp = await this.employeeRepository.findOne({
       where: { id: saved.id },
-      relations: ["department", "designation", "shift",
+      relations: [
+        "department",
+        "designation",
+        "shift",
         "annualLeave",
-        "allowances",],
+        "allowances",
+        "branches",
+      ],
     });
 
     if (!fullEmp) throw new NotFoundException("Employee not found after save");
@@ -388,12 +487,17 @@ export class EmployeeService {
           status: fullEmp.annualLeave.status,
         }
         : null,
-      allowances: fullEmp.allowances?.map(a => ({
-        id: a.id,
-        title: a.title,
-        type: a.type,
-        amount: a.amount,
-        company_id: a.company_id,
+      allowances:
+        fullEmp.allowances?.map((a) => ({
+          id: a.id,
+          title: a.title,
+          type: a.type,
+          amount: a.amount,
+          company_id: a.company_id,
+        })) || [],
+      branches: fullEmp.branches?.map(b => ({
+        id: b.id,
+        name: b.branch_name,
       })) || [],
       status: fullEmp.status,
       created_at: fullEmp.created_at,
@@ -407,5 +511,46 @@ export class EmployeeService {
     await this.employeeRepository.remove(emp);
     return { message: `Employee ID ${id} deleted successfully` };
   }
-}
+  async statusUpdate(id: number) {
+    try {
+      const emp = await this.employeeRepository.findOne({
+        where: { id },
+        relations: ["documents", "bankDetails", "user"],
+      });
 
+      if (!emp) throw new NotFoundException("Employee Not Found");
+
+      // 🔹 toggle employee status
+      emp.status = emp.status === 0 ? 1 : 0;
+
+      // 🔹 update employee
+      await this.employeeRepository.save(emp);
+
+      // 🔹 cascade to documents
+      if (emp.documents?.length) {
+        await this.documentService.updateStatusForMany(
+          emp.documents,
+          emp.status
+        );
+      }
+
+      // 🔹 cascade to bankDetails of this employee only
+      await this.bankDetailRepo
+        .createQueryBuilder()
+        .update(BankDetail)
+        .set({ status: emp.status })
+        .where("employeeId = :id", { id: emp.id })
+        .execute();
+
+      // 🔹 cascade to user
+      // if (emp.user) {
+      //   emp.user.status = emp.status;
+      //   await this.userRepository.save(emp.user);
+      // }
+
+      return toggleStatusResponse("employee", emp.status);
+    } catch (err) {
+      return errorResponse("Something went wrong", err.message);
+    }
+  }
+}

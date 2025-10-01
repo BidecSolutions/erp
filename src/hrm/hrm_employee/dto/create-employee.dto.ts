@@ -14,6 +14,7 @@ import {
   IsBoolean,
   IsInt,
   ArrayNotEmpty,
+  ArrayMaxSize,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { CreateBankDetailDto } from 'src/hrm/hrm_bank-details/dto/create-bank-details.dto';
@@ -70,13 +71,22 @@ export class CreateEmployeeDto {
   @IsNotEmpty({ message: 'Date of joining is required' })
   dateOfJoining: string;
 
-  @IsOptional()
-  @IsString()
-  cv?: string;
+   @IsOptional()
+  @IsString({ message: 'CV must be a valid string (file name)' })
+  cv?: string; // file name after upload
 
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'Photo must be a valid string (file name)' })
   photo?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Academic Transcript must be a valid string (file name)' })
+  academic_transcript?: string;
+
+  @IsOptional()
+  @IsArray({ message: 'Identity Card must be an array of file names' })
+  @ArrayMaxSize(2, { message: 'Identity Card can have maximum 2 files (front and back)' })
+  identity_card?: string[]
 
   // ✅ Multiple bank details allowed
   @IsOptional()
@@ -142,8 +152,8 @@ export class CreateEmployeeDto {
 
   @IsOptional()
   @Type(() => Number)
-  @IsInt({ message: 'leave_setup_id must be an integer number' })
-  annual_leave_id: number;
+  @IsInt({ message: 'annual_leave_id must be an integer number' })
+  annual_leave_id?: number;
 
 
   @IsOptional()
@@ -158,11 +168,11 @@ export class CreateEmployeeDto {
   role_id?: number;
 
 
-  @IsArray()
-  @ArrayNotEmpty()
-  @IsInt({ each: true })
-  @Type(() => Number)
-  branch_id: number[];
+@IsOptional()
+@IsArray()
+@Type(() => Number)
+@IsNumber({}, { each: true })
+branch_ids?: number[];
 
 
 }

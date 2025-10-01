@@ -15,11 +15,12 @@ import { User } from 'src/entities/user.entity';
 import { Role } from 'src/entities/role.entity';
 import { userRoleMapping } from 'src/entities/user-role-mapping.entity';
 import { userCompanyMapping } from 'src/entities/user-company-mapping.entity';
+import { Branch } from 'src/Company/branch/branch.entity';
 // import { LeaveModule } from '../hrm_leave/leave.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([userRoleMapping, userCompanyMapping, Employee, Department, Designation, Shift, AnnualLeave, BankDetail, Allowance, User, Role]),
+    TypeOrmModule.forFeature([userRoleMapping, userCompanyMapping, Employee, Department, Designation, Shift, AnnualLeave, BankDetail, Allowance, User, Role, Branch]),
     BankDetailModule,
     DocumentModule,
   ],

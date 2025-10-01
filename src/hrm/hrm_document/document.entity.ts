@@ -5,9 +5,9 @@ import { Employee } from '../hrm_employee/employee.entity';
 export class Document {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column()
-  type: string; // e.g. 'cv', 'photo', 'cnic'
+  
+ @Column()
+  type: string; // cv, photo, academic_transcript, identity_card
 
   @Column()
   filePath: string; // uploaded file ka path
@@ -22,7 +22,7 @@ export class Document {
   
      @Column({
               type: 'int',
-              comment: '1 = active, 2 = inactive',
+              comment: '0 = inactive 1 = active',
               default: 1
           })
           status: number;
