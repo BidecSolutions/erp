@@ -32,16 +32,16 @@ export class Company {
   @Column({ nullable: true })
   address_line2: string;
 
-  @Column()
+  @Column({ nullable: true })
   city: string;
 
-  @Column()
+  @Column({ nullable: true })
   state: string;
 
-  @Column()
+  @Column({ nullable: true })
   country: string;
 
-  @Column()
+  @Column({ nullable: true })
   postal_code: string;
 
   @Column({ nullable: true })
