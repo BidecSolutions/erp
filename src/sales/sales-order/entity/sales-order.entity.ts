@@ -22,9 +22,10 @@ export class SalesOrder {
 
   // ------------------ RELATIONS ------------------
   @OneToMany(() => SalesOrderDetail, (detail) => detail.salesOrder, {
-    
+    cascade: true,
   })
   salesOrderDetails: SalesOrderDetail[];
+
 
   @OneToMany(() => CustomerInvoice, (invoice) => invoice.salesOrder)
   customerInvoices: CustomerInvoice[];
@@ -50,7 +51,7 @@ export class SalesOrder {
     enum: SalesStatus,
   })
   sales_status: SalesStatus;
-  
+
 
   // @Column()
   // company_id: number;
@@ -144,6 +145,9 @@ export class SalesOrder {
 
   @Column({ type: 'date', nullable: true })
   updated_at: string;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  line_total: number;
 
 
   @BeforeInsert()

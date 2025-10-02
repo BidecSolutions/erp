@@ -35,11 +35,10 @@ import { POS } from './pos/POS-module-file.module';
     ...procurement,
     ...companySetting,
     ...HRM,
-    ...sales,
-    ...POS
+    ...sales
   ],
   controllers: [AppController],
-  providers: [AppService, registerUser, userRoles, sideMenuAndRoleSeederService],
+  providers: [AppService, registerUser, userRoles, sideMenuAndRoleSeederService, ],
 })
 export class AppModule implements OnModuleInit {
   constructor(

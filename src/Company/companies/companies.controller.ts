@@ -27,7 +27,10 @@ export class CompaniesController {
         }),
     )
     create(@Body() dto: CreateCompanyDto, @UploadedFile() file: Express.Multer.File) {
-        if (file) dto['company_logo_path'] = file.path;
+        if (!file) {
+            return { success: false, message: 'Company logo is required!' };
+        }
+         dto['company_logo_path'] = file.path;
         return this.companiesService.create(dto);
     }
 
