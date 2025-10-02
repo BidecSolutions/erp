@@ -1,6 +1,8 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateCompanyDto } from './create-company.dto';
+import { IsOptional } from 'class-validator';
 
 export class UpdateCompanyDto extends PartialType(CreateCompanyDto) {
-  updated_by?: number;
+  @IsOptional()
+    password: string;
 }
