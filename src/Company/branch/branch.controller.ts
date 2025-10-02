@@ -16,8 +16,9 @@ export class BranchController {
     }
 
     @Get('list')
-    findAll() {
-        return this.branchService.findAll();
+    findAll(@Req() req: Request) {
+        const userId = (req as any).user.id;
+        return this.branchService.findAll(userId);
     }
 
     @Get('findby/:id')

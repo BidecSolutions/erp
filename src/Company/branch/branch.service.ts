@@ -51,48 +51,51 @@ export class BranchService {
         }
     }
 
-    async findAll() {
-        try {
-            const branches = await this.branchRepo
-                .createQueryBuilder('branch')
-                .leftJoinAndSelect('branch.company', 'company')
-                .select([
-                    'branch.id',
-                    'branch.branch_code',
-                    'branch.branch_name',
-                    'branch.address_line1',
-                    'branch.city',
-                    'branch.state',
-                    'branch.country',
-                    'branch.postal_code',
-                    'branch.phone',
-                    'branch.mobile',
-                    'branch.email',
-                    'branch.manager_name',
-                    'branch.manager_email',
-                    'branch.manager_phone',
-                    'branch.opening_balance',
-                    'branch.bank_account_no',
-                    'branch.bank_name',
-                    'branch.ifsc_code',
-                    'branch.is_head_office',
-                    'branch.allow_negative_stock',
-                    'branch.is_active',
-                    'branch.created_by',
-                    'branch.created_date',
-                    'branch.updated_by',
-                    'branch.updated_date',
-                    'branch.is_active',
-                    'company.id',
-                    'company.company_name',
-                ])
-                .where('branch.is_active = :isActive', { isActive: 1 })
-                .orderBy('branch.id', 'DESC')
-                .getMany();
-            return { success: true, message: 'Branches retrieved successfully', data: branches };
-        } catch (error) {
-            return { success: false, message: 'Failed to retrieve branches' };
+    async findAll(user_id: number) {
+        const findBranches = await this.ucm.findOne({ where: { user_id } });
+
+        if (!findBranches || !Array.isArray(findBranches.branch_id) || findBranches.branch_id.length === 0) {
+            return { status: true, message: "No Branch Found", data: [] }
         }
+        const branchIDS = findBranches.branch_id;
+        const branch = await this.branchRepo
+            .createQueryBuilder('branch')
+            .leftJoin('branch.company', 'company')
+            .andWhere('branch.is_active = :isActive', { isActive: 1 })
+            .andWhere('branch.id IN (:...ids)', { ids: branchIDS })
+            .select([
+                'branch.id',
+                'branch.branch_code',
+                'branch.branch_name',
+                'branch.branch_type',
+                'branch.address_line1',
+                'branch.address_line2',
+                'branch.city',
+                'branch.state',
+                'branch.country',
+                'branch.postal_code',
+                'branch.phone',
+                'branch.mobile',
+                'branch.email',
+                'branch.manager_name',
+                'branch.manager_email',
+                'branch.manager_phone',
+                'branch.opening_balance',
+                'branch.bank_account_no',
+                'branch.bank_name',
+                'branch.ifsc_code',
+                'branch.is_head_office',
+                'branch.allow_negative_stock',
+                'branch.is_active',
+                'branch.created_by',
+                'branch.created_date',
+                'branch.updated_by',
+                'branch.updated_date',
+                'company.id',
+                'company.company_name',
+            ])
+            .getRawMany();
+        return { status: true, message: "Get All Branches", data: branch }
     }
 
     async findOne(id: number) {
@@ -102,6 +105,7 @@ export class BranchService {
                 .leftJoin('branch.company', 'company')
                 .where('branch.id = :id', { id })
                 .andWhere('branch.is_active = :isActive', { isActive: 1 })
+
                 .select([
                     'branch.id',
                     'branch.branch_code',
