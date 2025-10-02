@@ -41,7 +41,7 @@ export class Company {
   @Column({ nullable: true })
   country: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true }  )
   postal_code: string;
 
   @Column({ nullable: true })
