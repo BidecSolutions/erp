@@ -9,8 +9,9 @@ import { EmployeeSalaryModule } from "./hrm_employee-salary/employee-salary.modu
 import { EmployeeModule } from "./hrm_employee/employee.module";
 import { LeaveRequestModule } from "./hrm_leave-request/leave-request.module";
 import { LeaveTypeModule } from "./hrm_leave-type/leave-type.module";
-import { LoanOptionModule } from "./hrm_loan-option/loan-option.module";
-import { LoanModule } from "./hrm_loan/loan.module";
+// import { LoanOptionModule } from "./hrm_loan-option/loan-option.module";
+import { LoanRequestModule } from "./hrm_loan-request/loan-request.module";
+// import { LoanModule } from "./hrm_loan/loan.module";
 import { AttendanceModule } from "./hrm_mark-attendance/mark-attendance.module";
 import { NotificationTypeModule } from "./hrm_notification-type/notification-type.module";
 import { NotificationModule } from "./hrm_notification/notification.module";
@@ -26,8 +27,8 @@ export const HRM = [
     PaysliptypeModule,
     EmployeeSalaryModule,
     AllowanceModule,
-    LoanOptionModule,
-    LoanModule,
+    // LoanOptionModule,
+    // LoanModule,
     AttendanceModule,
     BulkAttendanceModule,
     BankDetailModule,
@@ -40,5 +41,6 @@ export const HRM = [
     UnpaidLeaveModule,
     NotificationTypeModule,
     LeaveRequestModule,
-     ProbationSettingModule
+     ProbationSettingModule,
+      LoanRequestModule,
 ]

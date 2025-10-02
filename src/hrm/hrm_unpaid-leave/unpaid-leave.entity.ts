@@ -16,7 +16,7 @@ export class UnpaidLeave {
   leaveRequest: LeaveRequest;
 
   @Column({ type: 'int' })
-  extra_days: number; 
+  unpain_days: number; 
 
     
        @Column({

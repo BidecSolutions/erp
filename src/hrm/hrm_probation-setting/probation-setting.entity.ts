@@ -1,3 +1,4 @@
+import { IsIn, IsString } from 'class-validator';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, BeforeInsert } from 'typeorm';
 
 @Entity('hrm_probation_settings')
@@ -8,8 +9,14 @@ export class ProbationSetting {
   @Column({ type: 'int', comment: 'Max leave allowed for probation employee' })
   leave_days: number;
 
-  @Column({ type: 'int', comment: 'Probation duration in months' })
+  @Column({ type: 'int'})
   probation_period: number;
+
+@Column({ type: 'varchar', length: 20, default: 'months' })
+@IsString()
+@IsIn(['days', 'months'], { message: 'Duration type must be days or months' })
+duration_type: 'days' | 'months';
+
 
    @Column({
              type: 'int',

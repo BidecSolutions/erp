@@ -26,6 +26,7 @@ import {
   toggleStatusResponse,
 } from "src/commonHelper/response.util";
 import { Branch } from "src/Company/branch/branch.entity";
+import { ProbationSetting } from "../hrm_probation-setting/probation-setting.entity";
 @Injectable()
 export class EmployeeService {
   // statusUpdate(id: number) {
@@ -43,6 +44,8 @@ export class EmployeeService {
     private readonly documentService: DocumentService,
     @InjectRepository(AnnualLeave)
     private annualLeaveRepo: Repository<AnnualLeave>,
+    @InjectRepository(ProbationSetting)
+    private probationSettingRepo: Repository<ProbationSetting>,
     @InjectRepository(BankDetail)
     private readonly bankDetailRepo: Repository<BankDetail>,
     @InjectRepository(Allowance)
@@ -54,8 +57,7 @@ export class EmployeeService {
     private usersRoleRepository: Repository<userRoleMapping>,
 
     @InjectRepository(userCompanyMapping)
-    private readonly companyMaping: Repository<userCompanyMapping>,
-
+    private readonly companyMaping: Repository<userCompanyMapping>
   ) {}
 
   private async generateEmployeeCode(): Promise<string> {
@@ -79,7 +81,7 @@ export class EmployeeService {
         "annualLeave",
         "allowances",
         "shift",
-         "branches",
+        "branches",
       ],
     });
 
@@ -121,55 +123,66 @@ export class EmployeeService {
     //   status: emp.status,
     // }));
     return employees.map((emp) => {
-  const documents = emp.documents || [];
+      const documents = emp.documents || [];
 
-  return {
-    id: emp.id,
-    name: emp.name,
-    phone: emp.phone,
-    gender: emp.gender,
-    is_system_user: emp.is_system_user,
-    address: emp.address,
-    dateOfBirth: emp.dateOfBirth,
-    locationType: emp.locationType,
-    department: emp.department?.name || null,
-    designation: emp.designation?.name || null,
-    dateOfJoining: emp.dateOfJoining,
-    employeeCode: emp.employeeCode,
-    hoursPerDay: emp.hoursPerDay,
-    daysPerWeek: emp.daysPerWeek,
-    fixedSalary: emp.fixedSalary,
-    shift: emp.shift?.name || null,
-   document: emp.documents && emp.documents.length > 0 ? {
-  cv: emp.documents.find(d => d.type === 'cv')?.filePath || null,
-  photo: emp.documents.find(d => d.type === 'photo')?.filePath || null,
-  identity_card: emp.documents
-    .filter(d => d.type === 'identity_card')
-    .map(d => d.filePath) || [],
-  academic_transcript: emp.documents.find(d => d.type === 'academic_transcript')?.filePath || null
-} : {
-  cv: null,
-  photo: null,
-  identity_card: [],
-  academic_transcript: null
-},
-    bankDetails: emp.bankDetails || [],
-    annualLeave: emp.annualLeave || [],
-    allowances: emp.allowances?.map(a => ({
-      id: a.id,
-      title: a.title,
-      type: a.type,
-      amount: a.amount,
-      company_id: a.company_id,
-      status: a.status,
-    })) || [],
-    branches: emp.branches?.map(b => ({
-      id: b.id,
-      name: b.branch_name,
-    })) || [],
-    status: emp.status,
-  };
-})
+      return {
+        id: emp.id,
+        name: emp.name,
+        phone: emp.phone,
+        gender: emp.gender,
+        is_system_user: emp.is_system_user,
+        address: emp.address,
+        dateOfBirth: emp.dateOfBirth,
+        locationType: emp.locationType,
+        department: emp.department?.name || null,
+        designation: emp.designation?.name || null,
+        dateOfJoining: emp.dateOfJoining,
+        employeeCode: emp.employeeCode,
+        hoursPerDay: emp.hoursPerDay,
+        daysPerWeek: emp.daysPerWeek,
+        fixedSalary: emp.fixedSalary,
+        shift: emp.shift?.name || null,
+        document:
+          emp.documents && emp.documents.length > 0
+            ? {
+                cv:
+                  emp.documents.find((d) => d.type === "cv")?.filePath || null,
+                photo:
+                  emp.documents.find((d) => d.type === "photo")?.filePath ||
+                  null,
+                identity_card:
+                  emp.documents
+                    .filter((d) => d.type === "identity_card")
+                    .map((d) => d.filePath) || [],
+                academic_transcript:
+                  emp.documents.find((d) => d.type === "academic_transcript")
+                    ?.filePath || null,
+              }
+            : {
+                cv: null,
+                photo: null,
+                identity_card: [],
+                academic_transcript: null,
+              },
+        bankDetails: emp.bankDetails || [],
+        annualLeave: emp.annualLeave || [],
+        allowances:
+          emp.allowances?.map((a) => ({
+            id: a.id,
+            title: a.title,
+            type: a.type,
+            amount: a.amount,
+            company_id: a.company_id,
+            status: a.status,
+          })) || [],
+        branches:
+          emp.branches?.map((b) => ({
+            id: b.id,
+            name: b.branch_name,
+          })) || [],
+        status: emp.status,
+      };
+    });
   }
 
   async findOne(id: number) {
@@ -183,67 +196,70 @@ export class EmployeeService {
         "allowances",
         "documents",
         "bankDetails",
-         "branches",
+        "branches",
       ],
     });
 
     if (!emp) throw new NotFoundException(`Employee ID ${id} not found`);
-const documents = emp.documents || [];
+    const documents = emp.documents || [];
 
-return {
-  id: emp.id,
-  name: emp.name,
-  phone: emp.phone,
-  gender: emp.gender,
-  is_system_user: emp.is_system_user,
-  address: emp.address,
-  dateOfBirth: emp.dateOfBirth,
-  locationType: emp.locationType,
-  department: emp.department?.name || null,
-  designation: emp.designation?.name || null,
-  shift: emp.shift?.name || null,
-  dateOfJoining: emp.dateOfJoining,
-  employeeCode: emp.employeeCode,
-  hoursPerDay: emp.hoursPerDay,
-  daysPerWeek: emp.daysPerWeek,
-  fixedSalary: emp.fixedSalary,
-  documents: {
-    cv: documents.find(d => d.type === 'cv')?.filePath || null,
-    photo: documents.find(d => d.type === 'photo')?.filePath || null,
-    identity_card: documents
-      .filter(d => d.type === 'identity_card')
-      .map(d => d.filePath),
-    academic_transcript: documents.find(d => d.type === 'academic_transcript')?.filePath || null,
-  },
-  bankDetails: emp.bankDetails || [],
-  annualLeave: emp.annualLeave || [],
-  allowances: emp.allowances?.map(a => ({
-    id: a.id,
-    title: a.title,
-    type: a.type,
-    amount: a.amount,
-    company_id: a.company_id,
-  })) || [],
-  branches: emp.branches?.map(b => ({
-    id: b.id,
-    name: b.branch_name,
-  })) || [],
-  status: emp.status,
-  created_at: emp.created_at,
-  updated_at: emp.updated_at,
-};
-
+    return {
+      id: emp.id,
+      name: emp.name,
+      phone: emp.phone,
+      gender: emp.gender,
+      is_system_user: emp.is_system_user,
+      address: emp.address,
+      dateOfBirth: emp.dateOfBirth,
+      locationType: emp.locationType,
+      department: emp.department?.name || null,
+      designation: emp.designation?.name || null,
+      shift: emp.shift?.name || null,
+      dateOfJoining: emp.dateOfJoining,
+      employeeCode: emp.employeeCode,
+      hoursPerDay: emp.hoursPerDay,
+      daysPerWeek: emp.daysPerWeek,
+      fixedSalary: emp.fixedSalary,
+      documents: {
+        cv: documents.find((d) => d.type === "cv")?.filePath || null,
+        photo: documents.find((d) => d.type === "photo")?.filePath || null,
+        identity_card: documents
+          .filter((d) => d.type === "identity_card")
+          .map((d) => d.filePath),
+        academic_transcript:
+          documents.find((d) => d.type === "academic_transcript")?.filePath ||
+          null,
+      },
+      bankDetails: emp.bankDetails || [],
+      annualLeave: emp.annualLeave || [],
+      allowances:
+        emp.allowances?.map((a) => ({
+          id: a.id,
+          title: a.title,
+          type: a.type,
+          amount: a.amount,
+          company_id: a.company_id,
+        })) || [],
+      branches:
+        emp.branches?.map((b) => ({
+          id: b.id,
+          name: b.branch_name,
+        })) || [],
+      status: emp.status,
+      created_at: emp.created_at,
+      updated_at: emp.updated_at,
+    };
   }
 
   async create(
     dto: CreateEmployeeDto,
     @UploadedFiles()
-files: {
-  cv?: Express.Multer.File[];
-  photo?: Express.Multer.File[];
-  academic_transcript?: Express.Multer.File[];
-  identity_card?: Express.Multer.File[];
-},
+    files: {
+      cv?: Express.Multer.File[];
+      photo?: Express.Multer.File[];
+      academic_transcript?: Express.Multer.File[];
+      identity_card?: Express.Multer.File[];
+    }
   ) {
     try {
       const department = await this.departmentRepository.findOneBy({
@@ -260,19 +276,50 @@ files: {
         });
         if (!annualLeave) throw new NotFoundException("Annual Leave not found");
       }
+
+      let probationSetting: ProbationSetting | null = null;
+      if (dto.probation_setting_id) {
+        probationSetting = await this.probationSettingRepo.findOneBy({
+          id: dto.probation_setting_id,
+        });
+        if (!probationSetting) {
+          throw new NotFoundException("Probation Setting not found");
+        }
+      }
+
       if (!department) throw new NotFoundException("Department not found");
       if (!designation) throw new NotFoundException("Designation not found");
       if (!shift) throw new NotFoundException("Shift not found");
       if (!files?.cv) {
-    throw new BadRequestException('CV is required');
-  }
-  if (!files?.photo) {
-    throw new BadRequestException('Photo is required');
-  }
-if (!files?.identity_card || files.identity_card.length < 2) {
-  throw new BadRequestException('Identity Card front and back are required');
-}
+        throw new BadRequestException("CV is required");
+      }
+      if (!files?.photo) {
+        throw new BadRequestException("Photo is required");
+      }
+      if (!files?.identity_card || files.identity_card.length < 2) {
+        throw new BadRequestException(
+          "Identity Card front and back are required"
+        );
+      }
 
+      if (dto.emp_type === "PROBATION") {
+        if (dto.annual_leave_id) {
+          throw new BadRequestException(
+            "Probation employees cannot have Annual Leave"
+          );
+        }
+        if (!dto.probation_setting_id) {
+          throw new BadRequestException(
+            "Probation employees must have a probation_setting_id"
+          );
+        }
+      } else {
+        if (dto.probation_setting_id) {
+          throw new BadRequestException(
+            "Only probation employees can have probation_setting_id"
+          );
+        }
+      }
 
       const emp = this.employeeRepository.create({
         ...dto,
@@ -280,10 +327,25 @@ if (!files?.identity_card || files.identity_card.length < 2) {
         designation,
         shift,
         ...(annualLeave ? { annualLeave } : {}),
-   cv: files.cv?.[0]?.filename ?? (() => { throw new BadRequestException('CV is required'); })(),
-  photo: files.photo?.[0]?.filename ?? (() => { throw new BadRequestException('Photo is required'); })(),
-  identity_card: files.identity_card?.map(f => f.filename) ?? (() => { throw new BadRequestException('Identity Card (front & back) are required'); })(),
-  academic_transcript: files.academic_transcript?.[0]?.filename ?? null, // optional
+        ...(probationSetting ? { probationSetting } : {}),
+        cv:
+          files.cv?.[0]?.filename ??
+          (() => {
+            throw new BadRequestException("CV is required");
+          })(),
+        photo:
+          files.photo?.[0]?.filename ??
+          (() => {
+            throw new BadRequestException("Photo is required");
+          })(),
+        identity_card:
+          files.identity_card?.map((f) => f.filename) ??
+          (() => {
+            throw new BadRequestException(
+              "Identity Card (front & back) are required"
+            );
+          })(),
+        academic_transcript: files.academic_transcript?.[0]?.filename ?? null, // optional
       });
 
       emp.is_system_user = dto.is_system_user ?? false;
@@ -367,11 +429,10 @@ if (!files?.identity_card || files.identity_card.length < 2) {
         await this.employeeRepository.save(saved);
       }
       // Save documents
-   if (files && Object.keys(files).length > 0) {
-  // ab createOrUpdateMany use karo
-  await this.documentService.createOrUpdateMany(saved.id, files);
-}
-
+      if (files && Object.keys(files).length > 0) {
+        // ab createOrUpdateMany use karo
+        await this.documentService.createOrUpdateMany(saved.id, files);
+      }
 
       // Save bank details
       if (dto.bankDetails?.length) {
@@ -379,6 +440,9 @@ if (!files?.identity_card || files.identity_card.length < 2) {
       }
 
       return {
+         success: true,
+  message: 'Employee created successfully',
+  data: {
         id: saved.id,
         name: saved.name,
         phone: saved.phone,
@@ -395,14 +459,36 @@ if (!files?.identity_card || files.identity_card.length < 2) {
         daysPerWeek: saved.daysPerWeek,
         fixedSalary: saved.fixedSalary,
         shift: saved.shift?.name,
-        annualLeave: saved.annualLeave
+        // annualLeave: saved.annualLeave
+        //   ? {
+        //       id: saved.annualLeave.id,
+        //       name: saved.annualLeave.name,
+        //       total_leave: saved.annualLeave.total_leave,
+        //       status: saved.annualLeave.status,
+        //     }
+        //   : null,
+        ...(saved.emp_type === "PROBATION"
           ? {
-              id: saved.annualLeave.id,
-              name: saved.annualLeave.name,
-              total_leave: saved.annualLeave.total_leave,
-              status: saved.annualLeave.status,
+              probationSetting: saved.probationSetting
+                ? {
+                    id: saved.probationSetting.id,
+                    leave_days: saved.probationSetting.leave_days,
+                    probation_period: saved.probationSetting.probation_period,
+                    duration_type: saved.probationSetting.duration_type,
+                    status: saved.probationSetting.status,
+                  }
+                : null,
             }
-          : null,
+          : {
+              annualLeave: saved.annualLeave
+                ? {
+                    id: saved.annualLeave.id,
+                    name: saved.annualLeave.name,
+                    total_leave: saved.annualLeave.total_leave,
+                    status: saved.annualLeave.status,
+                  }
+                : null,
+            }),
         allowances: saved.allowances?.map((a) => ({
           id: a.id,
           title: a.title,
@@ -410,30 +496,31 @@ if (!files?.identity_card || files.identity_card.length < 2) {
           amount: a.amount,
           company_id: a.company_id,
         })),
-        branches: saved.branches?.map(b => ({
-        id: b.id,
-        name: b.branch_name,
-      })) || [],
+        branches:
+          saved.branches?.map((b) => ({
+            id: b.id,
+            name: b.branch_name,
+          })) || [],
+        emp_type: saved.emp_type,
         status: saved.status,
         created_at: saved.created_at,
         updated_at: saved.updated_at,
-      };
+    }};
     } catch (e) {
-  console.error(e);
-  throw new BadRequestException(e.message || 'Something went wrong');
-}
-
+      console.error(e);
+      throw new BadRequestException(e.message || "Something went wrong");
+    }
   }
 
   async update(
     id: number,
     dto: UpdateEmployeeDto,
-   files?: { 
-  cv?: Express.Multer.File[]; 
-  photo?: Express.Multer.File[];
-  identity_card?: Express.Multer.File[];
-  academic_transcript?: Express.Multer.File[];
-}
+    files?: {
+      cv?: Express.Multer.File[];
+      photo?: Express.Multer.File[];
+      identity_card?: Express.Multer.File[];
+      academic_transcript?: Express.Multer.File[];
+    }
   ) {
     const emp = await this.employeeRepository.findOne({
       where: { id },
@@ -533,16 +620,12 @@ if (!files?.identity_card || files.identity_card.length < 2) {
     const saved = await this.employeeRepository.save(emp);
 
     // Documents
-  // Save/update documents via DocumentService
-  if (files && Object.keys(files).length > 0) {
-await this.documentService.createOrUpdateMany(emp.id, files);
-  }
+    // Save/update documents via DocumentService
+    if (files && Object.keys(files).length > 0) {
+      await this.documentService.createOrUpdateMany(emp.id, files);
+    }
 
-// Identity Card array update
-
-
-
-
+    // Identity Card array update
 
     const fullEmp = await this.employeeRepository.findOne({
       where: { id: saved.id },
@@ -552,13 +635,16 @@ await this.documentService.createOrUpdateMany(emp.id, files);
         "shift",
         "annualLeave",
         "allowances",
-         "branches",
+        "branches",
       ],
     });
 
     if (!fullEmp) throw new NotFoundException("Employee not found after save");
 
     return {
+        success: true,
+  message: 'Employee updated successfully',
+  data: {
       id: fullEmp.id,
       name: fullEmp.name,
       phone: fullEmp.phone,
@@ -590,22 +676,23 @@ await this.documentService.createOrUpdateMany(emp.id, files);
           amount: a.amount,
           company_id: a.company_id,
         })) || [],
-         branches: fullEmp.branches?.map(b => ({
-      id: b.id,
-      name: b.branch_name,
-    })) || [],
+      branches:
+        fullEmp.branches?.map((b) => ({
+          id: b.id,
+          name: b.branch_name,
+        })) || [],
       status: fullEmp.status,
       created_at: fullEmp.created_at,
       updated_at: fullEmp.updated_at,
-    };
+    }};
   }
 
-  async remove(id: number) {
-    const emp = await this.employeeRepository.findOneBy({ id });
-    if (!emp) throw new NotFoundException(`Employee ID ${id} not found`);
-    await this.employeeRepository.remove(emp);
-    return { message: `Employee ID ${id} deleted successfully` };
-  }
+  // async remove(id: number) {
+  //   const emp = await this.employeeRepository.findOneBy({ id });
+  //   if (!emp) throw new NotFoundException(`Employee ID ${id} not found`);
+  //   await this.employeeRepository.remove(emp);
+  //   return { message: `Employee ID ${id} deleted successfully` };
+  // }
   async statusUpdate(id: number) {
     try {
       const emp = await this.employeeRepository.findOne({
@@ -615,13 +702,13 @@ await this.documentService.createOrUpdateMany(emp.id, files);
 
       if (!emp) throw new NotFoundException("Employee Not Found");
 
-      // 🔹 toggle employee status
+      //  toggle employee status
       emp.status = emp.status === 0 ? 1 : 0;
 
-      // 🔹 update employee
+      //  update employee
       await this.employeeRepository.save(emp);
 
-      // 🔹 cascade to documents
+      //  cascade to documents
       if (emp.documents?.length) {
         await this.documentService.updateStatusForMany(
           emp.documents,
@@ -629,7 +716,7 @@ await this.documentService.createOrUpdateMany(emp.id, files);
         );
       }
 
-      // 🔹 cascade to bankDetails of this employee only
+      //  cascade to bankDetails of this employee only
       await this.bankDetailRepo
         .createQueryBuilder()
         .update(BankDetail)
@@ -637,7 +724,7 @@ await this.documentService.createOrUpdateMany(emp.id, files);
         .where("employeeId = :id", { id: emp.id })
         .execute();
 
-      // 🔹 cascade to user
+      //  cascade to user
       // if (emp.user) {
       //   emp.user.status = emp.status;
       //   await this.userRepository.save(emp.user);

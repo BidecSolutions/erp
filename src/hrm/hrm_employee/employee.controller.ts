@@ -109,7 +109,7 @@ create(
   // }
   @Get('list')
 findAll(@Query('status') status?: string) {
-  // 🔹 query param se status ko number me convert kar rahe
+  //  query param se status ko number me convert kar rahe
   const filterStatus = status !== undefined ? Number(status) : undefined;
   return this.employeeService.findAll(filterStatus);
 }
@@ -147,10 +147,10 @@ findAll(@Query('status') status?: string) {
     return this.employeeService.update(id, dto, files);
   }
 
-  @Delete(':id/delete')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.employeeService.remove(id);
-  }
+  // @Delete(':id/delete')
+  // remove(@Param('id', ParseIntPipe) id: number) {
+  //   return this.employeeService.remove(id);
+  // }
 
    @Get('toogleStatus/:id')
     statusChange(@Param('id', ParseIntPipe) id: number){

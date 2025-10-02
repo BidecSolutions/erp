@@ -16,11 +16,12 @@ import { Role } from 'src/entities/role.entity';
 import { userRoleMapping } from 'src/entities/user-role-mapping.entity';
 import { userCompanyMapping } from 'src/entities/user-company-mapping.entity';
 import { Branch } from 'src/Company/branch/branch.entity';
+import { ProbationSetting } from '../hrm_probation-setting/probation-setting.entity';
 // import { LeaveModule } from '../hrm_leave/leave.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([userRoleMapping, userCompanyMapping, Employee, Department, Designation, Shift, AnnualLeave, BankDetail, Allowance, User, Role, Branch]),
+    TypeOrmModule.forFeature([userRoleMapping, userCompanyMapping, Employee, Department, Designation, Shift, AnnualLeave, BankDetail, Allowance, User, Role, Branch,ProbationSetting]),
     BankDetailModule,
     DocumentModule,
   ],

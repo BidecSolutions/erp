@@ -18,6 +18,7 @@ import {
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { CreateBankDetailDto } from 'src/hrm/hrm_bank-details/dto/create-bank-details.dto';
+import { EmployeeType } from '../employee.entity';
 
 export class CreateEmployeeDto {
   @IsString()
@@ -123,10 +124,10 @@ export class CreateEmployeeDto {
   @Type(() => Number)
   annualSalary?: number;
 
-  @IsOptional()
+  @IsNotEmpty({ message: 'Salary is required' })
   @IsNumber()
   @Type(() => Number)
-  fixedSalary?: number;
+  fixedSalary: number;
 
   @IsOptional()
   @IsNumber()
@@ -153,10 +154,18 @@ export class CreateEmployeeDto {
   })
   is_system_user: boolean = false; // default value
 
-  @IsOptional()
-  @Type(() => Number)
+ @ValidateIf((o) => o.emp_type === EmployeeType.PERMANENT)
+  @IsNotEmpty({ message: 'annual_leave_id is required for permanent employees' })
   @IsInt({ message: 'annual_leave_id must be an integer number' })
+  @Type(() => Number)
   annual_leave_id?: number;
+
+  //  Probation setting ID -> sirf PROBATION employees ke liye
+  @ValidateIf((o) => o.emp_type === EmployeeType.PROBATION)
+  @IsNotEmpty({ message: 'probation_setting_id is required for probation employees' })
+  @IsInt({ message: 'probation_setting_id must be an integer number' })
+  @Type(() => Number)
+  probation_setting_id?: number;
 
 
   @IsOptional()
@@ -177,5 +186,7 @@ export class CreateEmployeeDto {
 @IsNumber({}, { each: true })
 branch_ids?: number[];
 
-
+   @IsEnum(EmployeeType, { message: 'emp_type must be PROBATION or PERMANENT' })
+  @IsNotEmpty({ message: 'emp_type is required' })
+  emp_type: EmployeeType;
 }

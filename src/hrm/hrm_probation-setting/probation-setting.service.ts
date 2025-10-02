@@ -7,11 +7,20 @@ import { ProbationSetting } from './probation-setting.entity';
 export class ProbationSettingService {
   constructor(
     @InjectRepository(ProbationSetting)
-    private readonly probationRepo: Repository<ProbationSetting>,
+    private probationRepo: Repository<ProbationSetting>,
   ) {}
 
-  async create(data: { leave_days: number; probation_period: number }) {
-    const ps = this.probationRepo.create(data);
+  async create(data: { leave_days: number; probation_period: number; duration_type?: 'days' | 'months' }) {
+    // 👇 Agar duration_type days hai, to months me convert kar do
+    if (data.duration_type === 'days') {
+      data.probation_period = Math.ceil(data.probation_period / 30); // approx 30 days = 1 month
+    }
+
+    const ps = this.probationRepo.create({
+      leave_days: data.leave_days,
+      probation_period: data.probation_period, // always months stored in DB
+    });
+
     return await this.probationRepo.save(ps);
   }
 
@@ -25,8 +34,14 @@ export class ProbationSettingService {
     return ps;
   }
 
-  async update(id: number, data: Partial<ProbationSetting>) {
+  async update(id: number, data: Partial<ProbationSetting> & { duration_type?: 'days' | 'months' }) {
     const ps = await this.findOne(id);
+
+    // 👇 Same conversion logic for update
+    if (data.duration_type === 'days' && data.probation_period) {
+      data.probation_period = Math.ceil(data.probation_period / 30);
+    }
+
     Object.assign(ps, data);
     return await this.probationRepo.save(ps);
   }

@@ -38,6 +38,7 @@ import { POS } from './pos/POS-module-file.module';
     ...sales,
     ...POS,
    
+   
 
   ],
   controllers: [AppController],

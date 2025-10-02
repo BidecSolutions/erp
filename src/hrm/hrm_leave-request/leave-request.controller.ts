@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Param, Body, Patch, Delete, Put } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, Patch, Delete, Put, ParseIntPipe, Query } from '@nestjs/common';
 import { LeaveRequestService } from './leave-request.service';
 import { CreateLeaveRequestDto } from './dto/create-leave-request.dto';
 import { UpdateLeaveRequestDto } from './dto/update-leave-request.dto';
@@ -12,9 +12,11 @@ export class LeaveRequestController {
     return this.service.create(dto);
   }
 
-  @Get('list')
-  findAll() {
-    return this.service.findAll();
+    @Get('list')
+  findAll(@Query('status') status?: string) {
+    //  query param se status ko number me convert kar rahe
+    const filterStatus = status !== undefined ? Number(status) : undefined;
+    return this.service.findAll(filterStatus);
   }
 
   @Get(':id/get')
@@ -27,10 +29,10 @@ export class LeaveRequestController {
     return this.service.update(+id, dto);
   }
 
-  @Delete(':id/delete')
-  remove(@Param('id') id: number) {
-    return this.service.remove(+id);
-  }
+   @Get('toogleStatus/:id')
+    statusChange(@Param('id', ParseIntPipe) id: number){
+      return this.service.statusUpdate(id);
+    }
 
   @Put(':id/approve')
 approve(@Param('id') id: number) {

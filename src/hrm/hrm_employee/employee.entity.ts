@@ -64,7 +64,7 @@ export class Employee {
   })
   locationType?: 'residential' | 'postal' | 'work address';
 
-  // 🔹 Required files
+  //  Required files
   @Column({ nullable: false })
   cv: string;
 
@@ -99,8 +99,8 @@ academic_transcript: string | null;
   @Column({ nullable: true })
   daysPerWeek?: number;
 
-  @Column({ nullable: true })
-  fixedSalary?: number;
+  @Column({ nullable: false })
+  fixedSalary: number;
 
 
 // @Column({ type: 'simple-json', nullable: true })
@@ -162,7 +162,11 @@ probationSetting?: ProbationSetting;
 @Column({ type: 'int', nullable: true })
 probation_setting_id?: number;
 
-@Column({ type: 'enum', enum: EmployeeType, default: EmployeeType.PROBATION })
+@Column({
+  type: 'enum',
+  enum: EmployeeType,
+  nullable: false //  required bana diya
+})
 emp_type: EmployeeType;
 
 
