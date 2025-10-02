@@ -7,6 +7,7 @@ import {
   Body,
   Param,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { ProbationSettingService } from './probation-setting.service';
 import { CreateProbationSettingDto } from './dto/create-probation-setting.dto';
@@ -22,8 +23,9 @@ export class ProbationSettingController {
   }
 
   @Get('list')
-  async findAll() {
-    return this.probationService.findAll();
+  findAll(@Query('status') status?: string) {
+    const filterStatus = status !== undefined ? Number(status) : undefined;
+    return this.probationService.findAll(filterStatus);
   }
 
   @Get(':id/get')
@@ -43,4 +45,9 @@ export class ProbationSettingController {
   async remove(@Param('id', ParseIntPipe) id: number) {
     return this.probationService.remove(id);
   }
+
+    @Get('toogleStatus/:id')
+      statusChange(@Param('id', ParseIntPipe) id: number){
+        return this.probationService.statusUpdate(id);
+      }
 }

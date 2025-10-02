@@ -14,7 +14,6 @@ export class LeaveRequestController {
 
     @Get('list')
   findAll(@Query('status') status?: string) {
-    //  query param se status ko number me convert kar rahe
     const filterStatus = status !== undefined ? Number(status) : undefined;
     return this.service.findAll(filterStatus);
   }

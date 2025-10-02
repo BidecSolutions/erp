@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Put, Delete, Param, Body, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Put, Delete, Param, Body, ParseIntPipe, UseGuards, Query } from '@nestjs/common';
 import { AnnualLeaveService } from './annual-leave.service';
 import { CreateAnnualLeaveDto } from './dto/create-annual-leave.dto';
 import { UpdateAnnualLeaveDto } from './dto/update-annual-leave.dto';
@@ -13,11 +13,13 @@ export class AnnualLeaveController {
   create(@Body() dto: CreateAnnualLeaveDto) {
     return this.annualleaveService.create(dto);
   }
-
+  
   @Get('list')
-  findAll() {
-    return this.annualleaveService.findAll();
+  findAll(@Query('status') status?: string) {
+    const filterStatus = status !== undefined ? Number(status) : undefined;
+    return this.annualleaveService.findAll(filterStatus);
   }
+
 
   @Get(':id/get')
   findOne(@Param('id', ParseIntPipe) id: number) {
@@ -33,4 +35,9 @@ export class AnnualLeaveController {
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.annualleaveService.remove(id);
   }
+
+   @Get('toogleStatus/:id')
+      statusChange(@Param('id', ParseIntPipe) id: number){
+        return this.annualleaveService.statusUpdate(id);
+      }
 }

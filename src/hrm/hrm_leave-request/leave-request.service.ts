@@ -98,7 +98,7 @@ return {
 };  }
 
   // Find All
-  async findAll(filterStatus?: number) {
+async findAll(filterStatus?: number) {
     const status = filterStatus !== undefined ? filterStatus : 1;
     const leaveRequests = await this.leaveRequestRepository.find({
       where: { status },

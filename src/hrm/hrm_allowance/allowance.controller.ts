@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Put, Delete, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Put, Delete, Param, Body, UseGuards, ParseIntPipe, Query } from '@nestjs/common';
 import { AllowanceService } from './allowance.service';
 import { CreateAllowanceDto } from './dto/create-allowance.dto';
 import { UpdateAllowanceDto } from './dto/update-allowance.dto';
@@ -15,9 +15,10 @@ export class AllowanceController {
     return this.allowanceService.create(dto);
   }
 
-  @Get('list')
-  findAll() {
-    return this.allowanceService.findAll();
+ @Get('list')
+  findAll(@Query('status') status?: string) {
+    const filterStatus = status !== undefined ? Number(status) : undefined;
+    return this.allowanceService.findAll(filterStatus);
   }
 
   @Get(':id/get')
@@ -34,4 +35,9 @@ export class AllowanceController {
   remove(@Param('id') id: number) {
     return this.allowanceService.remove(+id);
   }
+
+      @Get('toogleStatus/:id')
+        statusChange(@Param('id', ParseIntPipe) id: number){
+          return this.allowanceService.statusUpdate(id);
+        }
 }

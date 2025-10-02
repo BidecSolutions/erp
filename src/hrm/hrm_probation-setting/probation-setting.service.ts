@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ProbationSetting } from './probation-setting.entity';
+import { errorResponse, toggleStatusResponse } from 'src/commonHelper/response.util';
 
 @Injectable()
 export class ProbationSettingService {
@@ -24,8 +25,9 @@ export class ProbationSettingService {
     return await this.probationRepo.save(ps);
   }
 
-  async findAll() {
-    return await this.probationRepo.find();
+  async findAll(filterStatus?: number) {
+            const status = filterStatus !== undefined ? filterStatus : 1;
+    return await this.probationRepo.find({where: {status}});
   }
 
   async findOne(id: number) {
@@ -51,4 +53,18 @@ export class ProbationSettingService {
     await this.probationRepo.remove(ps);
     return { message: 'Probation setting removed successfully' };
   }
+
+    async statusUpdate(id: number) {
+        try {
+          const dep = await this.probationRepo.findOneBy({ id });
+          if (!dep) throw new NotFoundException("Probation setting not found");
+    
+          dep.status = dep.status === 0 ? 1 : 0;
+          await this.probationRepo.save(dep);
+    
+          return toggleStatusResponse("Probation setting", dep.status);
+        } catch (err) {
+          return errorResponse("Something went wrong", err.message);
+        }
+      }
 }

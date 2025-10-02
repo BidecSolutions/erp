@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateShiftDto } from './dto/create-shift.dto';
 import { UpdateShiftDto } from './dto/update-shift.dto';
 import { Shift } from './shift.entity';
+import { errorResponse, toggleStatusResponse } from 'src/commonHelper/response.util';
 
 @Injectable()
 export class ShiftService {
@@ -17,8 +18,9 @@ export class ShiftService {
     return await this.shiftRepo.save(shift);
   }
 
-  async findAll() {
-    return await this.shiftRepo.find();
+  async findAll(filterStatus?: number) {
+    const status = filterStatus !== undefined ? filterStatus : 1;
+    return await this.shiftRepo.find({where: {status}});
   }
 
   async findOne(id: number) {
@@ -38,4 +40,18 @@ export class ShiftService {
     await this.shiftRepo.remove(shift);
     return { message: `Shift ID ${id} deleted successfully` };
   }
+
+    async statusUpdate(id: number) {
+            try {
+              const dep = await this.shiftRepo.findOneBy({ id });
+              if (!dep) throw new NotFoundException("Shift not found");
+        
+              dep.status = dep.status === 0 ? 1 : 0;
+              await this.shiftRepo.save(dep);
+        
+              return toggleStatusResponse("Shift", dep.status);
+            } catch (err) {
+              return errorResponse("Something went wrong", err.message);
+            }
+          }
 }

@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { LeaveType } from './leave-type.entity';
 import { CreateLeaveTypeDto } from './dto/create-leave-type.dto';
 import { UpdateLeaveTypeDto } from './dto/update-leave-type.dto';
+import { errorResponse, toggleStatusResponse } from 'src/commonHelper/response.util';
 
 @Injectable()
 export class LeaveTypeService {
@@ -17,8 +18,9 @@ export class LeaveTypeService {
     return await this.leaveTypeRepo.save(leaveType);
   }
 
-  async findAll() {
-    return await this.leaveTypeRepo.find();
+  async findAll(filterStatus?: number) {
+       const status = filterStatus !== undefined ? filterStatus : 1;
+    return await this.leaveTypeRepo.find({where: {status}});
   }
 
   async findOne(id: number) {
@@ -37,4 +39,18 @@ export class LeaveTypeService {
     const leaveType = await this.findOne(id);
     return await this.leaveTypeRepo.remove(leaveType);
   }
+  
+      async statusUpdate(id: number) {
+          try {
+            const dep = await this.leaveTypeRepo.findOneBy({ id });
+            if (!dep) throw new NotFoundException("Leave Type not found");
+      
+            dep.status = dep.status === 0 ? 1 : 0;
+            await this.leaveTypeRepo.save(dep);
+      
+            return toggleStatusResponse("Leave Type", dep.status);
+          } catch (err) {
+            return errorResponse("Something went wrong", err.message);
+          }
+        }
 }

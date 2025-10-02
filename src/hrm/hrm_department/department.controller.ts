@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe, UseGuards, Query } from '@nestjs/common';
 import { DepartmentService } from './department.service';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
@@ -10,9 +10,10 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 export class DepartmentController {
   constructor(private readonly departmentService: DepartmentService) {}
 
-  @Get('list')
-  findAll() {
-    return this.departmentService.findAll();
+   @Get('list')
+  findAll(@Query('status') status?: string) {
+    const filterStatus = status !== undefined ? Number(status) : undefined;
+    return this.departmentService.findAll(filterStatus);
   }
 
   @Get(':id/get')
@@ -34,4 +35,8 @@ export class DepartmentController {
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.departmentService.remove(id);
   }
+     @Get('toogleStatus/:id')
+      statusChange(@Param('id', ParseIntPipe) id: number){
+        return this.departmentService.statusUpdate(id);
+      }
 }

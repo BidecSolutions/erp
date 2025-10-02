@@ -5,6 +5,7 @@ import { Designation } from './designation.entity';
 import { CreateDesignationDto } from './dto/create-designation.dto';
 import { UpdateDesignationDto } from './dto/update-designation.dto';
 import { Department } from '../hrm_department/department.entity';
+import { errorResponse, toggleStatusResponse } from 'src/commonHelper/response.util';
 
 @Injectable()
 export class DesignationService {
@@ -16,7 +17,7 @@ export class DesignationService {
     private departmentRepo: Repository<Department>,
   ) {}
 
-  async create(dto: CreateDesignationDto): Promise<any> {
+  async create(dto: CreateDesignationDto) {
     const department = await this.departmentRepo.findOne({ where: { id: dto.departmentId } });
     if (!department) throw new NotFoundException(`Department with ID ${dto.departmentId} not found`);
 
@@ -33,8 +34,10 @@ export class DesignationService {
     };
   }
 
-  async findAll(): Promise<any[]> {
+  async findAll(filterStatus?: number) {
+                const status = filterStatus !== undefined ? filterStatus : 1;
     const designations = await this.designationRepository.find({
+      where: {status},
       relations: ['department'],
     });
 
@@ -45,7 +48,7 @@ export class DesignationService {
     }));
   }
 
-  async findOne(id: number): Promise<any> {
+  async findOne(id: number) {
     const designation = await this.designationRepository.findOne({
       where: { id },
       relations: ['department'],
@@ -59,7 +62,7 @@ export class DesignationService {
     };
   }
 
-  async update(id: number, dto: UpdateDesignationDto): Promise<any> {
+  async update(id: number, dto: UpdateDesignationDto) {
     const designation = await this.designationRepository.findOne({
       where: { id },
       relations: ['department'],
@@ -92,4 +95,19 @@ export class DesignationService {
 
     return { message: `Designation with ID ${id} deleted successfully` };
   }
+
+  
+      async statusUpdate(id: number) {
+          try {
+            const dep = await this.designationRepository.findOneBy({ id });
+            if (!dep) throw new NotFoundException("Designation not found");
+      
+            dep.status = dep.status === 0 ? 1 : 0;
+            await this.designationRepository.save(dep);
+      
+            return toggleStatusResponse("Designation", dep.status);
+          } catch (err) {
+            return errorResponse("Something went wrong", err.message);
+          }
+        }
 }

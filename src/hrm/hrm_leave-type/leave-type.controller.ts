@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, Put, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, Put, UseGuards, ParseIntPipe, Query } from '@nestjs/common';
 import { LeaveTypeService } from './leave-type.service';
 import { CreateLeaveTypeDto } from './dto/create-leave-type.dto';
 import { UpdateLeaveTypeDto } from './dto/update-leave-type.dto';
@@ -16,9 +16,10 @@ export class LeaveTypeController {
   }
 
   @Get('list')
-  findAll() {
-    return this.leaveTypeService.findAll();
-  }
+   findAll(@Query('status') status?: string) {
+     const filterStatus = status !== undefined ? Number(status) : undefined;
+     return this.leaveTypeService.findAll(filterStatus);
+   }
 
   @Get(':id/get')
   findOne(@Param('id') id: number) {
@@ -34,4 +35,8 @@ export class LeaveTypeController {
   remove(@Param('id') id: number) {
     return this.leaveTypeService.remove(+id);
   }
+      @Get('toogleStatus/:id')
+        statusChange(@Param('id', ParseIntPipe) id: number){
+          return this.leaveTypeService.statusUpdate(id);
+        }
 }

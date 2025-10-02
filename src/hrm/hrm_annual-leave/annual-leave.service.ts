@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { AnnualLeave } from './annual-leave.entity';
 import { CreateAnnualLeaveDto } from './dto/create-annual-leave.dto';
 import { UpdateAnnualLeaveDto } from './dto/update-annual-leave.dto';
+import { errorResponse, toggleStatusResponse } from 'src/commonHelper/response.util';
 
 @Injectable()
 export class AnnualLeaveService {
@@ -17,8 +18,9 @@ export class AnnualLeaveService {
     return this.repo.save(record);
   }
 
-  findAll() {
-    return this.repo.find();
+  findAll(filterStatus?: number) {
+        const status = filterStatus !== undefined ? filterStatus : 1;
+    return this.repo.find({where: {status}});
   }
 
   async findOne(id: number) {
@@ -38,5 +40,19 @@ export class AnnualLeaveService {
     const record = await this.findOne(id);
     return this.repo.remove(record);
   }
+
+   async statusUpdate(id: number) {
+      try {
+        const dep = await this.repo.findOneBy({ id });
+        if (!dep) throw new NotFoundException("Annual Leave not found");
+  
+        dep.status = dep.status === 0 ? 1 : 0;
+        await this.repo.save(dep);
+  
+        return toggleStatusResponse("Annual Leave", dep.status);
+      } catch (err) {
+        return errorResponse("Something went wrong", err.message);
+      }
+    }
 }
 
