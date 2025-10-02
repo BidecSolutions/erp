@@ -21,7 +21,7 @@ export class Company {
   @Column()
   company_name: string;
 
-  @Column({ nullable: false })
+  @Column({ type: 'varchar', nullable: true, length: 100 })
   company_logo_path: string;
 
   @Column({ nullable: true })
@@ -42,7 +42,7 @@ export class Company {
   @Column({ nullable: true })
   country: string;
 
-  @Column({ nullable: true }  )
+  @Column({ nullable: true })
   postal_code: string;
 
   @Column({ nullable: true })

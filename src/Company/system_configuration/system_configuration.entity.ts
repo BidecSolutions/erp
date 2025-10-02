@@ -14,7 +14,7 @@ export class SystemConfiguration {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => Company, (company) => company.systemConfigurations, { onDelete: 'CASCADE' })
+    @ManyToOne(() => Company, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'company_id' })
     company: Company;
 
