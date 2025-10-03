@@ -246,6 +246,22 @@ export class AuthService {
     return { sideMenus, menuTrees };
   }
 
+  async getRoles() {
+    const roles = await this.usersRoles.find({ where: { status: 1, id: Not(In([1, 2])), } });
+    const rolesWithMapping = await Promise.all(roles.map(async (role) => {
+      const mappings = await this.sideMenuMapppingRepository.createQueryBuilder('srm')
+        .innerJoin('side_menus', 'sm', 'srm.side_menu_id = sm.id')
+        .select(['sm.id as id', 'sm.name as name'])
+        .where('srm.role_id = :roleId', { roleId: role.id })
+        .getRawMany();
+      return {
+        ...role,
+        mappings
+      };
+    }));
+    return rolesWithMapping;
+  }
+
 
   async fetchUserBranches(userId: number) {
     //here
