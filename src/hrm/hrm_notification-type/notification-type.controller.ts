@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Param, Patch, Delete, Body } from '@nestjs/common';
+import { Controller, Post, Get, Param, Patch, Delete, Body, Query, ParseIntPipe } from '@nestjs/common';
 import { NotificationTypeService } from './notification-type.service';
 import { CreateNotificationTypeDto } from './dto/create-notification-type.dto';
 import { UpdateNotificationTypeDto } from './dto/update-notification-type.dto';
@@ -12,9 +12,10 @@ export class NotificationTypeController {
     return this.service.create(dto);
   }
 
-  @Get('list')
-  findAll() {
-    return this.service.findAll();
+   @Get('list')
+  findAll(@Query('status') status?: string) {
+    const filterStatus = status !== undefined ? Number(status) : undefined;
+    return this.service.findAll(filterStatus);
   }
 
   @Get(':id/get')
@@ -31,4 +32,9 @@ export class NotificationTypeController {
   remove(@Param('id') id: number) {
     return this.service.remove(+id);
   }
+
+   @Get('toogleStatus/:id')
+        statusChange(@Param('id', ParseIntPipe) id: number){
+          return this.service.statusUpdate(id);
+        }
 }

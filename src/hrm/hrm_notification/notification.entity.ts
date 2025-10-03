@@ -15,7 +15,7 @@ export enum NotificationReadStatus {
   READ = 1,
 }
 
-@Entity('hrm_notification')
+@Entity('notification')
 export class Notification {
   @PrimaryGeneratedColumn()
   id: number;

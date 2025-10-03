@@ -11,10 +11,10 @@ export class Department {
   name: string;
 
   @ManyToOne(() => Company, { eager: true })
-  @JoinColumn({ name: 'company_Id' }) 
+  @JoinColumn({ name: 'company_id' }) 
   company: Company;
   
-  @Column({ name: 'company_Id' })
+  @Column({ name: 'company_id' })
   company_id: number; 
   
   

@@ -34,40 +34,57 @@ export class EmployeeController {
       { name: 'cv', maxCount: 1 },
       { name: 'photo', maxCount: 1 },
       { name: 'academic_transcript', maxCount: 1 },
-      { name: 'identity_card', maxCount: 2 },
+      { name: 'identity_card', maxCount: 2 }, // 👈 2 files allow
     ],
     {
       storage: diskStorage({
         destination: './uploads/employees',
         filename: (req, file, callback) => {
-          const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
-          callback(
-            null,
-            file.fieldname +
-              '-' +
-              uniqueSuffix +
-              extname(file.originalname),
-          );
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          callback(null, file.fieldname + '-' + uniqueSuffix + extname(file.originalname));
         },
       }),
       fileFilter: (req, file, callback) => {
         const allowedTypes = {
-          cv: ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-          academic_transcript: ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+          cv: [
+            'application/pdf',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          ],
+          academic_transcript: [
+            'application/pdf',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          ],
           photo: ['image/png', 'image/jpg', 'image/jpeg'],
           identity_card: ['image/png', 'image/jpg', 'image/jpeg'],
         };
 
         const fieldRules = allowedTypes[file.fieldname];
         if (fieldRules && !fieldRules.includes(file.mimetype)) {
-          return callback(
-            new BadRequestException(
-              `${file.fieldname.replace('_', ' ')} has an invalid file type`,
-            ),
-            false,
-          );
+          let message = '';
+          switch (file.fieldname) {
+            case 'cv':
+              message = 'CV must be a PDF or DOCX file';
+              break;
+            case 'academic_transcript':
+              message = 'Academic Transcript must be a PDF or DOCX file';
+              break;
+            case 'photo':
+              message = 'Photo must be in PNG, JPG, or JPEG format';
+              break;
+            case 'identity_card':
+              message = 'Identity Card must be in PNG, JPG, or JPEG format';
+              break;
+            default:
+              message = `${file.fieldname} has an invalid file type`;
+          }
+          return callback(new BadRequestException(message), false);
         }
+
+        // ✅ Photo size check (2MB limit)
+        if (file.fieldname === 'photo' && file.size > 2 * 1024 * 1024) {
+          return callback(new BadRequestException('Photo must not exceed 2 MB'), false);
+        }
+
         callback(null, true);
       },
     },
@@ -92,7 +109,7 @@ create(
   // }
   @Get('list')
 findAll(@Query('status') status?: string) {
-  // 🔹 query param se status ko number me convert kar rahe
+  //  query param se status ko number me convert kar rahe
   const filterStatus = status !== undefined ? Number(status) : undefined;
   return this.employeeService.findAll(filterStatus);
 }
@@ -105,10 +122,12 @@ findAll(@Query('status') status?: string) {
   @Put(':id/update')
   @UseInterceptors(
     FileFieldsInterceptor(
-      [
-        { name: 'cv', maxCount: 1 },
-        { name: 'photo', maxCount: 1 },
-      ],
+     [
+  { name: 'cv', maxCount: 1 },
+  { name: 'photo', maxCount: 1 },
+  { name: 'academic_transcript', maxCount: 1 },
+  { name: 'identity_card', maxCount: 2 },
+],
       {
         storage: diskStorage({
           destination: './uploads/employees',
@@ -128,10 +147,10 @@ findAll(@Query('status') status?: string) {
     return this.employeeService.update(id, dto, files);
   }
 
-  @Delete(':id/delete')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.employeeService.remove(id);
-  }
+  // @Delete(':id/delete')
+  // remove(@Param('id', ParseIntPipe) id: number) {
+  //   return this.employeeService.remove(id);
+  // }
 
    @Get('toogleStatus/:id')
     statusChange(@Param('id', ParseIntPipe) id: number){
