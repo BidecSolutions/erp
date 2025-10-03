@@ -38,13 +38,16 @@ export class GoodsReceivingNoteService {
     }
     let totalAmount = 0;
     dto.items.forEach((item) => {
-      totalAmount += item.received_quantity * item.unit_price;
+      totalAmount += item.received_qty * item.unit_price;
     });
     const grn = this.grnRepo.create({
       po_id: dto.po_id,
       grn_date: dto.grn_date,
       remarks: dto.remarks,
-      total_received_amount: totalAmount,
+      total_amount: totalAmount,
+      warehouse_id:dto.warehouse_id,
+      company_id:dto.company_id,
+      branch_id :dto.branch_id
 
     });
     const savedGrn = await this.grnRepo.save(grn);
@@ -53,11 +56,15 @@ export class GoodsReceivingNoteService {
         grn_id: savedGrn.id,
         product_id: item.product_id,
         variant_id: item.variant_id,
-        received_quantity: item.received_quantity,
+        received_qty: item.received_qty,
         unit_price: item.unit_price,
-        total_price: item.received_quantity * item.unit_price,
+        total_price: item.received_qty * item.unit_price,
         remarks: item.remarks,
         grn_status: item.grn_status,
+        ordered_qty: 101,
+        accepted_qty:item.accepted_qty,
+        rejected_qty:102
+
       }),
     );
     await this.grnItemRepo.save(grnItems);
@@ -71,7 +78,7 @@ export class GoodsReceivingNoteService {
         },
       });
       if (stock) {
-        stock.quantity_on_hand += item.received_quantity;
+        stock.quantity_on_hand += item.received_qty;
       } else {
         stock = this.stockRepo.create({
           product_id: item.product_id,
@@ -79,9 +86,8 @@ export class GoodsReceivingNoteService {
           warehouse_id: dto.warehouse_id,
           company_id: dto.company_id,
           branch_id: dto.branch_id,
-          quantity_on_hand: item.received_quantity,
-          reorder_level: 0,
-          reorder_quantity: 0,
+          quantity_on_hand: item.received_qty,
+          alert_qty: 0,
         });
       }
       await this.stockRepo.save(stock);
@@ -92,6 +98,9 @@ export class GoodsReceivingNoteService {
       grnItems: grnItems,
     })
   }
+
+
+
     async findAll(filter?: number) {
         try {
           const where: any = {};

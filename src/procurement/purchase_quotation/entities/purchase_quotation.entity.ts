@@ -4,6 +4,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDat
 import { PurchaseQuotationStatus } from 'src/procurement/enums/purchase-quatation.enum';
 import { Company } from 'src/Company/companies/company.entity';
 import { Branch } from 'src/Company/branch/branch.entity';
+import { QuotationItem } from './purchase_quotation_item.entity';
 
 
 @Entity('purchase_quotations')
@@ -59,4 +60,8 @@ export class PurchaseQuotation {
 
     @UpdateDateColumn({ name: 'updated_date', type: 'timestamp', nullable: true })
     updated_date?: Date;
+
+    @OneToMany(() => QuotationItem, (qi) => qi.purchase_quotation)
+quotation_items: QuotationItem[];
+
 }

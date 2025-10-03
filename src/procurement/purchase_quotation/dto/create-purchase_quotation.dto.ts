@@ -14,6 +14,8 @@ export class CreatePurchaseQuotationDto {
   @IsNumber()
   branch_id: number;
 
+  
+
 
   @IsArray()
   @ValidateNested({ each: true })

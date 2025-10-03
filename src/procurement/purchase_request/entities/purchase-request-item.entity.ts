@@ -10,8 +10,7 @@ export class PurchaseRequestItem {
     @PrimaryGeneratedColumn()
     id: number;
 
-    //   @ManyToOne(() => PurchaseRequest, (pr) => pr.items)
-    //   purchase_request: PurchaseRequest;
+
 
     @Column()
     pr_id: number

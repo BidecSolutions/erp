@@ -6,9 +6,8 @@ import { SupplierCategory } from '../supplier-category/supplier-category.entity'
 import { Supplier } from '../supplier/supplier.entity';
 import { CustomerPayment } from '../customer-payment/customer-payment.entity';
 import { CustomerInvoice } from '../customer-invoice/customer-invoice.entity';
-import { SupplierPayment } from '../supplier-payment/supplier-payment.entity';
-import { SupplierInvoice } from '../supplier-invoice/supplier-invoice.entity';
 import { ChartOfAccount } from '../chart-of-accounts/chart-of-account.entity';
+import { SupplierInvoice } from '../supplier-invoice/entities/supplier-invoice.entity';
 
 @Entity('companies')
 export class Company {
@@ -125,9 +124,9 @@ export class Company {
   @OneToMany(() => CustomerInvoice, (invoice) => invoice.company)
   customer_invoices: CustomerInvoice[];
 
-  // One company can have many supplier payments
-  @OneToMany(() => SupplierPayment, (payment) => payment.company)
-  supplier_payments: SupplierPayment[];
+  // // One company can have many supplier payments
+  // @OneToMany(() => SupplierPayment, (payment) => payment.company)
+  // supplier_payments: SupplierPayment[];
 
   // One company can have many supplier invoices
   @OneToMany(() => SupplierInvoice, (invoice) => invoice.company)

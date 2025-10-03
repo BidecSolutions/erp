@@ -1,9 +1,6 @@
-import { IsNotEmpty, IsNumber, IsArray, ValidateNested, IsString, IsInt, IsEnum } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsArray, ValidateNested, IsString, IsInt, IsEnum, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 import { grnStatus } from 'src/procurement/enums/grn-enum';
-
-
-
 
 export class CreatePurchaseGrnDto {
   @IsNumber()
@@ -16,15 +13,15 @@ export class CreatePurchaseGrnDto {
   @IsString()
   remarks?: string;
 
-  
+
   @IsNumber()
-  warehouse_id:number
+  warehouse_id: number
 
   @IsInt()
-  company_id:number
+  company_id: number
 
-   @IsInt()
-  branch_id:number
+  @IsInt()
+  branch_id: number
 
   @IsArray()
   @ValidateNested({ each: true })
@@ -41,7 +38,7 @@ export class CreatePurchaseGrnItemDto {
   variant_id: number;
 
   @IsNumber()
-  received_quantity: number;
+  received_qty: number;
 
   @IsNumber()
   unit_price: number;
@@ -49,8 +46,18 @@ export class CreatePurchaseGrnItemDto {
   @IsString()
   remarks?: string;
 
-
   @IsEnum(grnStatus)
   grn_status: grnStatus;
+
+  @IsNotEmpty()
+  @IsNumber()
+  accepted_qty: number;
+
+  @IsOptional()
+  @IsNumber()
+  rejected_qty: number;
+
+
+
 }
 

@@ -37,12 +37,12 @@ export class PurchaseOrder {
     @JoinColumn({ name: 'branch_id' })
     branch: Branch
 
-// Entity
-@Column({ type: 'date' })
-order_date: string;
+    // Entity
+    @Column({ type: 'date' })
+    order_date: string;
 
-@Column({ type: 'date' })
-expected_delivery_date: string;
+    @Column({ type: 'date' })
+    expected_delivery_date: string;
 
     @Column({
         type: 'enum',

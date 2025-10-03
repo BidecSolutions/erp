@@ -10,30 +10,19 @@ export class Stock {
   @PrimaryGeneratedColumn()
   id: number;
 
-  // @Column()
-  // product_id: number;
-  // @ManyToOne(() => Product)
-  // @JoinColumn({ name: 'product_id' })
-  // product: Product
-
-  // @Column({ nullable: true })
-  // variant_id: number;
-  // @ManyToOne(() => productVariant)
-  // @JoinColumn({ name: 'variant_id' })
-  // variant: productVariant
   @Column({ type: 'int' })
-product_id: number;
+  product_id: number;
 
-@ManyToOne(() => Product)
-@JoinColumn({ name: 'product_id' })
-product: Product;
+  @ManyToOne(() => Product)
+  @JoinColumn({ name: 'product_id' })
+  product: Product;
 
-@Column({ type: 'int', nullable: true })
-variant_id?: number | null;
+  @Column({ type: 'int', nullable: true })
+  variant_id?: number | null;
 
-@ManyToOne(() => productVariant, { nullable: true })
-@JoinColumn({ name: 'variant_id' })
-variant?: productVariant | null;
+  @ManyToOne(() => productVariant, { nullable: true })
+  @JoinColumn({ name: 'variant_id' })
+  variant?: productVariant | null;
 
   @Column()
   warehouse_id: number;
@@ -48,7 +37,6 @@ variant?: productVariant | null;
   @JoinColumn({ name: 'company_id' })
   company: Company
 
-
   @Column()
   branch_id: number;
   @ManyToOne(() => Branch)
@@ -59,10 +47,7 @@ variant?: productVariant | null;
   quantity_on_hand: number;
 
   @Column({ type: 'int', default: 0 })
-  reorder_level: number;
-
-  @Column({ type: 'int', default: 0 })
-  reorder_quantity: number;
+  alert_qty: number;
 
   @Column({ type: 'int', default: 1 })
   status: number;

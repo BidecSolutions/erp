@@ -1,63 +1,43 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, IsDateString } from 'class-validator';
 
 export class CreateSupplierInvoiceDto {
-  @IsNotEmpty()
-  company_id: number;
+
+  purchase_order_id:number;
 
   @IsNotEmpty()
-  supplier_id: number;
+  @IsDateString()
+  invoice_date: string;
 
   @IsOptional()
-  purchase_order_id?: number;
+  @IsString()
+  invoice_number?: string;
 
   @IsNotEmpty()
-  bill_no: string;
-
-  @IsNotEmpty()
-  supplier_bill_no: string;
-
-  @IsNotEmpty()
-  bill_date: string;
-
-  @IsNotEmpty()
+  @IsDateString()
   due_date: string;
 
   @IsOptional()
+  @IsString()
   payment_terms?: string;
 
-  @IsNumber()
-  bill_amount: number;
-
-  @IsNumber()
-  tax_amount: number;
-
-  @IsNumber()
-  discount_amount: number;
-
-  @IsNumber()
-  total_amount: number;
+  
+  @IsOptional()
+  @IsString()
+  payment_method?: string;
 
   @IsOptional()
-  paid_amount?: number;
+  @IsNumber()
+  tax_amount?: number;
 
   @IsOptional()
-  outstanding_amount?: number;
-
-  @IsNotEmpty()
-  bill_status: string;
-
-  @IsNotEmpty()
-  approval_status: string;
-
-  @IsNotEmpty()
-  currency_code: string;
+  @IsNumber()
+  discount_amount?: number;
 
   @IsOptional()
-  exchange_rate?: number;
-
-  @IsOptional()
+  @IsString()
   notes?: string;
 
   @IsOptional()
+  @IsString()
   attachment_path?: string;
 }

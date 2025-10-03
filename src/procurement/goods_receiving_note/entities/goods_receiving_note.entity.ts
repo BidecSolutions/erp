@@ -10,6 +10,9 @@ import {
     UpdateDateColumn,
 } from 'typeorm';
 import { PurchaseGrnItem } from './goods_receiving_note-item.entity';
+import { Company } from 'src/Company/companies/company.entity';
+import { Branch } from 'src/Company/branch/branch.entity';
+import { Warehouse } from 'src/procurement/warehouse/entities/warehouse.entity';
 
 @Entity('purchase_grn')
 export class PurchaseGrn {
@@ -23,13 +26,31 @@ export class PurchaseGrn {
     purchaseOrder: PurchaseOrder;
 
     @Column()
+    company_id: number;
+    @ManyToOne(() => Company)
+    @JoinColumn({ name: 'company_id' })
+    company: Company
+
+    @Column()
+    branch_id: number;
+    @ManyToOne(() => Branch)
+    @JoinColumn({ name: 'branch_id' })
+    branch: Branch
+
+    @Column()
+    warehouse_id: number;
+    @ManyToOne(() => Warehouse)
+    @JoinColumn({ name: 'warehouse_id' })
+    warehouse: Warehouse
+
+    @Column()
     grn_date: Date;
 
     @Column({ nullable: true })
     remarks: string;
 
     @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
-    total_received_amount: number;
+    total_amount: number;
 
     @Column({ default: 'pending' })
     grn_status: string;

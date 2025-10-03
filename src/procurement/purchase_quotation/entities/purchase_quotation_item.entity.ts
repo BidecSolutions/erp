@@ -5,7 +5,7 @@ import { productVariant } from 'src/procurement/product/entities/variant.entity'
 import { Supplier } from 'src/Company/supplier/supplier.entity';
 import { PurchaseQuotationStatus } from 'src/procurement/enums/purchase-quatation.enum';
 
-@Entity('purchase-quotation_items')
+@Entity('purchase_quotation_items')
 export class QuotationItem {
     @PrimaryGeneratedColumn()
     id: number;
@@ -63,4 +63,6 @@ export class QuotationItem {
 
     @UpdateDateColumn({ name: 'updated_date', type: 'timestamp', nullable: true })
     updated_date?: Date;
+
+
 }

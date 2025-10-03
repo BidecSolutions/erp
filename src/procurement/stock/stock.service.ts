@@ -14,14 +14,11 @@ export class StockService {
     private readonly stockRepo: Repository<Stock>,
     private readonly dataSource: DataSource,
   ) {}
-    
 async store(dto: CreateStockDto) {
   try {
     return await this.dataSource.transaction(async (manager) => {
       const stockRepo = manager.getRepository(Stock);
-
       const stocksToSave: Stock[] = [];
-
       for (const product of dto.products) {
         let stock = await stockRepo.findOne({
           where: {
@@ -29,37 +26,26 @@ async store(dto: CreateStockDto) {
             warehouse_id: dto.warehouse_id,
             company_id: dto.company_id,
             branch_id: dto.branch_id,
-            // variant_id null ho to IsNull() use karna
             variant_id: product.variant_id ?? IsNull(),
           },
         });
-
         if (stock) {
-          // ✅ update existing stock
           stock.quantity_on_hand += product.quantity_on_hand;
-          stock.reorder_level = product.reorder_level ?? stock.reorder_level;
-          stock.reorder_quantity = product.reorder_quantity ?? stock.reorder_quantity;
+          stock.alert_qty = product.alert_qty ?? stock.alert_qty;
         } else {
-          // ✅ create new stock
           stock = stockRepo.create({
             product_id: product.product_id,
             variant_id: product.variant_id ?? null,
             quantity_on_hand: product.quantity_on_hand,
-            reorder_level: product.reorder_level ?? 0,
-            reorder_quantity: product.reorder_quantity ?? 0,
+            alert_qty: product.alert_qty ?? 0,
             warehouse_id: dto.warehouse_id,
             company_id: dto.company_id,
             branch_id: dto.branch_id,
-
           });
         }
-
         stocksToSave.push(stock);
       }
-
-      // ✅ Save all stocks in one go
       const savedStocks = await stockRepo.save(stocksToSave);
-
       return successResponse('Stock craeted successfully!', savedStocks);
     });
   } catch (error) {

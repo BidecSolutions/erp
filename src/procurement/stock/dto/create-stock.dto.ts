@@ -46,11 +46,7 @@ export class ProductDto {
   @IsOptional()
   @IsInt()
   @Min(0)
-  reorder_level?: number;
+  alert_qty?: number;
 
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  reorder_quantity?: number;
 }
 
