@@ -31,20 +31,20 @@ export class StockAdjustment {
         type: 'enum',
         enum: AdjustmentReason,
     })
-    reason: AdjustmentType;
+    reason: AdjustmentReason;
 
 
     @Column({ type: 'int', default: 1 })
     status: number;
 
 
-    @Column({ name: 'company_id', nullable: false })
+    @Column()
     company_id: number;
     @ManyToOne(() => Company)
     @JoinColumn({ name: 'company_id' })
     comapany: Company
 
-    @Column({ name: 'branch_id', nullable: false })
+    @Column()
     branch_id: number;
     @ManyToOne(() => Branch)
     @JoinColumn({ name: 'branch_id' })
