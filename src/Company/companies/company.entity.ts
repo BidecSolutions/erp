@@ -10,6 +10,7 @@ import { ChartOfAccount } from '../chart-of-accounts/chart-of-account.entity';
 import { SystemConfiguration } from '../system_configuration/system_configuration.entity';
 import { SalesOrder } from 'src/sales/sales-order/entity/sales-order.entity';
 import { TaxType } from 'src/sales/tax-type/entity/tax-type.entity';
+import { SupplierInvoice } from '../supplier-invoice/entities/supplier-invoice.entity';
 
 @Entity('companies')
 export class Company {
