@@ -51,7 +51,7 @@ export class EmployeeStrategy extends PassportStrategy(Strategy, 'employee') {
                 where: { id: In(branches.branch_id) },
                 select: ({ id: true, branch_name: true })
             });
-            return { user, branches: allBranches ? allBranches : null };
+            return { user, branches: allBranches ? allBranches : null, company_id: branches ? branches.company_id : null };
         }
     }
 }

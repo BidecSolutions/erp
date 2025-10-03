@@ -12,13 +12,13 @@ export class BranchController {
 
     @Post('create')
     create(@Body() dto: CreateBranchDto, @Req() req: Request) {
-        const userId = (req as any).user.id;
+        const userId = req['user'].user.id;
         return this.branchService.create(dto, userId);
     }
 
     @Get('list')
     findAll(@Req() req: Request) {
-        const userId = (req as any).user.id;
+        const userId = req['user'].user.id;
         return this.branchService.findAll(userId);
     }
 
@@ -29,7 +29,7 @@ export class BranchController {
 
     @Put('updateby/:id')
     update(@Param('id') id: number, @Body() dto: UpdateBranchDto, @Req() req: Request) {
-        const userId = (req as any).user.id;
+        const userId = req['user'].user.id;
         return this.branchService.update(id, dto, userId);
     }
 

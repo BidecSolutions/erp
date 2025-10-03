@@ -55,6 +55,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         select: ({ id: true, branch_name: true })
       });
     }
-    return { user, branches: allBranches ? allBranches : null };
+    return { user, branches: allBranches ? allBranches : null, company_id: branches ? branches.company_id : null };
   }
 }

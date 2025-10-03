@@ -20,34 +20,41 @@ export class BranchService {
     ) { }
 
     async create(dto: CreateBranchDto, userID: number) {
-        try {
-            const company = await this.companyRepo.findOneBy({ id: dto.companyId });
-            if (!company) return { success: false, message: `Company with ID ${dto.companyId} not found` };
 
-            const branch = this.branchRepo.create({
-                ...dto,
-                company: { id: dto.companyId } as Company,
-                is_active: 1,
-            });
-            const savedBranch = await this.branchRepo.save(branch);
+        const company = await this.companyRepo.findOneBy({ id: dto.companyId });
+        if (!company) return { success: false, message: `Company with ID ${dto.companyId} not found` };
 
-            const findBranch = await this.ucm.findOne({ where: { company_id: dto.companyId } });
+        const branch = this.branchRepo.create({
+            ...dto,
+            company: { id: dto.companyId } as Company,
+            is_active: 1,
+        });
+        const savedBranch = await this.branchRepo.save(branch);
 
-            if (!findBranch) {
-                throw new Error('Company mapping not found');
-            }
+        const findBranch = await this.ucm.findOne({ where: { user_id: userID } });
 
-            let updatedBranches: number[] = Array.isArray(findBranch.branch_id) ? [...findBranch.branch_id] : [];
+
+
+        if (!findBranch) {
+            throw new Error('Company mapping not found');
+        }
+
+        // branch_id is already a number[] (auto-parsed by TypeORM JSON column)
+        let updatedBranches: number[] = [...(findBranch.branch_id || [])];
+
+        if (!updatedBranches.includes(savedBranch.id)) {
             updatedBranches.push(savedBranch.id);
+        }
 
-            await this.ucm.update(
-                { company_id: dto.companyId },
-                { branch_id: updatedBranches }
-            );
+        // Update with array directly (TypeORM handles JSON serialization)
+        await this.ucm.update(
+            { user_id: userID },
+            { branch_id: updatedBranches }
+        );
 
-            const branches = await this.findAll(userID);
-            return { success: true, message: 'Branch created successfully', data: branches };
-        } catch (error) {
+        const branches = await this.findAll(userID);
+        return { success: true, message: 'Branch created successfully', data: branches };
+        try { } catch (error) {
             return { success: false, message: 'Failed to create branch' };
         }
     }
