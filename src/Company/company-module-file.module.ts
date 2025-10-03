@@ -31,7 +31,7 @@ export const companySetting = [
     SupplierInvoiceModule,
     BankModule,
     ChartOfAccountsModule,
-    SupplierInvoiceModule
+    SupplierInvoiceModule,
     SystemConfigurationsModule,
 
 ];
