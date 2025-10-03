@@ -6,8 +6,5 @@ export class CreateDepartmentDto {
   name: string;
 
   
-     @IsNumber()
-    @IsNotEmpty()
-    company_id: number; // yahan add karo
-
+   
 }

@@ -15,7 +15,7 @@ export class BranchController {
         const userId = req['user'].user.id;
         return this.branchService.create(dto, userId);
     }
-
+ 
     @Get('list')
     findAll(@Req() req: Request) {
         const userId = req['user'].user.id;

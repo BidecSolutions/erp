@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { Department } from "./department.entity";
 import { UpdateDepartmentDto } from "./dto/update-department.dto";
-import { Repository } from "typeorm";
+import { createQueryBuilder, Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Company } from "src/Company/companies/company.entity";
 import { CreateDepartmentDto } from "./dto/create-department.dto";
@@ -20,90 +20,90 @@ export class DepartmentService {
     private readonly companyRepo: Repository<Company>
   ) {}
 
-  async create(dto: CreateDepartmentDto): Promise<any> {
-    const company = await this.companyRepo.findOneBy({ id: dto.company_id });
-    if (!company) throw new NotFoundException("Company not found");
+  async create(dto: CreateDepartmentDto, company_id: number) {
+    try {
+      const department = this.departmentRepository.create({
+        name: dto.name,
+        company_id: company_id,
+      });
 
-    const department = this.departmentRepository.create({
-      name: dto.name,
-      company_id: company.id,
-    });
+      await this.departmentRepository.save(department);
+      const savedDept = await this.findAll(company_id);
 
-    const savedDept = await this.departmentRepository.save(department);
-
-    return {
-      id: savedDept.id,
-      name: savedDept.name,
-      company: company.company_name, // sirf name
-      status: savedDept.status,
-    };
+      return savedDept;
+    } catch (e) {
+      return { message: e.message };
+    }
   }
 
-  async findAll(filterStatus?: number) {
+  async findAll(company_id: number, filterStatus?: number) {
     const status = filterStatus !== undefined ? filterStatus : 1;
-    const departments = await this.departmentRepository.find({
-      where: {status},
-      relations: ["company"],
-    });
-    return departments.map((d) => ({
-      id: d.id,
-      name: d.name,
-      company: d.company?.company_name, // sirf name
-      status: d.status,
-    }));
+    try {
+      const departments = await this.departmentRepository
+        .createQueryBuilder("department")
+        .leftJoin("department.company", "company")
+        .select([
+          "department.id",
+          "department.name",
+          "company.company_name", // sirf company name select
+          "department.status",
+        ])
+        .where("department.company_id = :company_id", { company_id })
+        .where("department.status = :status", { status })
+        .orderBy("department.id", "DESC")
+        .getRawMany();
+      return departments;
+    } catch (e) {
+      return { message: e.message };
+    }
   }
 
-  async findOne(id: number): Promise<any> {
-    const department = await this.departmentRepository.findOne({
-      where: { id },
-      relations: ["company"],
-    });
-    if (!department)
+ async findOne(id: number) {
+  try {
+    const department = await this.departmentRepository
+      .createQueryBuilder("department")
+      .leftJoin("department.company", "company")
+      .select([
+        "department.id",
+        "department.name",
+        "department.status",
+        "company.company_name", // sirf company ka name select
+      ])
+      .where("department.id = :id", { id })
+      .getRawOne();
+
+    if (!department) {
       throw new NotFoundException(`Department with ID ${id} not found`);
-
-    return {
-      id: department.id,
-      name: department.name,
-      company: department.company?.company_name, // sirf name
-      status: department.status,
-    };
-  }
-
-  async update(id: number, dto: UpdateDepartmentDto): Promise<any> {
-    const department = await this.departmentRepository.findOneBy({ id });
-    if (!department)
-      throw new NotFoundException(`Department with ID ${id} not found`);
-
-    if (dto.name) department.name = dto.name;
-
-    if (dto.company_Id) {
-      const company = await this.companyRepo.findOneBy({ id: dto.company_Id });
-      if (!company) throw new NotFoundException("Company not found");
-      department.company = company; // relation assign
     }
 
-    const updatedDept = await this.departmentRepository.save(department);
+    return department;
+  } catch (e) {
+    return { message: e.message };
+  }
+}
 
-    return {
-      id: updatedDept.id,
-      name: updatedDept.name,
-      company: updatedDept.company?.company_name,
-      status: updatedDept.status,
-    };
+
+  async update(id: number, dto: UpdateDepartmentDto, company_id: number) {
+    try {
+      const department = await this.departmentRepository.findOne({
+        where: { id, company_id },
+      });
+
+      if (!department) {
+        throw new NotFoundException(`Department with ID ${id} not found`);
+      }
+
+      if (dto.name) department.name = dto.name;
+
+      await this.departmentRepository.save(department);
+
+      const updatedDept = await this.findAll(company_id);
+      return updatedDept;
+    } catch (e) {
+      return { message: e.message };
+    }
   }
 
-  async remove(id: number): Promise<{ message: string }> {
-    const department = await this.departmentRepository.findOne({
-      where: { id },
-      relations: ["company"],
-    });
-    if (!department)
-      throw new NotFoundException(`Department with ID ${id} not found`);
-
-    await this.departmentRepository.remove(department);
-
-    return { message: `Department with ID ${id} deleted successfully` };
-  }
   async statusUpdate(id: number) {
     try {
       const dep = await this.departmentRepository.findOneBy({ id });
