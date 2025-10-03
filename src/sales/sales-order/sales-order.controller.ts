@@ -8,6 +8,7 @@ import {
   Patch,
   ParseIntPipe,
   Delete,
+  BadRequestException,
 } from '@nestjs/common';
 import { SalesOrderService } from './sales-order.service';
 import { CreateSalesOrderDto, UpdateSalesOrderDto } from './dto/sales-order.dto';
@@ -31,13 +32,14 @@ export class SalesOrderController {
     return this.salesOrderService.findOne(id);
   }
 
-  // @Patch(':id')
-  // async update(
-  //   @Param('id', ParseIntPipe) id: number,
-  //   @Body() dto: UpdateSalesOrderDto,
-  // ) {
-  //   return this.salesOrderService.update(id, dto);
-  // }
+  @Patch(':id')
+  async update(@Param('id') id: number, @Body() updateDto: CreateSalesOrderDto) {
+    try {
+      return await this.salesOrderService.update(+id, updateDto);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
 
   @Get('toogleStatus/:id')
   statusChange(@Param('id', ParseIntPipe) id: number) {

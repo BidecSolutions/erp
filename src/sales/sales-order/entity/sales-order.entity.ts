@@ -12,8 +12,9 @@ import { SalesOrderDetail } from './sales-order-detail.entity';
 import { Company } from 'src/Company/companies/company.entity';
 import { Branch } from 'src/Company/branch/branch.entity';
 import { Customer } from 'src/Company/customers/customer.entity';
-import { CustomerInvoice } from 'src/Company/customer-invoice/customer-invoice.entity';
+import { CustomerInvoice } from 'src/Company/customer-invoice/entity/customer-invoice.entity';
 import { SalesStatus } from 'src/sales/enums/sales-enums';
+import { customer_invoice_items } from 'src/Company/customer-invoice/entity/customer-invoice-items.entity';
 
 @Entity('sales_orders')
 export class SalesOrder {
@@ -26,12 +27,10 @@ export class SalesOrder {
   })
   salesOrderDetails: SalesOrderDetail[];
 
-
-  @OneToMany(() => CustomerInvoice, (invoice) => invoice.salesOrder)
-  customerInvoices: CustomerInvoice[];
-
-  @ManyToOne(() => Company, (company) => company.id, { nullable: true, 
-    onDelete: 'CASCADE', eager: true })
+  @ManyToOne(() => Company, (company) => company.id, {
+    nullable: true,
+    onDelete: 'CASCADE', eager: true
+  })
   @JoinColumn({ name: 'company_id' })
   company: Company;
 
@@ -43,6 +42,11 @@ export class SalesOrder {
   @JoinColumn({ name: 'customer_id' })
   customer: Customer;
 
+  @OneToMany(() => CustomerInvoice, (invoice) => invoice.salesOrder)
+  customerInvoices: CustomerInvoice[];
+
+
+
 
   // ------------------------------------------------
 
@@ -53,16 +57,16 @@ export class SalesOrder {
   sales_status: SalesStatus;
 
 
-  // @Column()
-  // company_id: number;
-
-  // @Column()
-  // branch_id: number;
-
-  // @Column()
-  // customer_id: number;
+  @Column()
+  company_id: number;
 
   @Column()
+  branch_id: number;
+
+  @Column()
+  customer_id: number;
+
+  @Column({ default: 1 })
   sales_person_id: number;
 
   @Column({ length: 50 })
@@ -146,8 +150,6 @@ export class SalesOrder {
   @Column({ type: 'date', nullable: true })
   updated_at: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
-  line_total: number;
 
 
   @BeforeInsert()
