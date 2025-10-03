@@ -19,7 +19,7 @@ export class BranchService {
 
     ) { }
 
-    async create(dto: CreateBranchDto) {
+    async create(dto: CreateBranchDto, userID: number) {
         try {
             const company = await this.companyRepo.findOneBy({ id: dto.companyId });
             if (!company) return { success: false, message: `Company with ID ${dto.companyId} not found` };
@@ -40,12 +40,13 @@ export class BranchService {
             let updatedBranches: number[] = Array.isArray(findBranch.branch_id) ? [...findBranch.branch_id] : [];
             updatedBranches.push(savedBranch.id);
 
-
             await this.ucm.update(
                 { company_id: dto.companyId },
                 { branch_id: updatedBranches }
             );
-            return { success: true, message: 'Branch created successfully', data: savedBranch };
+
+            const branches = await this.findAll(userID);
+            return { success: true, message: 'Branch created successfully', data: branches };
         } catch (error) {
             return { success: false, message: 'Failed to create branch' };
         }
@@ -65,34 +66,34 @@ export class BranchService {
             .andWhere('branch.id IN (:...ids)', { ids: branchIDS })
             .select([
                 'branch.id',
-                'branch.branch_code',
-                'branch.branch_name',
-                'branch.branch_type',
-                'branch.address_line1',
-                'branch.address_line2',
-                'branch.city',
-                'branch.state',
-                'branch.country',
-                'branch.postal_code',
-                'branch.phone',
-                'branch.mobile',
-                'branch.email',
-                'branch.manager_name',
-                'branch.manager_email',
-                'branch.manager_phone',
-                'branch.opening_balance',
-                'branch.bank_account_no',
-                'branch.bank_name',
-                'branch.ifsc_code',
-                'branch.is_head_office',
-                'branch.allow_negative_stock',
-                'branch.is_active',
-                'branch.created_by',
-                'branch.created_date',
-                'branch.updated_by',
-                'branch.updated_date',
-                'company.id',
-                'company.company_name',
+                'branch.branch_code as branch_code',
+                'branch.branch_name as branch_name',
+                'branch.branch_type as branch_type',
+                'branch.address_line1 as address_line1',
+                'branch.address_line2 as address_line2',
+                'branch.city as city',
+                'branch.state as state',
+                'branch.country as country',
+                'branch.postal_code as postal_code',
+                'branch.phone as phone',
+                'branch.mobile as mobile',
+                'branch.email as email',
+                'branch.manager_name as manager_name',
+                'branch.manager_email  as manager_email',
+                'branch.manager_phone as manager_phone',
+                'branch.opening_balance as opening_balance',
+                'branch.bank_account_no as bank_account_no',
+                'branch.bank_name as bank_name',
+                'branch.ifsc_code as ifsc_code',
+                'branch.is_head_office as is_head_office',
+                'branch.allow_negative_stock as allow_negative_stock',
+                'branch.is_active as is_active',
+                'branch.created_by as created_by',
+                'branch.created_date as created_date',
+                'branch.updated_by as updated_by',
+                'branch.updated_date as updated_date',
+                'company.id as companyId',
+                'company.company_name as company_name',
             ])
             .getRawMany();
         return { status: true, message: "Get All Branches", data: branch }
@@ -184,7 +185,7 @@ export class BranchService {
     }
 
 
-    async update(id: number, dto: UpdateBranchDto) {
+    async update(id: number, dto: UpdateBranchDto, userID: number) {
         try {
             const branch = await this.branchRepo.findOneBy({ id });
             if (!branch) return { success: false, message: 'Branch not found' };
@@ -198,12 +199,12 @@ export class BranchService {
                 branch.company = { id: dto.companyId } as Company;
             }
 
-
             Object.assign(branch, dto);
             branch.updated_date = new Date().toISOString().split('T')[0];
 
             const updatedBranch = await this.branchRepo.save(branch);
-            return { success: true, message: 'Branch updated successfully', data: updatedBranch };
+            const branches = await this.findAll(userID);
+            return { success: true, message: 'Branch updated successfully', data: branches };
         } catch (error) {
             return { success: false, message: 'Failed to update branch' };
         }
