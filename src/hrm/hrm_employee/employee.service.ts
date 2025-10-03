@@ -327,25 +327,25 @@ export class EmployeeService {
         designation,
         shift,
         ...(annualLeave ? { annualLeave } : {}),
-        ...(probationSetting ? { probationSetting } : {}),
-        cv:
-          files.cv?.[0]?.filename ??
-          (() => {
-            throw new BadRequestException("CV is required");
-          })(),
-        photo:
-          files.photo?.[0]?.filename ??
-          (() => {
-            throw new BadRequestException("Photo is required");
-          })(),
-        identity_card:
-          files.identity_card?.map((f) => f.filename) ??
-          (() => {
-            throw new BadRequestException(
-              "Identity Card (front & back) are required"
-            );
-          })(),
-        academic_transcript: files.academic_transcript?.[0]?.filename ?? null, // optional
+        ...(probationSetting ? { probationSetting } : {})
+        // cv:
+        //   files.cv?.[0]?.filename ??
+        //   (() => {
+        //     throw new BadRequestException("CV is required");
+        //   })(),
+        // photo:
+        //   files.photo?.[0]?.filename ??
+        //   (() => {
+        //     throw new BadRequestException("Photo is required");
+        //   })(),
+        // identity_card:
+        //   files.identity_card?.map((f) => f.filename) ??
+        //   (() => {
+        //     throw new BadRequestException(
+        //       "Identity Card (front & back) are required"
+        //     );
+        //   })(),
+        // academic_transcript: files.academic_transcript?.[0]?.filename ?? null, // optional
       });
 
       emp.is_system_user = dto.is_system_user ?? false;

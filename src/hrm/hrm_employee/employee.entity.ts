@@ -13,7 +13,6 @@ import {
 } from 'typeorm';
 import { Department } from '../hrm_department/department.entity';
 import { Designation } from '../hrm_designation/designation.entity';
-import { Attendance } from '../hrm_mark-attendance/mark-attendance.entity';
 import { BankDetail } from '../hrm_bank-details/bank-detail.entity';
 import { Shift } from '../hrm_shift/shift.entity';
 import { Document } from '../hrm_document/document.entity';
@@ -64,18 +63,18 @@ export class Employee {
   })
   locationType?: 'residential' | 'postal' | 'work address';
 
-  //  Required files
-  @Column({ nullable: false })
-  cv: string;
+//   //  Required files
+//   @Column({ nullable: false })
+//   cv: string;
 
-  @Column({ nullable: false })
-  photo: string;
+//   @Column({ nullable: false })
+//   photo: string;
 
-  @Column("simple-array", { nullable: false }) 
-  identity_card: string[];
+//   @Column("simple-array", { nullable: false }) 
+//   identity_card: string[];
 
-@Column({ type: 'text', nullable: true })
-academic_transcript: string | null;
+// @Column({ type: 'text', nullable: true })
+// academic_transcript: string | null;
 
 
   @ManyToOne(() => Department, { nullable: false })
@@ -107,8 +106,6 @@ academic_transcript: string | null;
 // branch_id: number[];
 
 
-  @OneToMany(() => Attendance, (markattendance) => markattendance.employee)
-  markattendance: Attendance[];
 
   @ManyToOne(() => Shift, (shift) => shift.employees)
   @JoinColumn({ name: 'shiftId' })
