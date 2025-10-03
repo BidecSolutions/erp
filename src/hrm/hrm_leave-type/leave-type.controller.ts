@@ -1,42 +1,81 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, Put, UseGuards, ParseIntPipe, Query } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Put,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+  ParseIntPipe,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { LeaveTypeService } from './leave-type.service';
 import { CreateLeaveTypeDto } from './dto/create-leave-type.dto';
 import { UpdateLeaveTypeDto } from './dto/update-leave-type.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
-
-UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard)
 @Controller('leave-type')
 export class LeaveTypeController {
-  constructor(private readonly leaveTypeService: LeaveTypeService) { }
+  constructor(private readonly leaveTypeService: LeaveTypeService) {}
 
+  // Create LeaveType
   @Post('create')
-  create(@Body() dto: CreateLeaveTypeDto) {
-    return this.leaveTypeService.create(dto);
+  async create(@Body() dto: CreateLeaveTypeDto, @Req() req: any) {
+    const companyId = req.user.company_id;
+    const leaveTypes = await this.leaveTypeService.create(dto, companyId);
+    return {
+      status: true,
+      message: 'Leave Type Created Successfully',
+      data: leaveTypes,
+    };
   }
 
+  // Get all LeaveTypes for a company with optional status filter
   @Get('list')
-   findAll(@Query('status') status?: string) {
-     const filterStatus = status !== undefined ? Number(status) : undefined;
-     return this.leaveTypeService.findAll(filterStatus);
-   }
+  async findAll(@Req() req: any, @Query('status') status?: string) {
+    const companyId = req.user.company_id;
+    const filterStatus = status !== undefined ? Number(status) : undefined;
+    const leaveTypes = await this.leaveTypeService.findAll(companyId, filterStatus);
+    return {
+      status: true,
+      message: 'Get All Leave Types',
+      data: leaveTypes,
+    };
+  }
 
+  // Get single LeaveType by ID
   @Get(':id/get')
-  findOne(@Param('id') id: number) {
-    return this.leaveTypeService.findOne(+id);
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    const leaveType = await this.leaveTypeService.findOne(id);
+    return {
+      status: true,
+      message: `Get Leave Type with ID ${id}`,
+      data: leaveType,
+    };
   }
 
+  // Update LeaveType
   @Put(':id/update')
-  update(@Param('id') id: number, @Body() dto: UpdateLeaveTypeDto) {
-    return this.leaveTypeService.update(+id, dto);
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateLeaveTypeDto,
+    @Req() req: any,
+  ) {
+    const companyId = req.user.company_id;
+    const updated = await this.leaveTypeService.update(id, dto, companyId);
+    return {
+      status: true,
+      message: 'Leave Type Updated Successfully',
+      data: updated,
+    };
   }
 
-  @Delete(':id/delete')
-  remove(@Param('id') id: number) {
-    return this.leaveTypeService.remove(+id);
+  // Toggle LeaveType status
+  @Get('toogleStatus/:id')
+  async statusChange(@Param('id', ParseIntPipe) id: number) {
+    return this.leaveTypeService.statusUpdate(id);
   }
-      @Get('toogleStatus/:id')
-        statusChange(@Param('id', ParseIntPipe) id: number){
-          return this.leaveTypeService.statusUpdate(id);
-        }
 }

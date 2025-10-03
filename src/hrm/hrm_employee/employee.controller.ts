@@ -107,12 +107,10 @@ create(
   // findAll() {
   //   return this.employeeService.findAll();
   // }
-  @Get('list')
-findAll(@Query('status') status?: string) {
-  //  query param se status ko number me convert kar rahe
-  const filterStatus = status !== undefined ? Number(status) : undefined;
-  return this.employeeService.findAll(filterStatus);
-}
+  @Post('list')
+  findAll(@Body() body:any) {
+    return this.employeeService.findAll(body);
+  }
 
   @Get(':id/get')
   findOne(@Param('id', ParseIntPipe) id: number) {

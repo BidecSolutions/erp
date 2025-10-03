@@ -18,86 +18,94 @@ export class AllowanceService {
   ) {}
 
   //  Create allowance with company
-  async create(dto: CreateAllowanceDto) {
-    const company = await this.companyRepo.findOneBy({ id: dto.company_id });
-    if (!company) throw new NotFoundException('Company not found');
+  async create(dto: CreateAllowanceDto, company_id: number) {
+    try {
+      const allowance = this.allowanceRepo.create({
+        title: dto.title,
+        type: dto.type,
+        amount: dto.amount,
+        company_id, // direct assign id
+      });
 
-    const newAllowance = this.allowanceRepo.create({
-      title: dto.title,
-      type: dto.type,
-      amount: dto.amount,
-      company,
-    });
-
-    const saved = await this.allowanceRepo.save(newAllowance);
-
-    return {
-      id: saved.id,
-      title: saved.title,
-      type: saved.type,
-      amount: saved.amount,
-      company: saved.company?.company_name,
-    };
-  }
-
-  //  Get all allowances with company name
-  async findAll(filterStatus?: number) {
-                    const status = filterStatus !== undefined ? filterStatus : 1;
-    const allowances = await this.allowanceRepo.find({ where: {status}, relations: ['company'] });
-    return allowances.map(a => ({
-      id: a.id,
-      title: a.title,
-      type: a.type,
-      amount: a.amount,
-      company: a.company?.company_name,
-      status: a.status,
-    }));
-  }
-
-  //  Get single allowance by id with company
-  async findOne(id: number) {
-    const a = await this.allowanceRepo.findOne({ where: { id }, relations: ['company'] });
-    if (!a) throw new NotFoundException(`Allowance ID ${id} not found`);
-
-    return {
-      id: a.id,
-      title: a.title,
-      type: a.type,
-      amount: a.amount,
-      company: a.company?.company_name,
-    };
-  }
-
-  //  Update allowance including company
-  async update(id: number, dto: UpdateAllowanceDto) {
-    const allowance = await this.allowanceRepo.findOne({ where: { id }, relations: ['company'] });
-    if (!allowance) throw new NotFoundException(`Allowance ID ${id} not found`);
-
-    if (dto.company_id) {
-      const company = await this.companyRepo.findOneBy({ id: dto.company_id });
-      if (!company) throw new NotFoundException('Company not found');
-      allowance.company = company;
+      await this.allowanceRepo.save(allowance);
+      const saved = await this.findAll(company_id);
+      return saved;
+    } catch (e) {
+      return { message: e.message };
     }
-
-    Object.assign(allowance, dto);
-    const saved = await this.allowanceRepo.save(allowance);
-
-    return {
-      id: saved.id,
-      title: saved.title,
-      type: saved.type,
-      amount: saved.amount,
-      company: saved.company?.company_name,
-    };
   }
 
-  //  Delete allowance
-  async remove(id: number) {
-    const allowance = await this.allowanceRepo.findOneBy({ id });
-    if (!allowance) throw new NotFoundException(`Allowance ID ${id} not found`);
-    await this.allowanceRepo.remove(allowance);
-    return { message: `Allowance ID ${id} deleted successfully` };
+
+   async findAll(company_id: number, filterStatus?: number) {
+    const status = filterStatus !== undefined ? filterStatus : 1;
+    try {
+      const allowances = await this.allowanceRepo
+        .createQueryBuilder("allowance")
+        .leftJoin("allowance.company", "company")
+        .select([
+          "allowance.id",
+          "allowance.title",
+          "allowance.type",
+          "allowance.amount",
+          "allowance.status",
+          "company.company_name",
+        ])
+        .where("allowance.company_id = :company_id", { company_id })
+        .andWhere("allowance.status = :status", { status })
+        .orderBy("allowance.id", "DESC")
+        .getRawMany();
+
+      return allowances;
+    } catch (e) {
+      return { message: e.message };
+    }
   }
+
+
+  async findOne(id: number) {
+    try {
+      const allowance = await this.allowanceRepo
+        .createQueryBuilder("allowance")
+        .leftJoin("allowance.company", "company")
+        .select([
+          "allowance.id",
+          "allowance.title",
+          "allowance.type",
+          "allowance.amount",
+          "allowance.status",
+          "company.company_name",
+        ])
+        .where("allowance.id = :id", { id })
+        .getRawOne();
+
+      if (!allowance) throw new NotFoundException(`Allowance ID ${id} not found`);
+
+      return allowance;
+    } catch (e) {
+      return { message: e.message };
+    }
+  }
+
+  // Update allowance (only title/type/amount update, NOT company_id)
+  async update(id: number, dto: UpdateAllowanceDto, company_id: number) {
+    try {
+      const allowance = await this.allowanceRepo.findOne({ where: { id, company_id } });
+      if (!allowance) throw new NotFoundException(`Allowance ID ${id} not found`);
+
+      if (dto.title) allowance.title = dto.title;
+      if (dto.type) allowance.type = dto.type;
+      if (dto.amount) allowance.amount = dto.amount;
+
+      await this.allowanceRepo.save(allowance);
+
+      const updated = await this.findAll(company_id);
+      return updated;
+    } catch (e) {
+      return { message: e.message };
+    }
+  }
+
+
 
        async statusUpdate(id: number) {
             try {
