@@ -55,9 +55,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         select: ({ id: true, branch_name: true })
       });
     }
-    // if (user.role_id == 2 && allBranches.length == 0) {
-    //   throw new UnauthorizedException('First Create You Banch');
-    // }
-    return { user, branches: allBranches ? allBranches : null };
+    return { user, branches: allBranches ? allBranches : null, company_id: branches ? branches.company_id : null };
   }
 }

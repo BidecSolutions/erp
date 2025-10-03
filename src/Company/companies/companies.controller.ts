@@ -17,7 +17,7 @@ export class CompaniesController {
     @UseInterceptors(
         FileInterceptor('company_logo', {
             storage: diskStorage({
-                destination: 'companies/uploads',
+                destination: 'src/uploads',
                 filename: (req, file, callback) => {
                     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
                     const ext = extname(file.originalname);
@@ -27,7 +27,10 @@ export class CompaniesController {
         }),
     )
     create(@Body() dto: CreateCompanyDto, @UploadedFile() file: Express.Multer.File) {
-        if (file) dto['company_logo_path'] = file.path;
+        if (!file) {
+            return { success: false, message: 'Company logo is required!' };
+        }
+         dto['company_logo_path'] = file.path;
         return this.companiesService.create(dto);
     }
 

@@ -22,22 +22,24 @@ export class SalesOrder {
 
   // ------------------ RELATIONS ------------------
   @OneToMany(() => SalesOrderDetail, (detail) => detail.salesOrder, {
-    
+    cascade: true,
   })
   salesOrderDetails: SalesOrderDetail[];
+
 
   @OneToMany(() => CustomerInvoice, (invoice) => invoice.salesOrder)
   customerInvoices: CustomerInvoice[];
 
-  @ManyToOne(() => Company, (company) => company.id, { onDelete: 'CASCADE', eager: true })
+  @ManyToOne(() => Company, (company) => company.id, { nullable: true, 
+    onDelete: 'CASCADE', eager: true })
   @JoinColumn({ name: 'company_id' })
   company: Company;
 
-  @ManyToOne(() => Branch, (branch) => branch.id, { onDelete: 'CASCADE', eager: true })
+  @ManyToOne(() => Branch, (branch) => branch.id, { nullable: true, onDelete: 'CASCADE', eager: true })
   @JoinColumn({ name: 'branch_id' })
   branch: Branch;
 
-  @ManyToOne(() => Customer, (customer) => customer.id, { onDelete: 'CASCADE', eager: true })
+  @ManyToOne(() => Customer, (customer) => customer.id, { nullable: true, onDelete: 'CASCADE', eager: true })
   @JoinColumn({ name: 'customer_id' })
   customer: Customer;
 
@@ -49,16 +51,16 @@ export class SalesOrder {
     enum: SalesStatus,
   })
   sales_status: SalesStatus;
-  
 
-  @Column()
-  company_id: number;
 
-  @Column()
-  branch_id: number;
+  // @Column()
+  // company_id: number;
 
-  @Column()
-  customer_id: number;
+  // @Column()
+  // branch_id: number;
+
+  // @Column()
+  // customer_id: number;
 
   @Column()
   sales_person_id: number;
@@ -143,6 +145,9 @@ export class SalesOrder {
 
   @Column({ type: 'date', nullable: true })
   updated_at: string;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  line_total: number;
 
 
   @BeforeInsert()

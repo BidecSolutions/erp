@@ -29,9 +29,6 @@ import { Branch } from "src/Company/branch/branch.entity";
 import { ProbationSetting } from "../hrm_probation-setting/probation-setting.entity";
 @Injectable()
 export class EmployeeService {
-  // statusUpdate(id: number) {
-  //   throw new Error('Method not implemented.');
-  // }
   constructor(
     @InjectRepository(Employee)
     private employeeRepository: Repository<Employee>,
@@ -58,7 +55,7 @@ export class EmployeeService {
 
     @InjectRepository(userCompanyMapping)
     private readonly companyMaping: Repository<userCompanyMapping>
-  ) {}
+  ) { }
 
   private async generateEmployeeCode(): Promise<string> {
     const lastEmployee = await this.employeeRepository.find({
@@ -81,6 +78,7 @@ export class EmployeeService {
         "annualLeave",
         "allowances",
         "shift",
+        "branches",
         "branches",
       ],
     });
@@ -196,6 +194,7 @@ export class EmployeeService {
         "allowances",
         "documents",
         "bankDetails",
+        "branches",
         "branches",
       ],
     });
@@ -404,6 +403,8 @@ export class EmployeeService {
         });
         await this.companyMaping.save(companyMapping);
       }
+
+
 
       // Save allowances
       if (dto.allowance_ids?.length) {
@@ -636,6 +637,7 @@ export class EmployeeService {
         "annualLeave",
         "allowances",
         "branches",
+        "branches",
       ],
     });
 
@@ -662,11 +664,11 @@ export class EmployeeService {
       shift: fullEmp.shift?.name,
       annualLeave: fullEmp.annualLeave
         ? {
-            id: fullEmp.annualLeave.id,
-            name: fullEmp.annualLeave.name,
-            total_leave: fullEmp.annualLeave.total_leave,
-            status: fullEmp.annualLeave.status,
-          }
+          id: fullEmp.annualLeave.id,
+          name: fullEmp.annualLeave.name,
+          total_leave: fullEmp.annualLeave.total_leave,
+          status: fullEmp.annualLeave.status,
+        }
         : null,
       allowances:
         fullEmp.allowances?.map((a) => ({

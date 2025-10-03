@@ -17,6 +17,14 @@ export class sideMenus {
     @Column({ length: 255, unique: true })
     name: string;
 
+
+    @Column({ length: 255, nullable: true })
+    key_name: string;
+
+
+    @Column({ type: 'int', nullable: true })
+    periority: number;
+
     @Column({
         type: 'int',
         comment: '1 = active, 2 = inactive',

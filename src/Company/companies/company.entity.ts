@@ -11,6 +11,7 @@ import { SupplierInvoice } from '../supplier-invoice/supplier-invoice.entity';
 import { ChartOfAccount } from '../chart-of-accounts/chart-of-account.entity';
 import { SystemConfiguration } from '../system_configuration/system_configuration.entity';
 import { SalesOrder } from 'src/sales/sales-order/entity/sales-order.entity';
+import { TaxType } from 'src/sales/tax-type/entity/tax-type.entity';
 
 @Entity('companies')
 export class Company {
@@ -20,7 +21,7 @@ export class Company {
   @Column()
   company_name: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true, length: 100 })
   company_logo_path: string;
 
   @Column({ nullable: true })
@@ -32,16 +33,16 @@ export class Company {
   @Column({ nullable: true })
   address_line2: string;
 
-  @Column()
+  @Column({ nullable: true })
   city: string;
 
-  @Column()
+  @Column({ nullable: true })
   state: string;
 
-  @Column()
+  @Column({ nullable: true })
   country: string;
 
-  @Column()
+  @Column({ nullable: true })
   postal_code: string;
 
   @Column({ nullable: true })
@@ -142,10 +143,6 @@ export class Company {
   // One company can have many chart of accounts
   @OneToMany(() => ChartOfAccount, (chart) => chart.company)
   chartOfAccounts: ChartOfAccount[];
-
-  // One company can have many system configurations
-  @OneToMany(() => SystemConfiguration, (config) => config.company)
-  systemConfigurations: SystemConfiguration[];
 
   @BeforeInsert()
   setCreateDate() {

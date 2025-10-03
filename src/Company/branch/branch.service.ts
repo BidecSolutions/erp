@@ -19,80 +19,91 @@ export class BranchService {
 
     ) { }
 
-    async create(dto: CreateBranchDto) {
-        try {
-            const company = await this.companyRepo.findOneBy({ id: dto.companyId });
-            if (!company) return { success: false, message: `Company with ID ${dto.companyId} not found` };
+    async create(dto: CreateBranchDto, userID: number) {
 
-            const branch = this.branchRepo.create({
-                ...dto,
-                company: { id: dto.companyId } as Company,
-                is_active: 1,
-            });
-            const savedBranch = await this.branchRepo.save(branch);
+        const company = await this.companyRepo.findOneBy({ id: dto.companyId });
+        if (!company) return { success: false, message: `Company with ID ${dto.companyId} not found` };
 
-            const findBranch = await this.ucm.findOne({ where: { company_id: dto.companyId } });
+        const branch = this.branchRepo.create({
+            ...dto,
+            company: { id: dto.companyId } as Company,
+            is_active: 1,
+        });
+        const savedBranch = await this.branchRepo.save(branch);
 
-            if (!findBranch) {
-                throw new Error('Company mapping not found');
-            }
+        const findBranch = await this.ucm.findOne({ where: { user_id: userID } });
 
-            let updatedBranches: number[] = Array.isArray(findBranch.branch_id) ? [...findBranch.branch_id] : [];
+
+
+        if (!findBranch) {
+            throw new Error('Company mapping not found');
+        }
+
+        // branch_id is already a number[] (auto-parsed by TypeORM JSON column)
+        let updatedBranches: number[] = [...(findBranch.branch_id || [])];
+
+        if (!updatedBranches.includes(savedBranch.id)) {
             updatedBranches.push(savedBranch.id);
-            console.log(updatedBranches);
+        }
 
-            await this.ucm.update(
-                { company_id: dto.companyId },
-                { branch_id: updatedBranches }
-            );
-            return { success: true, message: 'Branch created successfully', data: savedBranch };
-        } catch (error) {
+        // Update with array directly (TypeORM handles JSON serialization)
+        await this.ucm.update(
+            { user_id: userID },
+            { branch_id: updatedBranches }
+        );
+
+        const branches = await this.findAll(userID);
+        return { success: true, message: 'Branch created successfully', data: branches };
+        try { } catch (error) {
             return { success: false, message: 'Failed to create branch' };
         }
     }
 
-    async findAll() {
-        try {
-            const branches = await this.branchRepo
-                .createQueryBuilder('branch')
-                .leftJoinAndSelect('branch.company', 'company')
-                .select([
-                    'branch.id',
-                    'branch.branch_code',
-                    'branch.branch_name',
-                    'branch.address_line1',
-                    'branch.city',
-                    'branch.state',
-                    'branch.country',
-                    'branch.postal_code',
-                    'branch.phone',
-                    'branch.mobile',
-                    'branch.email',
-                    'branch.manager_name',
-                    'branch.manager_email',
-                    'branch.manager_phone',
-                    'branch.opening_balance',
-                    'branch.bank_account_no',
-                    'branch.bank_name',
-                    'branch.ifsc_code',
-                    'branch.is_head_office',
-                    'branch.allow_negative_stock',
-                    'branch.is_active',
-                    'branch.created_by',
-                    'branch.created_date',
-                    'branch.updated_by',
-                    'branch.updated_date',
-                    'branch.is_active',
-                    'company.id',
-                    'company.company_name',
-                ])
-                .where('branch.is_active = :isActive', { isActive: 1 })
-                .orderBy('branch.id', 'DESC')
-                .getMany();
-            return { success: true, message: 'Branches retrieved successfully', data: branches };
-        } catch (error) {
-            return { success: false, message: 'Failed to retrieve branches' };
+    async findAll(user_id: number) {
+        const findBranches = await this.ucm.findOne({ where: { user_id } });
+
+        if (!findBranches || !Array.isArray(findBranches.branch_id) || findBranches.branch_id.length === 0) {
+            return { status: true, message: "No Branch Found", data: [] }
         }
+        const branchIDS = findBranches.branch_id;
+        const branch = await this.branchRepo
+            .createQueryBuilder('branch')
+            .leftJoin('branch.company', 'company')
+            .andWhere('branch.is_active = :isActive', { isActive: 1 })
+            .andWhere('branch.id IN (:...ids)', { ids: branchIDS })
+            .select([
+                'branch.id',
+                'branch.branch_code as branch_code',
+                'branch.branch_name as branch_name',
+                'branch.branch_type as branch_type',
+                'branch.address_line1 as address_line1',
+                'branch.address_line2 as address_line2',
+                'branch.city as city',
+                'branch.state as state',
+                'branch.country as country',
+                'branch.postal_code as postal_code',
+                'branch.phone as phone',
+                'branch.mobile as mobile',
+                'branch.email as email',
+                'branch.manager_name as manager_name',
+                'branch.manager_email  as manager_email',
+                'branch.manager_phone as manager_phone',
+                'branch.opening_balance as opening_balance',
+                'branch.bank_account_no as bank_account_no',
+                'branch.bank_name as bank_name',
+                'branch.ifsc_code as ifsc_code',
+                'branch.is_head_office as is_head_office',
+                'branch.allow_negative_stock as allow_negative_stock',
+                'branch.is_active as is_active',
+                'branch.created_by as created_by',
+                'branch.created_date as created_date',
+                'branch.updated_by as updated_by',
+                'branch.updated_date as updated_date',
+                'company.id as companyId',
+                'company.company_name as company_name',
+            ])
+            .getRawMany();
+        return { status: true, message: "Get All Branches", data: branch }
     }
 
     async findOne(id: number) {
@@ -102,6 +113,7 @@ export class BranchService {
                 .leftJoin('branch.company', 'company')
                 .where('branch.id = :id', { id })
                 .andWhere('branch.is_active = :isActive', { isActive: 1 })
+
                 .select([
                     'branch.id',
                     'branch.branch_code',
@@ -180,7 +192,7 @@ export class BranchService {
     }
 
 
-    async update(id: number, dto: UpdateBranchDto) {
+    async update(id: number, dto: UpdateBranchDto, userID: number) {
         try {
             const branch = await this.branchRepo.findOneBy({ id });
             if (!branch) return { success: false, message: 'Branch not found' };
@@ -194,12 +206,12 @@ export class BranchService {
                 branch.company = { id: dto.companyId } as Company;
             }
 
-
             Object.assign(branch, dto);
             branch.updated_date = new Date().toISOString().split('T')[0];
 
             const updatedBranch = await this.branchRepo.save(branch);
-            return { success: true, message: 'Branch updated successfully', data: updatedBranch };
+            const branches = await this.findAll(userID);
+            return { success: true, message: 'Branch updated successfully', data: branches };
         } catch (error) {
             return { success: false, message: 'Failed to update branch' };
         }

@@ -42,7 +42,7 @@ import { POS } from './pos/POS-module-file.module';
 
   ],
   controllers: [AppController],
-  providers: [AppService, registerUser, userRoles, sideMenuAndRoleSeederService],
+  providers: [AppService, registerUser, userRoles, sideMenuAndRoleSeederService, ],
 })
 export class AppModule implements OnModuleInit {
   constructor(

@@ -31,13 +31,13 @@ export class SalesOrderController {
     return this.salesOrderService.findOne(id);
   }
 
-  @Patch(':id')
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateSalesOrderDto,
-  ) {
-    return this.salesOrderService.update(id, dto);
-  }
+  // @Patch(':id')
+  // async update(
+  //   @Param('id', ParseIntPipe) id: number,
+  //   @Body() dto: UpdateSalesOrderDto,
+  // ) {
+  //   return this.salesOrderService.update(id, dto);
+  // }
 
   @Get('toogleStatus/:id')
   statusChange(@Param('id', ParseIntPipe) id: number) {

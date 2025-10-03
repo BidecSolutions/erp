@@ -50,17 +50,19 @@ export class CompaniesService {
 
       await this.userRoleMappingRepo.save(userRoleMapping);
 
+
       //user company Mapping
       const userMapping = this.ucm.create({
         user_id: saveUser.id,
-        company_id: savedCompany.id
+        company_id: savedCompany.id,
+        branch_id: []
       });
 
       await this.ucm.save(userMapping);
       return { success: true, message: 'Company created successfully', data: savedCompany };
     }
     catch (error) {
-      return { success: false, message: 'Failed to create company' };
+      return { success: false, message: error.message };
     }
   }
 
