@@ -11,13 +11,15 @@ export class BranchController {
     constructor(private readonly branchService: BranchService) { }
 
     @Post('create')
-    create(@Body() dto: CreateBranchDto) {
-        return this.branchService.create(dto);
+    create(@Body() dto: CreateBranchDto, @Req() req: Request) {
+        const userId = req['user'].user.id;
+        return this.branchService.create(dto, userId);
     }
-
+ 
     @Get('list')
-    findAll() {
-        return this.branchService.findAll();
+    findAll(@Req() req: Request) {
+        const userId = req['user'].user.id;
+        return this.branchService.findAll(userId);
     }
 
     @Get('findby/:id')
@@ -26,8 +28,9 @@ export class BranchController {
     }
 
     @Put('updateby/:id')
-    update(@Param('id') id: number, @Body() dto: UpdateBranchDto) {
-        return this.branchService.update(id, dto);
+    update(@Param('id') id: number, @Body() dto: UpdateBranchDto, @Req() req: Request) {
+        const userId = req['user'].user.id;
+        return this.branchService.update(id, dto, userId);
     }
 
     // Soft delete

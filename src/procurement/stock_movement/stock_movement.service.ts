@@ -39,8 +39,8 @@ export class StockMovementService {
         );
 
         return successResponse('stock Movement created successfully!',{
-          stockData,
-          stockMovement
+          stock_movement,
+  
         } );
         
       } catch (error) {

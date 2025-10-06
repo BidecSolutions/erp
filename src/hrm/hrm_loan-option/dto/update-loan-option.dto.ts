@@ -1,4 +1,4 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateLoanOptionDto } from './create-loan-option.dto';
+// import { PartialType } from '@nestjs/mapped-types';
+// import { CreateLoanOptionDto } from './create-loan-option.dto';
 
-export class UpdateLoanOptionDto extends PartialType(CreateLoanOptionDto) {}
+// export class UpdateLoanOptionDto extends PartialType(CreateLoanOptionDto) {}

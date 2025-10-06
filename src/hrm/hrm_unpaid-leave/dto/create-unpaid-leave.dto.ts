@@ -11,5 +11,5 @@ export class CreateUnpaidLeaveDto {
 
   @IsInt({ message: 'Extra days must be an integer' })
   @Min(1, { message: 'Extra days must be at least 1' })
-  extra_days: number;
+  unpain_days: number;
 }

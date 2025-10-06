@@ -1,37 +1,82 @@
-import { Controller, Post, Get, Put, Delete, Param, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Put,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+  ParseIntPipe,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { AllowanceService } from './allowance.service';
 import { CreateAllowanceDto } from './dto/create-allowance.dto';
 import { UpdateAllowanceDto } from './dto/update-allowance.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
-
-UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard)
 @Controller('allowance')
 export class AllowanceController {
-  constructor(private readonly allowanceService: AllowanceService) { }
+  constructor(private readonly allowanceService: AllowanceService) {}
 
+  // Create allowance
   @Post('create')
-  create(@Body() dto: CreateAllowanceDto) {
-    return this.allowanceService.create(dto);
+  async create(@Body() dto: CreateAllowanceDto, @Req() req: any) {
+    const companyId = req.user.company_id;
+    const allowances = await this.allowanceService.create(dto, companyId);
+    return {
+      status: true,
+      message: 'Allowance Created Successfully',
+      data: allowances,
+    };
   }
 
+  // Get all allowances for company with optional status filter
   @Get('list')
-  findAll() {
-    return this.allowanceService.findAll();
+  async findAll(@Req() req: any, @Query('status') status?: string) {
+    const companyId = req.user.company_id;
+    const filterStatus = status !== undefined ? Number(status) : undefined;
+    const allowances = await this.allowanceService.findAll(companyId, filterStatus);
+    return {
+      status: true,
+      message: 'Get All Allowances',
+      data: allowances,
+    };
   }
 
+  // Get single allowance by ID
   @Get(':id/get')
-  findOne(@Param('id') id: number) {
-    return this.allowanceService.findOne(+id);
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    const allowance = await this.allowanceService.findOne(id);
+    return {
+      status: true,
+      message: `Get Allowance with ID ${id}`,
+      data: allowance,
+    };
   }
 
+  // Update allowance
   @Put(':id/update')
-  update(@Param('id') id: number, @Body() dto: UpdateAllowanceDto) {
-    return this.allowanceService.update(+id, dto);
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateAllowanceDto,
+    @Req() req: any,
+  ) {
+    const companyId = req.user.company_id;
+    const updated = await this.allowanceService.update(id, dto, companyId);
+    return {
+      status: true,
+      message: 'Allowance Updated Successfully',
+      data: updated,
+    };
   }
 
-  @Delete(':id/delete')
-  remove(@Param('id') id: number) {
-    return this.allowanceService.remove(+id);
+  // Toggle allowance status
+  @Get('toogleStatus/:id')
+  async statusChange(@Param('id', ParseIntPipe) id: number) {
+    return this.allowanceService.statusUpdate(id);
   }
+
 }

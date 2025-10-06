@@ -8,6 +8,6 @@ export class CustomerInvoiceController {
 
   @Post('create')
   create(@Body() dto: CreateCustomerInvoiceDto) {
-    return this.invoiceService.create(dto);
+    return this.invoiceService.createInvoice(dto);
   }
 }

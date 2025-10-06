@@ -10,80 +10,123 @@ export class DocumentService {
     private readonly docRepo: Repository<Document>,
   ) {}
 
-async createMany(
-  employeeId: number,
-  files: { [key: string]: Express.Multer.File[] },
-) {
-  const docs: Document[] = [];
+  /**
+   * Create or update multiple documents for an employee
+   */
+  async createOrUpdateMany(
+    employeeId: number,
+    files: { [key: string]: Express.Multer.File[] },
+    
+  ) {
+    const docsToSave: Document[] = [];
 
-  for (const [fieldName, uploadedFiles] of Object.entries(files)) {
-    for (const file of uploadedFiles) {
-      // ✅ CV / Academic Transcript → PDF or DOCX only
-      if (fieldName === 'cv' || fieldName === 'academic_transcript') {
-        if (
-          ![
-            'application/pdf',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-          ].includes(file.mimetype)
-        ) {
+    for (const [fieldName, uploadedFiles] of Object.entries(files)) {
+      // Validation
+      for (const file of uploadedFiles) {
+        if (fieldName === 'cv' || fieldName === 'academic_transcript') {
+          if (
+            ![
+              'application/pdf',
+              'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            ].includes(file.mimetype)
+          ) {
+            throw new BadRequestException(
+              `${fieldName.toUpperCase()} must be PDF or DOCX`,
+            );
+          }
+        }
+
+        if (fieldName === 'photo' || fieldName === 'identity_card') {
+          if (!['image/png', 'image/jpg', 'image/jpeg'].includes(file.mimetype)) {
+            throw new BadRequestException(
+              `${fieldName.replace('_', ' ')} must be PNG, JPG, or JPEG`,
+            );
+          }
+          if (file.size > 2 * 1024 * 1024) {
+            throw new BadRequestException(
+              `${fieldName.replace('_', ' ')} must not exceed 2 MB`,
+            );
+          }
+        }
+
+        if (fieldName === 'identity_card' && uploadedFiles.length !== 2) {
           throw new BadRequestException(
-            `${fieldName.toUpperCase()} must be a PDF or DOCX file`,
+            'Identity Card must have exactly 2 files (front & back)',
           );
         }
       }
 
-      // ✅ Photo / Identity Card → PNG, JPG, JPEG only + 2MB size
-      if (fieldName === 'photo' || fieldName === 'identity_card') {
-        if (
-          !['image/png', 'image/jpg', 'image/jpeg'].includes(file.mimetype)
-        ) {
-          throw new BadRequestException(
-            `${fieldName.replace('_', ' ')} must be in PNG, JPG, or JPEG format`,
-          );
-        }
-        if (file.size > 2 * 1024 * 1024) {
-          throw new BadRequestException(
-            `${fieldName.replace('_', ' ')} must not exceed 2 MB`,
-          );
-        }
-      }
+      if (fieldName === 'identity_card') {
+        // Fetch existing identity_card documents
+        const existingDocs = await this.docRepo.find({
+          where: { employeeId, type: 'identity_card' },
+          order: { id: 'ASC' },
+        });
 
-      // ✅ Identity card → max 2 files
-      if (fieldName === 'identity_card' && uploadedFiles.length > 2) {
-        throw new BadRequestException(
-          `Identity Card can only have a maximum of 2 files (front and back)`,
-        );
-      }
+        // Update existing docs or create new if not enough
+        for (let i = 0; i < uploadedFiles.length; i++) {
+          const file = uploadedFiles[i];
+          let doc: Document;
 
-      const doc = this.docRepo.create({
-        employeeId,
-        type: fieldName,
-        filePath: file.filename,
-      });
-      docs.push(doc);
+          if (existingDocs[i]) {
+            // Update existing
+            doc = existingDocs[i];
+            doc.filePath = file.filename;
+          } else {
+            // Create new if fewer existing docs
+            doc = this.docRepo.create({
+              employeeId,
+              type: 'identity_card',
+              filePath: file.filename,
+              status: 1,
+            });
+          }
+          docsToSave.push(doc);
+        }
+      } else {
+        // Single file documents (cv, photo, academic_transcript)
+        let doc = await this.docRepo.findOne({
+          where: { employeeId, type: fieldName },
+        });
+
+        if (doc) {
+          doc.filePath = uploadedFiles[0].filename; // update existing
+        } else {
+          doc = this.docRepo.create({
+            employeeId,
+            type: fieldName,
+            filePath: uploadedFiles[0].filename,
+            status: 1,
+          });
+        }
+        docsToSave.push(doc);
+      }
     }
+
+    if (docsToSave.length > 0) {
+      return this.docRepo.save(docsToSave);
+    }
+
+    return [];
   }
 
-  if (docs.length > 0) {
-    return this.docRepo.save(docs);
-  }
-  return [];
-}
-
-
-
+  /**
+   * Find all documents for an employee
+   */
   async findByEmployee(employeeId: number) {
     return this.docRepo.find({ where: { employeeId } });
   }
 
-async updateStatusForMany(documents: Document[], status: number) {
-  if (!documents || documents.length === 0) return;
-  
-  for (const doc of documents) {
-    doc.status = status;
-  }
+  /**
+   * Update status of multiple documents
+   */
+  async updateStatusForMany(documents: Document[], status: number) {
+    if (!documents || documents.length === 0) return;
 
-  await this.docRepo.save(documents); // save updated status
-}
-  
+    for (const doc of documents) {
+      doc.status = status;
+    }
+
+    await this.docRepo.save(documents);
+  }
 }

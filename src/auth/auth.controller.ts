@@ -63,6 +63,18 @@ export class AuthController {
     });
   }
 
+  @Post('side-menu-list')
+  async sideMenusList() {
+    const sideMenus = await this.authService.getSideMenus();
+    return { status: true, message: 'Side Menus List', data: sideMenus };
+  }
+
+  @Post('role-list')
+  async roleList() {
+    const sideMenus = await this.authService.getRoles();
+    return { status: true, message: 'Roles', data: sideMenus };
+  }
+
   @Post('verify-code')
   async verifyCode(
     @Body() body: { email: string; code: string },

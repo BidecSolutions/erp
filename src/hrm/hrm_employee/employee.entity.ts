@@ -13,7 +13,6 @@ import {
 } from 'typeorm';
 import { Department } from '../hrm_department/department.entity';
 import { Designation } from '../hrm_designation/designation.entity';
-import { Attendance } from '../hrm_mark-attendance/mark-attendance.entity';
 import { BankDetail } from '../hrm_bank-details/bank-detail.entity';
 import { Shift } from '../hrm_shift/shift.entity';
 import { Document } from '../hrm_document/document.entity';
@@ -24,8 +23,12 @@ import { LeaveRequest } from '../hrm_leave-request/leave-request.entity';
 import { User } from 'src/entities/user.entity';
 import { Role } from 'src/entities/role.entity';
 import { Branch } from 'src/Company/branch/branch.entity';
+import { ProbationSetting } from '../hrm_probation-setting/probation-setting.entity';
 
-
+export enum EmployeeType {
+  PROBATION = 'PROBATION',
+  PERMANENT = 'PERMANENT',
+}
 @Entity('hrm_employees')
 export class Employee {
   @PrimaryGeneratedColumn()
@@ -60,6 +63,9 @@ export class Employee {
   })
   locationType?: 'residential' | 'postal' | 'work address';
 
+    @Column({ type: 'json' })
+    branch_id: number[];
+
   @ManyToOne(() => Department, { nullable: false })
   @JoinColumn({ name: 'departmentId' })
   department: Department;
@@ -81,16 +87,14 @@ export class Employee {
   @Column({ nullable: true })
   daysPerWeek?: number;
 
-  @Column({ nullable: true })
-  fixedSalary?: number;
+  @Column({ nullable: false })
+  fixedSalary: number;
 
 
 // @Column({ type: 'simple-json', nullable: true })
 // branch_id: number[];
 
 
-  @OneToMany(() => Attendance, (markattendance) => markattendance.employee)
-  markattendance: Attendance[];
 
   @ManyToOne(() => Shift, (shift) => shift.employees)
   @JoinColumn({ name: 'shiftId' })
@@ -102,7 +106,7 @@ export class Employee {
   documents: Document[];
 
   // Bank Details
-  @OneToOne(() => BankDetail, (bankdetail) => bankdetail.employee)
+  @OneToMany(() => BankDetail, (bankdetail) => bankdetail.employee)
   bankDetails: BankDetail[];
 
   @ManyToOne(() => AnnualLeave, (annualLeave) => annualLeave.employees, { nullable: true })
@@ -133,9 +137,23 @@ branches: Branch[];
   @OneToMany(() => LeaveRequest, (leaveRequest) => leaveRequest.employee)
   leaveRequests: LeaveRequest[];
 
-  @OneToOne(() => User, (user) => user.employee, { cascade: true, onDelete: 'SET NULL' })
+  @OneToOne(() => User, (user) => user.employee, { cascade:true,  onDelete: 'SET NULL' })
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+@ManyToOne(() => ProbationSetting, { nullable: true })
+@JoinColumn({ name: 'probation_setting_id' })
+probationSetting?: ProbationSetting;
+
+@Column({ type: 'int', nullable: true })
+probation_setting_id?: number;
+
+@Column({
+  type: 'enum',
+  enum: EmployeeType,
+  nullable: false //  required bana diya
+})
+emp_type: EmployeeType;
 
 
   @Column({

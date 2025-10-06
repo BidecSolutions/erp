@@ -1,4 +1,4 @@
-import { IsInt, IsOptional, IsString, IsDecimal, IsBoolean } from 'class-validator';
+import { IsInt, IsOptional, IsString, IsDecimal, IsBoolean, IsNotEmpty } from 'class-validator';
 
 export class CreateProductVariantDto {
   @IsOptional()
@@ -19,17 +19,5 @@ export class CreateProductVariantDto {
   @IsOptional()
   @IsString()
   attribute_value?: string;
-
-  @IsOptional()
-  price_difference?: number;
-
-  @IsOptional()
-  cost_difference?: number;
-
-    @IsOptional()
-  company_id?: number;
-
-  @IsOptional()
-  branch_id?: number;
 
 }

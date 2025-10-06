@@ -1,6 +1,7 @@
 import { Branch } from 'src/Company/branch/branch.entity';
 import { Company } from 'src/Company/companies/company.entity';
 import { Product } from 'src/procurement/product/entities/product.entity';
+import { productVariant } from 'src/procurement/product/entities/variant.entity';
 import { Warehouse } from 'src/procurement/warehouse/entities/warehouse.entity';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
@@ -9,51 +10,49 @@ export class Stock {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ type: 'int' })
+  product_id: number;
+
+  @ManyToOne(() => Product)
+  @JoinColumn({ name: 'product_id' })
+  product: Product;
+
+  @Column({ type: 'int', nullable: true })
+  variant_id?: number | null;
+
+  @ManyToOne(() => productVariant, { nullable: true })
+  @JoinColumn({ name: 'variant_id' })
+  variant?: productVariant | null;
+
   @Column()
-    product_id:number;
-    @ManyToOne(() => Product)
-    @JoinColumn({name : 'product_id'})
-    product: Product
-  @Column()
-    warehouse_id:number;
-    @ManyToOne(() => Company)
-    @JoinColumn({name : 'warehouse_id'})
-    warehouse: Warehouse
+  warehouse_id: number;
+  @ManyToOne(() => Warehouse)
+  @JoinColumn({ name: 'warehouse_id' })
+  warehouse: Warehouse
 
 
   @Column()
-  company_id:number;
+  company_id: number;
   @ManyToOne(() => Company)
-  @JoinColumn({name : 'company_id'})
+  @JoinColumn({ name: 'company_id' })
   company: Company
 
-
-   @Column()
-    branch_id:number;
-    @ManyToOne(() => Branch)
-    @JoinColumn({name : 'branch_id'})
-    branch: Branch
+  @Column()
+  branch_id: number;
+  @ManyToOne(() => Branch)
+  @JoinColumn({ name: 'branch_id' })
+  branch: Branch
 
   @Column({ type: 'int', default: 0 })
   quantity_on_hand: number;
 
   @Column({ type: 'int', default: 0 })
-  reorder_level: number;
+  alert_qty: number;
 
-  @Column({ type: 'int', default: 0 })
-  reorder_quantity: number;
+  @Column({ type: 'int', default: 1 })
+  status: number;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  created_at: Date;
-
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
-  updated_at: Date;
-      @Column({ type: 'int', default: 1 })
-  status: number; 
-
-
-
- @Column({ name: 'created_by', type: 'int', nullable: true })
+  @Column({ name: 'created_by', type: 'int', nullable: true })
   created_by?: number;
 
   @CreateDateColumn({ name: 'created_date', type: 'timestamp' })

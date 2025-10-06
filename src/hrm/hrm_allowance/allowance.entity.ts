@@ -21,12 +21,12 @@ export class Allowance {
   @Column('decimal', { precision: 10, scale: 2 })
   amount: number;
 
-@ManyToOne(() => Company, { eager: true })
-@JoinColumn({ name: 'company_Id' }) 
-company: Company;
+  @ManyToOne(() => Company, { eager: true }) // eager true -> auto load
+  @JoinColumn({ name: 'company_id' })
+  company: Company;
 
-@Column({ name: 'company_Id' })
-company_id: number; 
+  @Column()
+  company_id: number;
 
 
    @Column({

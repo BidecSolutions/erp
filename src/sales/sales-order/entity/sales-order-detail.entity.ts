@@ -17,13 +17,15 @@ export class SalesOrderDetail {
   id: number;
 
 
+ @ManyToOne(() => SalesOrder, (order) => order.salesOrderDetails, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'order_id' })  // 👈 order_id column generate hoga
+  salesOrder: SalesOrder;            // 👈 single relation rakho
+
   
-  @ManyToOne(() => SalesOrder, (order) => order.salesOrderDetails)
-  @JoinColumn({ name: 'order_id' })
-  salesOrder: SalesOrder;
-
-
-  // Product relation
+  @Column()
+  product_id: number;
   @ManyToOne(() => Product, (product) => product.salesOrderDetails, {
     onDelete: 'CASCADE',
   })
@@ -33,10 +35,10 @@ export class SalesOrderDetail {
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  @Column({ nullable: false })
   quantity: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
   unit_price: number;
 
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
@@ -45,8 +47,8 @@ export class SalesOrderDetail {
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   discount_amount: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  line_total: number;
+  // @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  // line_total: number;
 
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   tax_rate: number;
@@ -57,13 +59,13 @@ export class SalesOrderDetail {
   @Column({ type: 'date', nullable: true })
   required_date: Date;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   delivered_quantity: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   pending_quantity: number;
 
-  @Column({ length: 50, nullable: true })
+  @Column({ length: 50, default: 'pending' })
   line_status: string;
 
   @Column({ nullable: true })

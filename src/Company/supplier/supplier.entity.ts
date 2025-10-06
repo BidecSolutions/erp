@@ -9,9 +9,8 @@ import {
 } from 'typeorm';
 import { Company } from '../companies/company.entity';
 import { SupplierCategory } from '../supplier-category/supplier-category.entity';
-import { SupplierPayment } from '../supplier-payment/supplier-payment.entity';
-import { SupplierInvoice } from '../supplier-invoice/supplier-invoice.entity';
 import { SupplierAccount } from './supplier.supplier_account.entity';
+import { SupplierInvoice } from '../supplier-invoice/entities/supplier-invoice.entity';
 
 @Entity('supplier')
 export class Supplier {
@@ -20,6 +19,7 @@ export class Supplier {
 
   @ManyToOne(() => Company, (company) => company.suppliers, { onDelete: 'CASCADE' })
   company: Company;
+
 
   @ManyToOne(() => SupplierCategory, (category) => category.suppliers, {
     onDelete: 'CASCADE',
@@ -30,8 +30,8 @@ export class Supplier {
   accounts: SupplierAccount[];
 
   // One supplier can have many payments
-  @OneToMany(() => SupplierPayment, (payment) => payment.supplier)
-  supplier_payments: SupplierPayment[];
+  // @OneToMany(() => SupplierPayment, (payment) => payment.supplier)
+  // supplier_payments: SupplierPayment[];
 
   // One supplier can have many invoices
   @OneToMany(() => SupplierInvoice, (invoice) => invoice.supplier)

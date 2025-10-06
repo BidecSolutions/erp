@@ -12,7 +12,6 @@ export class SupplierCategory {
   })
   company: Company;
 
-  // One category has many suppliers
   @OneToMany(() => Supplier, (supplier) => supplier.category)
   suppliers: Supplier[];
 
