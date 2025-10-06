@@ -6,6 +6,7 @@ import { UnitOfMeasure } from 'src/procurement/unit_of_measure/entities/unit_of_
 import { SalesOrderDetail } from 'src/sales/sales-order/entity/sales-order-detail.entity';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { InstantProductStatus } from '../enum';
+import { productVariant } from './variant.entity';
 
 
 @Entity('products')
@@ -35,18 +36,15 @@ export class Product {
   company_id: number;
   @ManyToOne(() => Company)
   @JoinColumn({ name: 'company_id' })
-  @JoinColumn({ name: 'company_id' })
   company: Company
 
   @Column()
   branch_id: number;
   @ManyToOne(() => Branch)
   @JoinColumn({ name: 'branch_id' })
-  @JoinColumn({ name: 'branch_id' })
   branch: Branch
 
-  @Column({ length: 50 })
-  sku: string;
+
 
   @Column({ length: 255 })
   @Column({ length: 50, unique: true })
@@ -61,11 +59,11 @@ export class Product {
   @Column({ type: 'text', nullable: true })
   description?: string;
 
-  @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  unit_price?: number;
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  unit_price: number | null;
 
-  @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  cost_price?: number;
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  cost_price: number | null;
 
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
   mrp?: number;
@@ -91,9 +89,6 @@ export class Product {
   status: number;
 
   @Column({ length: 50, nullable: true })
-  product_status?: string;
-
-  @Column({ length: 50, nullable: true })
   barcode?: string;
   @Column({ type: 'json', nullable: true })
   images: string[];
@@ -115,6 +110,13 @@ export class Product {
     default: 0,
   })
   is_instant_product: number;
+
+  @Column({ default: false })
+  has_variant: boolean;
+
+  @OneToMany(() => productVariant, (variant) => variant.product)
+  variants: productVariant[];
+
 
   @OneToMany(() => SalesOrderDetail, (detail) => detail.product, {
     cascade: true,
