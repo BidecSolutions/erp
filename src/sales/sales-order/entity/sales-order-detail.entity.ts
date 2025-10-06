@@ -23,10 +23,7 @@ export class SalesOrderDetail {
   @JoinColumn({ name: 'order_id' })  // 👈 order_id column generate hoga
   salesOrder: SalesOrder;            // 👈 single relation rakho
 
-
-
-
-
+  
   @Column()
   product_id: number;
   @ManyToOne(() => Product, (product) => product.salesOrderDetails, {

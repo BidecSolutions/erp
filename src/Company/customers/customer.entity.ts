@@ -10,7 +10,7 @@ import {
 import { Company } from '../companies/company.entity';
 import { CustomerCategory } from '../customer-categories/customer-category.entity';
 import { CustomerPayment } from '../customer-payment/customer-payment.entity';
-import { CustomerInvoice } from '../customer-invoice/customer-invoice.entity';
+import { CustomerInvoice } from '../customer-invoice/entity/customer-invoice.entity';
 import { CustomerAccount } from './customer.customer_account.entity';
 import { SalesOrder } from 'src/sales/sales-order/entity/sales-order.entity';
 
@@ -34,9 +34,9 @@ export class Customer {
   @OneToMany(() => CustomerPayment, (payment) => payment.customer)
   customer_payments: CustomerPayment[];
 
-  // One customer can have many invoices
-  @OneToMany(() => CustomerInvoice, (invoice) => invoice.customer)
-  customer_invoices: CustomerInvoice[];
+  // // One customer can have many invoices
+  // @OneToMany(() => CustomerInvoice, (invoice) => invoice.customer)
+  // invoices: CustomerInvoice[];
 
   // 👇 Relation with sale-order
   @OneToMany(() => SalesOrder, (salesOrder) => salesOrder.customer)
@@ -126,7 +126,7 @@ export class Customer {
   @Column({ type: 'smallint', default: 1, comment: '1=active, 2=inactive' })
   is_active: number;
 
-  @Column({nullable:true})
+  @Column({ nullable: true })
   created_by: number;
 
   @Column({ type: 'date' })

@@ -10,7 +10,6 @@ import { SupplierCategoryModule } from "./supplier-category/supplier-category.mo
 import { SupplierModule } from "./supplier/supplier.module";
 import { CustomerPaymentModule } from "./customer-payment/customer-payment.module";
 import { CustomerInvoiceModule } from "./customer-invoice/customer-invoice.module";
-import { SupplierPaymentModule } from "./supplier-payment/supplier-payment.module";
 import { SupplierInvoiceModule } from "./supplier-invoice/supplier-invoice.module";
 import { BankModule } from "./banks/bank.module";
 import { ChartOfAccountsModule } from "./chart-of-accounts/chart-of-accounts.module";
@@ -29,10 +28,10 @@ export const companySetting = [
     UsersModule,
     CustomerPaymentModule,
     CustomerInvoiceModule,
-    SupplierPaymentModule,
     SupplierInvoiceModule,
     BankModule,
     ChartOfAccountsModule,
+    SupplierInvoiceModule,
     SystemConfigurationsModule,
 
 ];

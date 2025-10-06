@@ -19,8 +19,14 @@ export class CreateStockAdjustmentDto {
   adjustment_type: AdjustmentType;
 
  @IsNotEmpty()
-  @IsEnum(AdjustmentReason, { message: 'Invalid status' })
+  @IsEnum(AdjustmentReason, { message: 'Invalid reason' })
   reason: AdjustmentReason;
+
+ @IsNotEmpty()
+company_id:number;
+
+ @IsNotEmpty()
+ branch_id:number;
 
 
 }

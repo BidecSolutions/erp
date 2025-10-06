@@ -8,9 +8,9 @@ export class StockAdjustmentController {
   constructor(private readonly stockAdjustmentService: StockAdjustmentService) {}
 
   @Post('store')
-  create(@Body() createStockAdjustmentDto: CreateStockAdjustmentDto) {
-    return this.stockAdjustmentService.store(createStockAdjustmentDto);
-  }
+store(@Body() createStockAdjustmentDto: CreateStockAdjustmentDto) {
+  return this.stockAdjustmentService.store(createStockAdjustmentDto);
+}
 
   @Get('list')
   findAll(@Query('filter') filter?: string) {
@@ -23,10 +23,10 @@ export class StockAdjustmentController {
     return this.stockAdjustmentService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateStockAdjustmentDto: UpdateStockAdjustmentDto) {
-    return this.stockAdjustmentService.update(+id, updateStockAdjustmentDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateStockAdjustmentDto: UpdateStockAdjustmentDto) {
+  //   return this.stockAdjustmentService.update(+id, updateStockAdjustmentDto);
+  // }
 
   @Get('toogleStatus/:id')
    statusChange(@Param('id', ParseIntPipe) id: number) {
