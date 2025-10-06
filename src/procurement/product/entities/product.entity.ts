@@ -15,13 +15,11 @@ export class Product {
 
   @Column()
   category_id: number;
-  category_id: number;
   @ManyToOne(() => Category)
   @JoinColumn({ name: 'category_id' })
   category: Category;
 
   @Column()
-  brand_id: number;
   brand_id: number;
   @ManyToOne(() => Brand)
   @JoinColumn({ name: 'brand_id' })
@@ -29,13 +27,11 @@ export class Product {
 
   @Column()
   uom_id: number;
-  uom_id: number;
   @ManyToOne(() => UnitOfMeasure)
   @JoinColumn({ name: 'uom_id' })
   uom: UnitOfMeasure;
 
   @Column()
-  company_id: number;
   company_id: number;
   @ManyToOne(() => Company)
   @JoinColumn({ name: 'company_id' })
@@ -43,7 +39,6 @@ export class Product {
   company: Company
 
   @Column()
-  branch_id: number;
   branch_id: number;
   @ManyToOne(() => Branch)
   @JoinColumn({ name: 'branch_id' })
@@ -94,7 +89,6 @@ export class Product {
 
   @Column({ type: 'int', default: 1 })
   status: number;
-  status: number;
 
   @Column({ length: 50, nullable: true })
   product_status?: string;
@@ -124,18 +118,6 @@ export class Product {
   })
   is_instant_product: number;
 
-
-  // ✅ Relation with SalesOrderDetail
-
-
-  @Column({
-    type: 'int',
-    default: 0,
-  })
-  is_instant_product: number;
-
-
-  // ✅ Relation with SalesOrderDetail
   @OneToMany(() => SalesOrderDetail, (detail) => detail.product, {
     cascade: true,
   })
