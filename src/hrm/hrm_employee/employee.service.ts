@@ -222,7 +222,7 @@ async findAll(body) {
       photo?: Express.Multer.File[];
       academic_transcript?: Express.Multer.File[];
       identity_card?: Express.Multer.File[];
-    }
+    }, login_company_id:number 
   ) {
     try {
       const department = await this.departmentRepository.findOneBy({
@@ -347,6 +347,10 @@ async findAll(body) {
         const companyMapping = this.companyMaping.create({
           user_id: userid.id,
           branch_id:Array.isArray(dto.branch_id) ? dto.branch_id.map(b => Number(b)) : [Number(dto.branch_id)],
+          company_id : login_company_id,
+
+          //mujtaba 
+        
         });
         await this.companyMaping.save(companyMapping);
       }
@@ -366,16 +370,16 @@ async findAll(body) {
       }
 
       // Save branches
-      if (dto.branch_ids?.length) {
-        const branches = await this.branchRepo.find({
-          where: { id: In(dto.branch_ids) },
-        });
-        if (branches.length !== dto.branch_ids.length) {
-          throw new NotFoundException("Some branches not found");
-        }
-        saved.branches = branches;
-        await this.employeeRepository.save(saved);
-      }
+      // if (dto.branch_ids?.length) {
+      //   const branches = await this.branchRepo.find({
+      //     where: { id: In(dto.branch_ids) },
+      //   });
+      //   if (branches.length !== dto.branch_ids.length) {
+      //     throw new NotFoundException("Some branches not found");
+      //   }
+      //   saved.branches = branches;
+      //   await this.employeeRepository.save(saved);
+      // }
       // Save documents
       if (files && Object.keys(files).length > 0) {
         // ab createOrUpdateMany use karo
@@ -525,14 +529,14 @@ async findAll(body) {
       emp.allowances = allowances;
     }
 
-    if (dto.branch_ids?.length) {
-      const branches = await this.branchRepo.find({
-        where: { id: In(dto.branch_ids) },
-      });
-      if (branches.length !== dto.branch_ids.length)
-        throw new NotFoundException("Some branches not found");
-      emp.branches = branches;
-    }
+    // if (dto.branch_ids?.length) {
+    //   const branches = await this.branchRepo.find({
+    //     where: { id: In(dto.branch_ids) },
+    //   });
+    //   if (branches.length !== dto.branch_ids.length)
+    //     throw new NotFoundException("Some branches not found");
+    //   emp.branches = branches;
+    // }
 
     // Update Employee fields
     Object.assign(emp, dto);

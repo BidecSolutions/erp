@@ -8,6 +8,8 @@ import { userCompanyMapping } from 'src/entities/user-company-mapping.entity';
 import { User } from 'src/entities/user.entity';
 import { userRoleMapping } from 'src/entities/user-role-mapping.entity';
 import * as bcrypt from 'bcryptjs';
+import { Customer } from '../customers/customer.entity';
+import { CustomerCategory } from '../customer-categories/customer-category.entity';
 
 
 @Injectable()
@@ -21,6 +23,13 @@ export class CompaniesService {
 
     @InjectRepository(User)
     private userRepo: Repository<User>,
+
+    @InjectRepository(CustomerCategory)
+    private customerCategory : Repository<CustomerCategory>,
+
+    @InjectRepository(Customer)
+    private customers: Repository<Customer>,
+
 
     @InjectRepository(userRoleMapping)
     private userRoleMappingRepo: Repository<userRoleMapping>,
@@ -50,15 +59,30 @@ export class CompaniesService {
 
       await this.userRoleMappingRepo.save(userRoleMapping);
 
-
-      //user company Mapping
       const userMapping = this.ucm.create({
         user_id: saveUser.id,
         company_id: savedCompany.id,
         branch_id: []
       });
+          await this.ucm.save(userMapping);
 
-      await this.ucm.save(userMapping);
+      const customerCat = this.customerCategory.create({
+        category_code : '000',
+        category_name : 'Walking-Customer',
+        created_by : '1'
+      })
+      const savedCustomerCategory = await this.customerCategory.save(customerCat);
+
+
+      const companyCustomer = this.customers.create({
+          customer_code: '000',
+          customer_name: 'Walking Customer', 
+          customer_type: '-',
+          category_customer: savedCustomerCategory,
+          company: savedCompany
+      });
+
+      await this.customers.save(companyCustomer);
       return { success: true, message: 'Company created successfully', data: savedCompany };
     }
     catch (error) {

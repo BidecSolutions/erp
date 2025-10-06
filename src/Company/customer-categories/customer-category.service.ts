@@ -34,12 +34,13 @@ export class CustomerCategoryService {
     }
   }
 
-  async findAll() {
+  async findAll(inactive?: number) {
     try {
+       const isActive = inactive ? inactive : 1;
       const categories = await this.categoryRepo
         .createQueryBuilder('category')
         .leftJoin('category.company', 'company')
-        .where('category.is_active = :isActive', { isActive: 1 })
+        .where('category.is_active = :isActive', { isActive })
         .orderBy('category.id', 'DESC')
         .select([
           'category.id',
