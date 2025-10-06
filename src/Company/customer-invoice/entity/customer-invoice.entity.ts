@@ -24,9 +24,9 @@ export class CustomerInvoice {
   @ManyToOne(() => Company, (company) => company.customer_invoices, { onDelete: 'CASCADE' })
   company: Company;
 
-  // @ManyToOne(() => Customer, (customer) => customer.invoices, { onDelete: 'CASCADE' })
-  // @JoinColumn({ name: 'customer_id' })
-  // customer: Customer;
+  @ManyToOne(() => Customer, (customer) => customer.invoices, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'customer_id' })
+  customer: Customer;
 
   @ManyToOne(() => SalesOrder, (order) => order.customerInvoices, {
     onDelete: 'CASCADE',
