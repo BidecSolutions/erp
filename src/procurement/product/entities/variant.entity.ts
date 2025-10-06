@@ -1,7 +1,8 @@
-import { PrimaryGeneratedColumn, Entity, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from "typeorm";
+import { PrimaryGeneratedColumn, Entity, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from "typeorm";
 import { Product } from "./product.entity";
 import { Branch } from "src/Company/branch/branch.entity";
 import { Company } from "src/Company/companies/company.entity";
+import { SalesOrderDetail } from "src/sales/sales-order/entity/sales-order-detail.entity";
 
 @Entity('variants')
 export class productVariant {
@@ -41,5 +42,10 @@ export class productVariant {
 
     @UpdateDateColumn({ name: 'updated_date', type: 'timestamp', nullable: true })
     updated_date?: Date;
+
+    @OneToMany(() => SalesOrderDetail, (detail) => detail.productVariant, {
+        cascade: true,
+      })
+      salesOrderDetails: SalesOrderDetail[];
 
 }
