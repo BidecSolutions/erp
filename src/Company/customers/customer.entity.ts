@@ -35,8 +35,8 @@ export class Customer {
   customer_payments: CustomerPayment[];
 
   // // One customer can have many invoices
-  @OneToMany(() => CustomerInvoice, (invoice) => invoice.customer)
-  invoices: CustomerInvoice[];
+  // @OneToMany(() => CustomerInvoice, (invoice) => invoice.customer)
+  // invoices: CustomerInvoice[];
 
   // 👇 Relation with sale-order
   @OneToMany(() => SalesOrder, (salesOrder) => salesOrder.customer)
