@@ -1,6 +1,6 @@
 export enum SalesStatus {
-  WALKIN_CUSTOMER = '0',
-  REGISTER_CUSTOMER = '1',
+  pos = 'pos',
+  other = 'other',
 }
 
 export enum InvoiceStatus {
