@@ -98,8 +98,6 @@ export class Product {
   @Column({ type: 'json', nullable: true })
   images: string[];
 
-
-
   @Column({ nullable: true })
   created_by?: number;
 
