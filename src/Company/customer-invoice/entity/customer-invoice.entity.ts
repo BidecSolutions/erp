@@ -5,28 +5,37 @@ import {
   ManyToOne,
   JoinColumn,
   BeforeInsert,
+  OneToMany,
 } from 'typeorm';
-import { Company } from '../companies/company.entity';
-import { Customer } from '../customers/customer.entity';
+import { Company } from '../../companies/company.entity';
+import { Customer } from '../../customers/customer.entity';
 import { SalesOrder } from 'src/sales/sales-order/entity/sales-order.entity';
+import { InvoiceStatus, PaymentMethod } from 'src/sales/enums/sales-enums';
+import { customer_invoice_items } from './customer-invoice-items.entity';
 
 @Entity('customer_invoice')
 export class CustomerInvoice {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @OneToMany(() => customer_invoice_items, (item) => item.customerInvoice, { cascade: true })
+  invoiceItems: customer_invoice_items[];
+
   @ManyToOne(() => Company, (company) => company.customer_invoices, { onDelete: 'CASCADE' })
   company: Company;
 
-  @ManyToOne(() => Customer, (customer) => customer.customer_invoices, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Customer, (customer) => customer.invoices, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'customer_id' })
   customer: Customer;
 
-  @ManyToOne(() => SalesOrder, (order) => order.customerInvoices, { onDelete: 'CASCADE' })
+  @ManyToOne(() => SalesOrder, (order) => order.customerInvoices, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'sales_order_id' })
   salesOrder: SalesOrder;
 
   @Column()
-  sales_order_id: number;
+  branch_id: number;
 
   @Column()
   invoice_no: string;
@@ -58,14 +67,18 @@ export class CustomerInvoice {
   @Column('decimal', { precision: 12, scale: 2, default: 0 })
   outstanding_amount: number;
 
-  @Column()
-  invoice_status: string;
+  @Column({
+    type: 'enum',
+    default: InvoiceStatus.UNPAID,
+    enum: InvoiceStatus,
+  })
+  invoice_status: InvoiceStatus;
 
-  @Column()
-  currency_code: string;
-
-  @Column('decimal', { precision: 12, scale: 4, default: 1 })
-  exchange_rate: number;
+  @Column({
+    type: 'enum',
+    enum: PaymentMethod,
+  })
+  payment_method: PaymentMethod;
 
   @Column({ nullable: true })
   notes: string;
@@ -73,7 +86,7 @@ export class CustomerInvoice {
   @Column({ nullable: true })
   attachment_path: string;
 
-  @Column()
+  @Column({ nullable: true })
   created_by: string;
 
   @Column({ type: 'date' })

@@ -5,7 +5,9 @@ import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert, BeforeUpdate, One
 import { SupplierCategory } from '../supplier-category/supplier-category.entity';
 import { Supplier } from '../supplier/supplier.entity';
 import { CustomerPayment } from '../customer-payment/customer-payment.entity';
-import { CustomerInvoice } from '../customer-invoice/customer-invoice.entity';
+import { CustomerInvoice } from '../customer-invoice/entity/customer-invoice.entity';
+import { SupplierPayment } from '../supplier-payment/supplier-payment.entity';
+import { SupplierInvoice } from '../supplier-invoice/supplier-invoice.entity';
 import { ChartOfAccount } from '../chart-of-accounts/chart-of-account.entity';
 import { SystemConfiguration } from '../system_configuration/system_configuration.entity';
 import { SalesOrder } from 'src/sales/sales-order/entity/sales-order.entity';

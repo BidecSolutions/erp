@@ -1,13 +1,15 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { InvoiceStatus, PaymentMethod } from 'src/sales/enums/sales-enums';
 
 export class CreateCustomerInvoiceDto {
+
   @IsNotEmpty()
   company_id: number;
 
   @IsNotEmpty()
-  customer_id: number;
+  branch_id: number;
 
-  @IsOptional()
+  @IsNotEmpty()
   sales_order_id?: number;
 
   @IsNotEmpty()
@@ -15,46 +17,47 @@ export class CreateCustomerInvoiceDto {
   invoice_no: string;
 
   @IsNotEmpty()
+  @IsString()
   invoice_date: string;
 
   @IsNotEmpty()
+  @IsString()
   due_date: string;
 
   @IsOptional()
+  @IsString()
   payment_terms?: string;
 
-  @IsNumber()
-  subtotal: number;
+  // @IsNumber()
+  // @Min(0)
+  // subtotal: number;
 
   @IsNumber()
+  @Min(0)
   tax_amount: number;
 
   @IsNumber()
+  @Min(0)
   discount_amount: number;
 
-  @IsNumber()
-  total_amount: number;
+  // @IsNumber()
+  // @Min(0)
+  // total_amount: number;
 
-  @IsOptional()
-  @IsNumber()
-  paid_amount?: number;
+  // @IsOptional()
+  // @IsNumber()
+  // @Min(0)
+  // paid_amount?: number;
 
-  @IsOptional()
-  @IsNumber()
-  outstanding_amount?: number;
-
+  @IsEnum(PaymentMethod)
   @IsNotEmpty()
-  invoice_status: string;
-
-  @IsNotEmpty()
-  currency_code: string;
+  payment_method: PaymentMethod;   // ✅ payload se bhejna hoga
 
   @IsOptional()
-  exchange_rate?: number;
-
-  @IsOptional()
+  @IsString()
   notes?: string;
 
   @IsOptional()
+  @IsString()
   attachment_path?: string;
 }

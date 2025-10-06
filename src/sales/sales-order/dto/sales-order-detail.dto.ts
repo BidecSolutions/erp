@@ -6,6 +6,7 @@ import {
   Min,
   IsDateString,
   IsInt,
+  IsNotEmpty,
 } from 'class-validator';
 
 export class CreateSalesOrderDetailDto {
@@ -74,4 +75,7 @@ export class UpdateSalesOrderDetailDto extends PartialType(
   CreateSalesOrderDetailDto,
 ) {
 
+  @IsOptional()
+  @IsInt()
+  id: number; 
 }
