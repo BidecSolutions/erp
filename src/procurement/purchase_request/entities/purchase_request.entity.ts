@@ -1,37 +1,69 @@
-import { pr_status } from "src/procurement/common/pr_enums";
-import { PrimaryGeneratedColumn ,Column ,Entity ,CreateDateColumn , UpdateDateColumn} from "typeorm";
+import { Branch } from "src/Company/branch/branch.entity";
+import { Company } from "src/Company/companies/company.entity";
+import { PurchaseRequestStatus, PurchaseRequestType } from "src/procurement/enums/purchase-request.enum";
+import { PrimaryGeneratedColumn, Column, Entity, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from "typeorm";
+import { PurchaseRequestItem } from "./purchase-request-item.entity";
 
-
-@Entity('pro_purchase_request')
+@Entity('purchase_request')
 export class PurchaseRequest {
 
-   @PrimaryGeneratedColumn()
-    id :number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column()
-    user_id: number;
+  @Column()
+  user_id: number;
 
-    @Column()
-    pr_type : number //local , imported
-
-    @Column()
-    location: string //store_location
-
-    @Column({
+  @Column({
     type: 'enum',
-    enum: pr_status,
-    default: pr_status.Draft, // default value
-    })
-    status: pr_status;
+    enum: PurchaseRequestType,
+  })
+  pr_type: PurchaseRequestType;
 
-    @Column()
-    remarks:string;
+  @Column()
+  company_id: number;
+  @ManyToOne(() => Company)
+  @JoinColumn({ name: 'company_id' })
+  comapany: Company
 
-    @CreateDateColumn({ type: 'timestamp' })
-    created_at: Date;
+  @Column()
+  branch_id: number;
+  @ManyToOne(() => Branch)
+  @JoinColumn({ name: 'branch_id' })
+  branch: Branch
 
-    @UpdateDateColumn({ type: 'timestamp' })
-    updated_at: Date;
+  @Column({
+    type: 'enum',
+    enum: PurchaseRequestStatus,
+    default: PurchaseRequestStatus.PENDING, // default value
+  })
+  pr_status: PurchaseRequestStatus;
+
+  @Column()
+  remarks: string;
+
+  @Column()
+  module_type: number
+
+
+  @Column({ type: 'int', default: 1 })
+  status: number;
+
+  @Column({ name: 'created_by', type: 'int', nullable: true })
+  created_by?: number;
+
+  @CreateDateColumn({ name: 'created_date', type: 'timestamp' })
+  created_date: Date;
+
+  @Column({ name: 'updated_by', type: 'int', nullable: true })
+  updated_by?: number;
+
+  @UpdateDateColumn({ name: 'updated_date', type: 'timestamp', nullable: true })
+  updated_date?: Date;
+
+  @OneToMany(() => PurchaseRequestItem, (item) => item.purchase_request, { cascade: true })
+   items: PurchaseRequestItem[];
+  
+
 
 
 }

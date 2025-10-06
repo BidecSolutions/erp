@@ -29,13 +29,13 @@ export class Branch {
   @Column({ nullable: true })
   address_line2: string;
 
-  @Column()
+  @Column({ nullable: true })
   city: string;
 
-  @Column()
+  @Column({ nullable: true })
   state: string;
 
-  @Column()
+  @Column({ nullable: true })
   country: string;
 
   @Column({ nullable: true })
@@ -83,7 +83,7 @@ export class Branch {
   @Column({ type: 'int', nullable: true })
   created_by: number;
 
-  @Column({ type: 'date' })
+  @Column({ type: 'date', nullable: true })
   created_date: string;
 
   @Column({ type: 'int', nullable: true })

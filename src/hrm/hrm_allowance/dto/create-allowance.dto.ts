@@ -13,7 +13,4 @@ export class CreateAllowanceDto {
   @IsNumber({}, { message: 'Amount must be a number' })
   amount: number;
 
-   @IsNumber()
-  @IsNotEmpty()
-  company_id: number; // yahan add karo
 }

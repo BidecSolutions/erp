@@ -18,7 +18,7 @@ async create(dto: CreateUnpaidLeaveDto) {
   const record = this.repo.create({
     employee: { id: dto.employeeId } as DeepPartial<Employee>,
     leaveRequest: { id: dto.leaveRequestId } as DeepPartial<LeaveRequest>,
-    extra_days: dto.extra_days,
+    unpain_days: dto.unpain_days,
   });
 
   return this.repo.save(record);

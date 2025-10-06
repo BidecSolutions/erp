@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, Put, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, Put, UseGuards, Query, ParseIntPipe } from '@nestjs/common';
 import { ShiftService } from './shift.service';
 import { CreateShiftDto } from './dto/create-shift.dto';
 import { UpdateShiftDto } from './dto/update-shift.dto';
@@ -14,10 +14,11 @@ export class ShiftController {
   create(@Body() dto: CreateShiftDto) {
     return this.shiftService.create(dto);
   }
-
-  @Get('list')
-  findAll() {
-    return this.shiftService.findAll();
+  
+ @Get('list')
+  findAll(@Query('status') status?: string) {
+    const filterStatus = status !== undefined ? Number(status) : undefined;
+    return this.shiftService.findAll(filterStatus);
   }
 
   @Get(':id/get')
@@ -34,4 +35,9 @@ export class ShiftController {
   remove(@Param('id') id: number) {
     return this.shiftService.remove(+id);
   }
+
+    @Get('toogleStatus/:id')
+          statusChange(@Param('id', ParseIntPipe) id: number){
+            return this.shiftService.statusUpdate(id);
+          }
 }

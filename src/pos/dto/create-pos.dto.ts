@@ -21,6 +21,5 @@ export class CreatePosDto {
   order_details: {
     product_id: number;
     quantity: number;
-    unit_price: number;
   }[];
 }

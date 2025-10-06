@@ -1,13 +1,10 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsOptional, IsNumber, IsString, IsDecimal, ValidateNested } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsNumber, IsString, IsDecimal, ValidateNested, IsArray } from 'class-validator';
 import { CreateProductVariantDto } from './create-variant.dto';
 
 export class CreateProductDto {
   @IsNotEmpty()
   sku: string;
-
-  @IsNotEmpty()
-  product_code: string;
 
   @IsNotEmpty()
   product_name: string;
@@ -18,13 +15,10 @@ export class CreateProductDto {
   @IsOptional()
   description?: string;
 
-  @IsOptional()
-  specifications?: string;
-
-  @IsOptional()
+  @IsNotEmpty()
   unit_price?: number;
 
-  @IsOptional()
+  @IsNotEmpty()
   cost_price?: number;
 
   @IsOptional()
@@ -43,62 +37,38 @@ export class CreateProductDto {
   reorder_quantity?: number;
 
   @IsOptional()
-  is_serialized?: number;
-
-  @IsOptional()
-  is_batch_tracked?: number;
-
-  @IsOptional()
-  allow_negative_stock?: number;
-
-  @IsOptional()
-  warranty_period_days?: number;
-
-  @IsOptional()
-  warranty_type?: string;
-
-  @IsOptional()
-  hsn_code?: string;
-
-  @IsOptional()
-  tax_rate?: number;
+  warranty_type?: number;
 
   @IsOptional()
   product_status?: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   barcode?: string;
 
   @IsOptional()
-  product_image_path?: string;
+  @IsArray()
+  @IsString({ each: true })
+  images?: string[];
 
-  @IsOptional()
-  created_by?: number;
-
-  @IsOptional()
-  updated_by?: number;
-
-  // Relations
-  @IsOptional()
+  @IsNotEmpty()
   company_id?: number;
 
-  @IsOptional()
+  @IsNotEmpty()
   branch_id?: number;
 
   @IsNotEmpty()
   category_id?: number;
 
-   @IsNotEmpty()
+  @IsNotEmpty()
   brand_id?: number;
 
-   @IsNotEmpty()
+  @IsNotEmpty()
   uom_id?: number;
 
-  // variant data
-  @IsOptional()               
-  @ValidateNested({ each: true })     
-  @Type(() =>  CreateProductVariantDto)      
-  variants?: CreateProductVariantDto[]; 
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => CreateProductVariantDto)
+  variants?: CreateProductVariantDto[];
 
 
 }

@@ -208,6 +208,61 @@ export class AuthService {
   }
 
 
+  async getSideMenus() {
+
+    const sideMenus = await this.sideMenuRepository.find({
+      order: { periority: 'ASC' },
+    });
+    const menuTrees = await Promise.all(
+      sideMenus.map(async (menu) => {
+        const subMenus = await this.subSideMenuRepository.find({
+          where: { menu_id: menu.id },
+        });
+        const subMenusWithPerms = await Promise.all(
+          subMenus.map(async (sm) => {
+            const perms = await this.subMenuPermRepository.find({
+              where: { sub_menu_id: sm.id },
+            });
+            return {
+              id: sm.id,
+              name: sm.name,
+              link: sm.link,
+              permissions: perms.map((p) => ({
+                id: p.id,
+                name: p.name,
+              })),
+            };
+          }),
+        );
+        return {
+          id: menu.id,
+          name: menu.name,
+          key_name: menu.key_name ?? 'Others', // group key
+          subMenus: subMenusWithPerms,
+        };
+      }),
+    );
+
+    return { sideMenus, menuTrees };
+  }
+
+  async getRoles() {
+    const roles = await this.usersRoles.find({ where: { status: 1, id: Not(In([1, 2])), } });
+    const rolesWithMapping = await Promise.all(roles.map(async (role) => {
+      const mappings = await this.sideMenuMapppingRepository.createQueryBuilder('srm')
+        .innerJoin('side_menus', 'sm', 'srm.side_menu_id = sm.id')
+        .select(['sm.id as id', 'sm.name as name'])
+        .where('srm.role_id = :roleId', { roleId: role.id })
+        .getRawMany();
+      return {
+        ...role,
+        mappings
+      };
+    }));
+    return rolesWithMapping;
+  }
+
+
   async fetchUserBranches(userId: number) {
     //here
     const branches = await this.userCompanyMap.findOne({ where: { user_id: userId } })

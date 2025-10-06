@@ -6,7 +6,4 @@ export class UpdateDepartmentDto {
   @Length(3, 50, { message: 'Department name must be between 3 and 50 characters' })
   name?: string;
 
-  @IsOptional()
-  @IsNumber()
-  company_Id?: number;
 }
