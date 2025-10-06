@@ -6,8 +6,8 @@ import { CreateCustomerInvoiceDto } from './dto/create-customer-invoice.dto';
 export class CustomerInvoiceController {
   constructor(private readonly invoiceService: CustomerInvoiceService) {}
 
-  // @Post('create')
-  // create(@Body() dto: CreateCustomerInvoiceDto) {
-  //   return this.invoiceService.createInvoice(dto);
-  // }
+  @Post('create')
+  create(@Body() dto: CreateCustomerInvoiceDto) {
+    return this.invoiceService.createInvoice(dto);
+  }
 }
