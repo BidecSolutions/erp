@@ -21,7 +21,7 @@
 //   async markBulk(dto: BulkAttendanceDto) {
 //     let employees: Employee[] = [];
 
-//     // ✅ Agar "all: true" hai to sab employees fetch karo
+//     // // Agar "all: true" hai to sab employees fetch karo
 //     if (dto.all) {
 //       employees = await this.employeeRepo.find();
 //     } else if (dto.employeeIds?.length) {
@@ -57,7 +57,7 @@
 
 //     const saved = await this.attendanceRepo.save(records);
 
-//     // ✅ Response me sirf employee ka name wapis do (puray object nahi)
+//     // // Response me sirf employee ka name wapis do (puray object nahi)
 //     return saved.map(att => ({
 //       id: att.id,
 //       employee: att.employee.name,

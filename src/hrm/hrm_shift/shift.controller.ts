@@ -21,7 +21,7 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 export class ShiftController {
   constructor(private readonly shiftService: ShiftService) {}
 
-  // ✅ Create Shift
+  //  Create Shift
   @Post('create')
   async create(@Body() dto: CreateShiftDto, @Req() req: any) {
     const companyId = req.user.company_id;
@@ -33,7 +33,7 @@ export class ShiftController {
     };
   }
 
-  // ✅ Get all Shifts (with optional status filter)
+  //  Get all Shifts (with optional status filter)
   @Get('list')
   async findAll(@Req() req: any, @Query('status') status?: string) {
     const companyId = req.user.company_id;
@@ -46,7 +46,7 @@ export class ShiftController {
     };
   }
 
-  // ✅ Get single shift
+  //  Get single shift
   @Get(':id/get')
   async findOne(@Param('id', ParseIntPipe) id: number) {
     const shift = await this.shiftService.findOne(id);
@@ -57,7 +57,7 @@ export class ShiftController {
     };
   }
 
-  // ✅ Update Shift
+  // // Update Shift
   @Put(':id/update')
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -73,18 +73,18 @@ export class ShiftController {
     };
   }
 
-  // ✅ Delete Shift
-  @Delete(':id/delete')
-  async remove(@Param('id', ParseIntPipe) id: number) {
-    const deleted = await this.shiftService.remove(id);
-    return {
-      status: true,
-      message: `Shift ID ${id} Deleted Successfully`,
-      data: deleted,
-    };
-  }
+  // // // Delete Shift
+  // @Delete(':id/delete')
+  // async remove(@Param('id', ParseIntPipe) id: number) {
+  //   const deleted = await this.shiftService.remove(id);
+  //   return {
+  //     status: true,
+  //     message: `Shift ID ${id} Deleted Successfully`,
+  //     data: deleted,
+  //   };
+  // }
 
-  // ✅ Toggle Status
+  // // Toggle Status
   @Get('toogleStatus/:id')
   async statusChange(@Param('id', ParseIntPipe) id: number) {
     return this.shiftService.statusUpdate(id);

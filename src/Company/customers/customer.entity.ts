@@ -6,6 +6,7 @@ import {
   BeforeInsert,
   BeforeUpdate,
   OneToMany,
+  JoinColumn,
 } from 'typeorm';
 import { Company } from '../companies/company.entity';
 import { CustomerCategory } from '../customer-categories/customer-category.entity';
@@ -19,8 +20,14 @@ export class Customer {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Company, (company) => company.customers, { onDelete: 'CASCADE' })
-  company: Company;
+  // @ManyToOne(() => Company, (company) => company.customers, { onDelete: 'CASCADE' })
+  // company: Company;
+    @ManyToOne(() => Company, { eager: true }) // eager true -> auto load
+    @JoinColumn({ name: 'company_id' })
+    company: Company;
+    
+    @Column()
+    company_id: number;
 
   @ManyToOne(() => CustomerCategory, (category) => category.customers, {
     onDelete: 'CASCADE',

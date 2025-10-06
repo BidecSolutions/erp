@@ -93,11 +93,11 @@ async update(id: number, dto: UpdateShiftDto, company_id: number) {
 }
 
 
-  async remove(id: number) {
-    const shift = await this.findOne(id);
-    await this.shiftRepo.remove(shift);
-    return { message: `Shift ID ${id} deleted successfully` };
-  }
+  // async remove(id: number) {
+  //   const shift = await this.findOne(id);
+  //   await this.shiftRepo.remove(shift);
+  //   return { message: `Shift ID ${id} deleted successfully` };
+  // }
 
     async statusUpdate(id: number) {
             try {
@@ -112,4 +112,6 @@ async update(id: number, dto: UpdateShiftDto, company_id: number) {
               return errorResponse("Something went wrong", err.message);
             }
           }
+
+
 }

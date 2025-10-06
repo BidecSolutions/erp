@@ -21,7 +21,7 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 export class ProbationSettingController {
   constructor(private readonly probationService: ProbationSettingService) {}
 
-  // ✅ Create probation setting
+  // // Create probation setting
   @Post('create')
   async create(@Body() dto: CreateProbationSettingDto, @Req() req: any) {
     const companyId = req.user.company_id;
@@ -33,7 +33,7 @@ export class ProbationSettingController {
     };
   }
 
-  // ✅ Get all settings for company (with optional status filter)
+  // // Get all settings for company (with optional status filter)
   @Get('list')
   async findAll(@Req() req: any, @Query('status') status?: string) {
     const companyId = req.user.company_id;
@@ -46,7 +46,7 @@ export class ProbationSettingController {
     };
   }
 
-  // ✅ Get single probation setting
+  // // Get single probation setting
   @Get(':id/get')
   async findOne(@Param('id', ParseIntPipe) id: number) {
     const setting = await this.probationService.findOne(id);
@@ -57,7 +57,7 @@ export class ProbationSettingController {
     };
   }
 
-  // ✅ Update probation setting
+  // // Update probation setting
   @Put(':id/update')
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -73,7 +73,7 @@ export class ProbationSettingController {
     };
   }
 
-  // ✅ Toggle probation setting status
+  // // Toggle probation setting status
   @Get('toogleStatus/:id')
   async statusChange(@Param('id', ParseIntPipe) id: number) {
     return this.probationService.statusUpdate(id);

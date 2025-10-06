@@ -12,9 +12,6 @@ export class CreateCategoryDto {
   @IsOptional()
   @IsString()
   description?: string;
-
-  @IsInt()
-  company_id?: number;
   
   @IsInt()
   branch_id: number;

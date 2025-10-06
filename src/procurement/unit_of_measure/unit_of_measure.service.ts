@@ -13,11 +13,12 @@ export class UnitOfMeasureService {
         @InjectRepository(UnitOfMeasure)
       private readonly repo: Repository<UnitOfMeasure>) {}
 
-async create(createDto: CreateUnitOfMeasureDto) {
+async create(createDto: CreateUnitOfMeasureDto, company_id:number) {
       try {
-        const unit_of_measure = this.repo.create(createDto);
+        const unit_of_measure = this.repo.create({...createDto, company_id});
         await this.repo.save(unit_of_measure);
-        return successResponse('unit_of_measure created successfully!', unit_of_measure);
+        const saved = await this.findAll(company_id);
+        return saved;
         
       } catch (error) {
           if (error.code === 'ER_DUP_ENTRY') {
@@ -26,49 +27,68 @@ async create(createDto: CreateUnitOfMeasureDto) {
         throw new BadRequestException(error.message || 'Failed to create unit_of_measure');
       }
     }
- async findAll(filter?: number) {
-      try {
-        const where: any = {};
-        if (filter !== undefined) {
-          where.status = filter; // filter apply
-        }
-        const [unit_of_measure, total] = await this.repo.findAndCount({
-          where,
-        });
-        return successResponse('unit of measure retrieved successfully!', {
-          total_record: total,
-          unit_of_measure,
-        });
-      } catch (error) {
-        return errorResponse('Failed to retrieve unit_of_measure', error.message);
-      }
-    }
+async findAll(company_id: number, filterStatus?: number) {
+  const status = filterStatus !== undefined ? filterStatus : 1; // default active
+  try {
+    const units = await this.repo
+      .createQueryBuilder("unit")
+      .leftJoin("unit.company", "company")
+      .select([
+        "unit.id",
+        "unit.uom_name",
+        "unit.uom_code",
+        "unit.status",
+        "company.company_name",
+      ])
+      .where("unit.company_id = :company_id", { company_id })
+      .andWhere("unit.status = :status", { status })
+      .orderBy("unit.id", "DESC")
+      .getRawMany();
 
- async findOne(id: number) {
-      try {
-        const unit_of_measure = await this.repo.findOneBy({ id });
-        if (!unit_of_measure) {
-          return errorResponse(`unit of measure #${id} not found`);
-        }
-    
-        return successResponse('unit of measure retrieved successfully!', unit_of_measure);
-      } catch (error) {
-        return errorResponse('Failed to retrieve unit of measure', error.message);
-      }
-    }
+    return {total_record: units.length, unit_of_measure: units,}
+  } catch (error) {
+    return errorResponse( error.message);
+  }
+}
 
- async update(id: number, updateDto: UpdateUnitOfMeasureDto) {
+async findOne(id: number) {
+  try {
+    const unit_of_measure = await this.repo
+      .createQueryBuilder("unit")
+      .leftJoin("unit.company", "company")
+      .select([
+        "unit.id",
+        "unit.uom_name",
+        "unit.uom_code",
+        "unit.status",
+        "company.company_name",
+      ])
+      .where("unit.id = :id", { id })
+      .getRawOne();
+
+    if (!unit_of_measure) throw new NotFoundException(`Unit of Measure ID ${id} not found`);
+
+
+      return unit_of_measure;
+    } catch (e) {
+      return { message: e.message };
+    }
+}
+
+
+ async update(id: number, updateDto: UpdateUnitOfMeasureDto,company_id: number) {
       try {
-        const existing = await this.repo.findOne({ where: { id } });
+        const existing = await this.repo.findOne({ where: { id, company_id } });
         if (!existing) {
           return errorResponse(`unit of measure #${id} not found`);
         }
     
-        const unit_of_measure = await this.repo.save({ id, ...updateDto });
-        return successResponse('unit of measure updated successfully!', unit_of_measure);
-      } catch (error) {
-        return errorResponse('Failed to update brand', error.message);
-      }
+        await this.repo.save({ id, ...updateDto });
+        const updated = await this.findAll(company_id);
+      return updated;
+    } catch (e) {
+      return { message: e.message };
+    }
     }
   async statusUpdate(id: number) {
    try {

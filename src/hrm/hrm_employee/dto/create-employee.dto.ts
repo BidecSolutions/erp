@@ -92,7 +92,7 @@ export class CreateEmployeeDto {
   // @ArrayMaxSize(2, { message: 'Identity Card can have maximum 2 files (front and back)' })
   // identity_card?: string[]
 
-  // ✅ Multiple bank details allowed
+  // // Multiple bank details allowed
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })

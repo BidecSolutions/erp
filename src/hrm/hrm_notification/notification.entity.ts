@@ -9,7 +9,7 @@ import {
 import { NotificationType } from '../hrm_notification-type/notification-type.entity';
 import { Employee } from '../hrm_employee/employee.entity';
 
-// ✅ Enum inside same file (no separate file)
+// // Enum inside same file (no separate file)
 export enum NotificationReadStatus {
   UNREAD = 0,
   READ = 1,

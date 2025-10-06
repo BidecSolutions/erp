@@ -80,7 +80,7 @@ export class EmployeeController {
           return callback(new BadRequestException(message), false);
         }
 
-        // ✅ Photo size check (2MB limit)
+        // // Photo size check (2MB limit)
         if (file.fieldname === 'photo' && file.size > 2 * 1024 * 1024) {
           return callback(new BadRequestException('Photo must not exceed 2 MB'), false);
         }

@@ -94,22 +94,22 @@ async update(
   company_id: number,
 ) {
   try {
-    // ✅ Find record for same company
+    // // Find record for same company
     const ps = await this.probationRepo.findOne({ where: { id, company_id } });
     if (!ps) throw new NotFoundException(`Probation setting ID ${id} not found`);
 
-    // ✅ Convert days → months if needed
+    // // Convert days → months if needed
     if (data.duration_type === 'days' && data.probation_period) {
       data.probation_period = Math.ceil(data.probation_period / 30);
     }
 
-    // ✅ Assign new values
+    // // Assign new values
     if (data.leave_days) ps.leave_days = data.leave_days;
     if (data.probation_period) ps.probation_period = data.probation_period;
 
     await this.probationRepo.save(ps);
 
-    // ✅ Return updated list for company
+    // // Return updated list for company
     const updated = await this.findAll(company_id);
     return updated;
   } catch (e) {

@@ -46,7 +46,7 @@ export class PosService {
                 return { success: false, message: 'No products found' };
             }
 
-            const { product } = result.data; // ✅ Safe now
+            const { product } = result.data; // // Safe now
 
             const product_with_stock = await Promise.all(
                 product.map(async (p) => {
@@ -65,14 +65,15 @@ export class PosService {
         }
     }
 
-    async getAllCustomers() {
-        try {
-            const result = await this.customerService.findAll();
-            return { success: true, message: 'Customers retrieved successfully', data: result };
-        } catch (error) {
-            return { success: false, message: 'Failed to retrieve customers' };
-        }
-    }
+ async getAllCustomers(company_id: number) {
+  try {
+    const result = await this.customerService.findAll(company_id);
+    return { success: true, message: 'Customers retrieved successfully', data: result };
+  } catch (error) {
+    return { success: false, message: 'Failed to retrieve customers' };
+  }
+}
+ 
 
     async createOrder(dto: CreatePosDto) {
         try {
