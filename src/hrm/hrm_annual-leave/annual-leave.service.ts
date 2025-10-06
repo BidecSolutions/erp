@@ -13,33 +13,93 @@ export class AnnualLeaveService {
     private repo: Repository<AnnualLeave>,
   ) {}
 
-  create(dto: CreateAnnualLeaveDto) {
-    const record = this.repo.create(dto);
-    return this.repo.save(record);
-  }
+  async create(dto: CreateAnnualLeaveDto, company_id: number) {
+      try {
+        const annualLeave = this.repo.create({
+           ...dto,
+      company_id,
+        });
+  
+        await this.repo.save(annualLeave);
+        const saved = await this.findAll(company_id);
+  
+        return saved;
+      } catch (e) {
+        return { message: e.message };
+      }
+    }
 
-  findAll(filterStatus?: number) {
-        const status = filterStatus !== undefined ? filterStatus : 1;
-    return this.repo.find({where: {status}});
+async findAll(company_id: number, filterStatus?: number) {
+    const status = filterStatus !== undefined ? filterStatus : 1;
+    try {
+      const annualLeave = await this.repo
+        .createQueryBuilder("annual_leave")
+        .leftJoin("annual_leave.company", "company")
+        .select([
+          "annual_leave.id",
+          "annual_leave.name",
+          "annual_leave.total_leave",
+          "annual_leave.status",
+          "company.company_name",
+        ])
+        .where("annual_leave.company_id = :company_id", { company_id })
+        .andWhere("annual_leave.status = :status", { status })
+        .orderBy("annual_leave.id", "DESC")
+        .getRawMany();
+
+      return annualLeave;
+    } catch (e) {
+      return { message: e.message };
+    }
   }
 
   async findOne(id: number) {
-    const record = await this.repo.findOne({ where: { id } });
-   if (!record) throw new NotFoundException(`Annual Leave ${id} not found`);
-    return record;
-  }
+  try {
+    const annualLeave = await this.repo
+      .createQueryBuilder("annual_leave")
+      .leftJoin("annual_leave.company", "company")
+      .select([
+        "annual_leave.id",
+        "annual_leave.name",
+        "annual_leave.total_leave",
+        "annual_leave.status",
+        "company.company_name", // sirf company name
+      ])
+      .where("annual_leave.id = :id", { id })
+      .getRawOne();
 
-  async update(id: number, dto: UpdateAnnualLeaveDto) {
-    const record = await this.findOne(id);
-       if (!record) throw new NotFoundException(`Annual Leave ${id} not found`);
-    Object.assign(record, dto);
-    return this.repo.save(record);
-  }
+    if (!annualLeave) {
+      throw new NotFoundException(`Annual Leave with ID ${id} not found`);
+    }
 
-  async remove(id: number) {
-    const record = await this.findOne(id);
-    return this.repo.remove(record);
+    return annualLeave;
+  } catch (e) {
+    return { message: e.message };
   }
+}
+
+
+async update(id: number, dto: UpdateAnnualLeaveDto, company_id: number) {
+  try {
+    const annualLeave = await this.repo.findOne({
+      where: { id, company_id },
+    });
+
+    if (!annualLeave) {
+      throw new NotFoundException(`Annual Leave with ID ${id} not found`);
+    }
+
+    Object.assign(annualLeave, dto);
+
+    await this.repo.save(annualLeave);
+
+    const updated = await this.findAll(company_id);
+    return updated;
+  } catch (e) {
+    return { message: e.message };
+  }
+}
+
 
    async statusUpdate(id: number) {
       try {

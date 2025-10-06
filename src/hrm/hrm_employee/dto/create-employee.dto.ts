@@ -155,7 +155,7 @@ export class CreateEmployeeDto {
   is_system_user: boolean = false; // default value
 
  @ValidateIf((o) => o.emp_type === EmployeeType.PERMANENT)
-  @IsNotEmpty({ message: 'annual_leave_id is required for permanent employees' })
+  @IsOptional({ message: 'annual_leave_id is required for permanent employees' })
   @IsInt({ message: 'annual_leave_id must be an integer number' })
   @Type(() => Number)
   annual_leave_id?: number;
@@ -189,4 +189,9 @@ branch_ids?: number[];
    @IsEnum(EmployeeType, { message: 'emp_type must be PROBATION or PERMANENT' })
   @IsNotEmpty({ message: 'emp_type is required' })
   emp_type: EmployeeType;
+
+
+  @IsNotEmpty({message : "Branch Id is Requeired"})
+  @IsArray()
+  branch_id : number
 }

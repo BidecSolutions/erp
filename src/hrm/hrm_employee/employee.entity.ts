@@ -63,19 +63,8 @@ export class Employee {
   })
   locationType?: 'residential' | 'postal' | 'work address';
 
-//   //  Required files
-//   @Column({ nullable: false })
-//   cv: string;
-
-//   @Column({ nullable: false })
-//   photo: string;
-
-//   @Column("simple-array", { nullable: false }) 
-//   identity_card: string[];
-
-// @Column({ type: 'text', nullable: true })
-// academic_transcript: string | null;
-
+    @Column({ type: 'json' })
+    branch_id: number[];
 
   @ManyToOne(() => Department, { nullable: false })
   @JoinColumn({ name: 'departmentId' })

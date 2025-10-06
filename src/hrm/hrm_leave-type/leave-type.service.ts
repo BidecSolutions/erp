@@ -1,56 +1,114 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { LeaveType } from './leave-type.entity';
-import { CreateLeaveTypeDto } from './dto/create-leave-type.dto';
-import { UpdateLeaveTypeDto } from './dto/update-leave-type.dto';
-import { errorResponse, toggleStatusResponse } from 'src/commonHelper/response.util';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { LeaveType } from "./leave-type.entity";
+import { CreateLeaveTypeDto } from "./dto/create-leave-type.dto";
+import { UpdateLeaveTypeDto } from "./dto/update-leave-type.dto";
+import { errorResponse, toggleStatusResponse } from "src/commonHelper/response.util";
+import { Company } from "src/Company/companies/company.entity";
 
 @Injectable()
 export class LeaveTypeService {
   constructor(
     @InjectRepository(LeaveType)
     private leaveTypeRepo: Repository<LeaveType>,
+
+    @InjectRepository(Company)
+    private readonly companyRepo: Repository<Company>,
   ) {}
 
-  async create(dto: CreateLeaveTypeDto) {
-    const leaveType = this.leaveTypeRepo.create(dto);
-    return await this.leaveTypeRepo.save(leaveType);
+  // Create LeaveType with company
+  async create(dto: CreateLeaveTypeDto, company_id: number) {
+    try {
+      const leaveType = this.leaveTypeRepo.create({
+        ...dto,
+        company_id, // assign company_id directly
+      });
+
+      await this.leaveTypeRepo.save(leaveType);
+      const saved = await this.findAll(company_id);
+      return saved;
+    } catch (e) {
+      return { message: e.message };
+    }
   }
 
-  async findAll(filterStatus?: number) {
-       const status = filterStatus !== undefined ? filterStatus : 1;
-    return await this.leaveTypeRepo.find({where: {status}});
+  // Get all LeaveTypes for a company
+  async findAll(company_id: number, filterStatus?: number) {
+    const status = filterStatus !== undefined ? filterStatus : 1;
+    try {
+      const leaveTypes = await this.leaveTypeRepo
+        .createQueryBuilder("leave_type")
+        .leftJoin("leave_type.company", "company")
+        .select([
+          "leave_type.id",
+          "leave_type.leave_type",
+          "leave_type.status",
+          "company.company_name",
+        ])
+        .where("leave_type.company_id = :company_id", { company_id })
+        .andWhere("leave_type.status = :status", { status })
+        .orderBy("leave_type.id", "DESC")
+        .getRawMany();
+
+      return leaveTypes;
+    } catch (e) {
+      return { message: e.message };
+    }
   }
 
+  // Get one LeaveType with company
   async findOne(id: number) {
-    const leaveType = await this.leaveTypeRepo.findOne({ where: { id } });
-    if (!leaveType) throw new NotFoundException(`Leave Type ${id} not found`);
-    return leaveType;
+    try {
+      const leaveType = await this.leaveTypeRepo
+        .createQueryBuilder("leave_type")
+        .leftJoin("leave_type.company", "company")
+        .select([
+          "leave_type.id",
+               "leave_type.leave_type",
+          "leave_type.status",
+          "company.company_name",
+        ])
+        .where("leave_type.id = :id", { id })
+        .getRawOne();
+
+      if (!leaveType) throw new NotFoundException(`Leave Type ID ${id} not found`);
+
+      return leaveType;
+    } catch (e) {
+      return { message: e.message };
+    }
   }
 
-  async update(id: number, dto: UpdateLeaveTypeDto) {
-    const leaveType = await this.findOne(id);
-    Object.assign(leaveType, dto);
-    return await this.leaveTypeRepo.save(leaveType);
+  // Update LeaveType
+  async update(id: number, dto: UpdateLeaveTypeDto, company_id: number) {
+    try {
+      const leaveType = await this.leaveTypeRepo.findOne({ where: { id, company_id } });
+      if (!leaveType) throw new NotFoundException(`Leave Type ID ${id} not found`);
+
+      if (dto.leave_type) leaveType.leave_type = dto.leave_type;
+
+      await this.leaveTypeRepo.save(leaveType);
+      const updated = await this.findAll(company_id);
+      return updated;
+    } catch (e) {
+      return { message: e.message };
+    }
   }
 
-  async remove(id: number) {
-    const leaveType = await this.findOne(id);
-    return await this.leaveTypeRepo.remove(leaveType);
+
+  // Toggle status
+  async statusUpdate(id: number) {
+    try {
+      const dep = await this.leaveTypeRepo.findOneBy({ id });
+      if (!dep) throw new NotFoundException("Leave Type not found");
+
+      dep.status = dep.status === 0 ? 1 : 0;
+      await this.leaveTypeRepo.save(dep);
+
+      return toggleStatusResponse("Leave Type", dep.status);
+    } catch (err) {
+      return errorResponse("Something went wrong", err.message);
+    }
   }
-  
-      async statusUpdate(id: number) {
-          try {
-            const dep = await this.leaveTypeRepo.findOneBy({ id });
-            if (!dep) throw new NotFoundException("Leave Type not found");
-      
-            dep.status = dep.status === 0 ? 1 : 0;
-            await this.leaveTypeRepo.save(dep);
-      
-            return toggleStatusResponse("Leave Type", dep.status);
-          } catch (err) {
-            return errorResponse("Something went wrong", err.message);
-          }
-        }
 }

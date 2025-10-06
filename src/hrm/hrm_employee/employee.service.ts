@@ -5,7 +5,7 @@ import {
   UploadedFiles,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository, In } from "typeorm";
+import { Repository, In, Raw } from "typeorm";
 import { Employee } from "./employee.entity";
 import { CreateEmployeeDto } from "./dto/create-employee.dto";
 import { UpdateEmployeeDto } from "./dto/update-employee.dto";
@@ -66,122 +66,86 @@ export class EmployeeService {
     return `EMP-${String(newId).padStart(3, "0")}`;
   }
 
-  async findAll(filterStatus?: number) {
-    const status = filterStatus !== undefined ? filterStatus : 1;
-    const employees = await this.employeeRepository.find({
-      where: { status },
-      relations: [
-        "department",
-        "designation",
-        "documents",
-        "bankDetails",
-        "annualLeave",
-        "allowances",
-        "shift",
-        "branches",
-        "branches",
-      ],
-    });
+async findAll(body) {
+  const employees = await this.employeeRepository.find({
+    where: {
+      status: body.status,
+      branch_id: Raw(
+        (alias) => `JSON_CONTAINS(${alias}, '${JSON.stringify([body.branch_id])}')`
+      ),
+    },
+    relations: [
+      "department",
+      "designation",
+      "documents",
+      "bankDetails",
+      "annualLeave",
+      "allowances",
+      "shift",
+      "branches",
+    ],
+  });
 
-    // return employees.map((emp) => ({
-    //   id: emp.id,
-    //   name: emp.name,
-    //   phone: emp.phone,
-    //   gender: emp.gender,
-    //   // email: emp.email,
-    //   // password: emp.password,
-    //   is_system_user: emp.is_system_user,
-    //   address: emp.address,
-    //   dateOfBirth: emp.dateOfBirth,
-    //   locationType: emp.locationType,
-    //   department: emp.department?.name || null,
-    //   designation: emp.designation?.name || null,
-    //   dateOfJoining: emp.dateOfJoining,
-    //   employeeCode: emp.employeeCode,
-    //   hoursPerDay: emp.hoursPerDay,
-    //   daysPerWeek: emp.daysPerWeek,
-    //   fixedSalary: emp.fixedSalary,
-    //   shift: emp.shift?.name || null,
-    //   document: emp.documents || [],
-    //   bankDetails: emp.bankDetails || [],
-    //   annualLeave: emp.annualLeave || [],
-    //   allowances:
-    //     emp.allowances?.map((a) => ({
-    //       id: a.id,
-    //       title: a.title,
-    //       type: a.type,
-    //       amount: a.amount,
-    //       company_id: a.company_id,
-    //       status: a.status,
-    //     })) || [],
-    //   branches: emp.branches?.map(b => ({
-    //   id: b.id,
-    //   name: b.branch_name,
-    // })) || [],
-    //   status: emp.status,
-    // }));
-    return employees.map((emp) => {
-      const documents = emp.documents || [];
+  return employees.map((emp) => {
+    const documents = emp.documents || [];
 
-      return {
-        id: emp.id,
-        name: emp.name,
-        phone: emp.phone,
-        gender: emp.gender,
-        is_system_user: emp.is_system_user,
-        address: emp.address,
-        dateOfBirth: emp.dateOfBirth,
-        locationType: emp.locationType,
-        department: emp.department?.name || null,
-        designation: emp.designation?.name || null,
-        dateOfJoining: emp.dateOfJoining,
-        employeeCode: emp.employeeCode,
-        hoursPerDay: emp.hoursPerDay,
-        daysPerWeek: emp.daysPerWeek,
-        fixedSalary: emp.fixedSalary,
-        shift: emp.shift?.name || null,
-        document:
-          emp.documents && emp.documents.length > 0
-            ? {
-                cv:
-                  emp.documents.find((d) => d.type === "cv")?.filePath || null,
-                photo:
-                  emp.documents.find((d) => d.type === "photo")?.filePath ||
-                  null,
-                identity_card:
-                  emp.documents
-                    .filter((d) => d.type === "identity_card")
-                    .map((d) => d.filePath) || [],
-                academic_transcript:
-                  emp.documents.find((d) => d.type === "academic_transcript")
-                    ?.filePath || null,
-              }
-            : {
-                cv: null,
-                photo: null,
-                identity_card: [],
-                academic_transcript: null,
-              },
-        bankDetails: emp.bankDetails || [],
-        annualLeave: emp.annualLeave || [],
-        allowances:
-          emp.allowances?.map((a) => ({
-            id: a.id,
-            title: a.title,
-            type: a.type,
-            amount: a.amount,
-            company_id: a.company_id,
-            status: a.status,
-          })) || [],
-        branches:
-          emp.branches?.map((b) => ({
-            id: b.id,
-            name: b.branch_name,
-          })) || [],
-        status: emp.status,
-      };
-    });
-  }
+    return {
+      id: emp.id,
+      name: emp.name,
+      phone: emp.phone,
+      gender: emp.gender,
+      is_system_user: emp.is_system_user,
+      address: emp.address,
+      dateOfBirth: emp.dateOfBirth,
+      locationType: emp.locationType,
+      department: emp.department?.name || null,
+      designation: emp.designation?.name || null,
+      dateOfJoining: emp.dateOfJoining,
+      employeeCode: emp.employeeCode,
+      hoursPerDay: emp.hoursPerDay,
+      daysPerWeek: emp.daysPerWeek,
+      fixedSalary: emp.fixedSalary,
+      shift: emp.shift?.name || null,
+      document:
+        documents.length > 0
+          ? {
+              cv: documents.find((d) => d.type === "cv")?.filePath || null,
+              photo: documents.find((d) => d.type === "photo")?.filePath || null,
+              identity_card:
+                documents
+                  .filter((d) => d.type === "identity_card")
+                  .map((d) => d.filePath) || [],
+              academic_transcript:
+                documents.find((d) => d.type === "academic_transcript")
+                  ?.filePath || null,
+            }
+          : {
+              cv: null,
+              photo: null,
+              identity_card: [],
+              academic_transcript: null,
+            },
+      bankDetails: emp.bankDetails || [],
+      annualLeave: emp.annualLeave || [],
+      allowances:
+        emp.allowances?.map((a) => ({
+          id: a.id,
+          title: a.title,
+          type: a.type,
+          amount: a.amount,
+          company_id: a.company_id,
+          status: a.status,
+        })) || [],
+      branches:
+        emp.branches?.map((b) => ({
+          id: b.id,
+          name: b.branch_name,
+        })) || [],
+      status: emp.status,
+    };
+  });
+}
+
 
   async findOne(id: number) {
     const emp = await this.employeeRepository.findOne({
@@ -322,29 +286,12 @@ export class EmployeeService {
 
       const emp = this.employeeRepository.create({
         ...dto,
+          branch_id: Array.isArray(dto.branch_id) ? dto.branch_id.map(b => Number(b)) : [Number(dto.branch_id)],    
         department,
         designation,
         shift,
         ...(annualLeave ? { annualLeave } : {}),
         ...(probationSetting ? { probationSetting } : {})
-        // cv:
-        //   files.cv?.[0]?.filename ??
-        //   (() => {
-        //     throw new BadRequestException("CV is required");
-        //   })(),
-        // photo:
-        //   files.photo?.[0]?.filename ??
-        //   (() => {
-        //     throw new BadRequestException("Photo is required");
-        //   })(),
-        // identity_card:
-        //   files.identity_card?.map((f) => f.filename) ??
-        //   (() => {
-        //     throw new BadRequestException(
-        //       "Identity Card (front & back) are required"
-        //     );
-        //   })(),
-        // academic_transcript: files.academic_transcript?.[0]?.filename ?? null, // optional
       });
 
       emp.is_system_user = dto.is_system_user ?? false;
@@ -399,7 +346,7 @@ export class EmployeeService {
         //user company and branch Mapping
         const companyMapping = this.companyMaping.create({
           user_id: userid.id,
-          // branch_id: dto.branch_id ? (Array.isArray(dto.branch_id) ? dto.branch_id : [dto.branch_id]) : [],
+          branch_id:Array.isArray(dto.branch_id) ? dto.branch_id.map(b => Number(b)) : [Number(dto.branch_id)],
         });
         await this.companyMaping.save(companyMapping);
       }

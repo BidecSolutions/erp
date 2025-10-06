@@ -10,32 +10,35 @@ UseGuards(JwtAuthGuard)
 export class DesignationController {
   constructor(private readonly designationService: DesignationService) { }
 
- @Get('list')
-  findAll(@Query('status') status?: string) {
+
+  @Get('list')
+  async findAll(@Query('status') status?: string) {
     const filterStatus = status !== undefined ? Number(status) : undefined;
-    return this.designationService.findAll(filterStatus);
+    const designations = await this.designationService.findAll(filterStatus);
+    return { status: true, message: "Get All Designations", data: designations };
   }
 
+ 
   @Post('create')
-  create(@Body() dto: CreateDesignationDto) {
-    return this.designationService.create(dto);
+  async create(@Body() dto: CreateDesignationDto) {
+    const designations = await this.designationService.create(dto);
+    return { status: true, message: "Designation Created Successfully", data: designations };
   }
 
+
+ 
   @Get(':id/get')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.designationService.findOne(id);
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    const designation = await this.designationService.findOne(id);
+    return { status: true, message: `Get Designation with ID ${id}`, data: designation };
   }
 
   @Put(':id/update')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateDesignationDto) {
-    return this.designationService.update(id, dto);
+  async update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateDesignationDto) {
+    const designations = await this.designationService.update(id, dto);
+    return { status: true, message: "Designation Updated Successfully", data: designations };
   }
 
-  @Delete(':id/delete')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.designationService.remove(id);
-  }
-  
       @Get('toogleStatus/:id')
       statusChange(@Param('id', ParseIntPipe) id: number){
         return this.designationService.statusUpdate(id);
