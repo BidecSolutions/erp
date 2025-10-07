@@ -13,6 +13,9 @@ import { Branch } from 'src/Company/branch/branch.entity';
 import { Product } from 'src/procurement/product/entities/product.entity';
 import { CustomerAccount } from 'src/Company/customers/customer.customer_account.entity';
 import { Stock } from 'src/procurement/stock/entities/stock.entity';
+import { CreateSalesReturnDto } from './dto/create-sales-return.dto';
+import { SalesReturn } from './entities/sales-return.entity';
+import { SalesReturnDetail } from './entities/sales-return-detail.entity';
 
 @Injectable()
 export class PosService {
@@ -67,15 +70,15 @@ export class PosService {
         }
     }
 
- async getAllCustomers(company_id: number) {
-  try {
-    const result = await this.customerService.findAll(company_id);
-    return { success: true, message: 'Customers retrieved successfully', data: result };
-  } catch (error) {
-    return { success: false, message: 'Failed to retrieve customers' };
-  }
-}
- 
+    async getAllCustomers(company_id: number) {
+        try {
+            const result = await this.customerService.findAll(company_id);
+            return { success: true, message: 'Customers retrieved successfully', data: result };
+        } catch (error) {
+            return { success: false, message: 'Failed to retrieve customers' };
+        }
+    }
+
 
     async createOrder(dto: CreatePosDto, user: any) {
         try {
@@ -109,7 +112,7 @@ export class PosService {
                 if (!dto.customer_id) {
                     walkingCustomer = await this.customerRepo
                         .createQueryBuilder('customer')
-                        .andWhere('companyId = :id', { id: company_id })
+                        .andWhere('company_id = :id', { id: company_id })
                         .getOne();
                 }
 
@@ -189,16 +192,18 @@ export class PosService {
                     })
                     : null;
 
+                let customerName: string;
 
-                const customerName = dto.customer_id
-                    ? (
-                        await this.customerRepo.findOne({
-                            where: { id: dto.customer_id },
-                            select: { customer_name: true },
-                        })
-                    )?.customer_name ?? 'Walking Customer'
-                    : walkingCustomer?.customer_name ?? 'Walking Customer';
-
+                if (!dto.customer_id) {
+                    customerName = 'Walking Customer';
+                } else {
+                    const customer = await this.customerRepo
+                        .createQueryBuilder('customer')
+                        .select(['customer.customer_name'])
+                        .where('customer.id = :id', { id: dto.customer_id })
+                        .getOne();
+                    customerName = customer?.customer_name ?? 'Walking Customer';
+                }
 
                 return {
                     success: true,
@@ -247,6 +252,135 @@ export class PosService {
             return { success: false, message: 'Failed to retrieve instant products', error };
         }
     }
+
+    async createSalesReturn(dto: CreateSalesReturnDto, user: any) {
+        try {
+            const company_id = user.company_id;
+            const user_id = user.user.id;
+
+            return await this.dataSource.transaction(async (manager) => {
+                const salesOrder = await manager.findOne(SalesOrder, {
+                    where: { id: dto.sales_order_id },
+                    relations: ['customer', 'company', 'branch'],
+                });
+
+                if (!salesOrder) {
+                    throw new Error('Invalid Sales Order');
+                }
+
+                const orderDetails = await manager.find(SalesOrderDetail, {
+                    where: { salesOrder: { id: dto.sales_order_id } },
+                    relations: ['product'],
+                });
+
+                if (!orderDetails.length) {
+                    throw new Error('No items found in sales order');
+                }
+
+                let returnItems = dto.return_items || [];
+                let totalReturnAmount = 0;
+
+                // Handle full return
+                if (dto.is_full_return) {
+                    returnItems = orderDetails.map((d) => ({
+                        product_id: d.product.id,
+                        quantity: d.quantity,
+                    }));
+                }
+
+                if (!dto.is_full_return && (!dto.return_items || dto.return_items.length === 0)) {
+                    throw new Error('No return items provided for partial return');
+                }
+
+                // Validate & process return items
+                for (const item of returnItems) {
+                    const orderItem = orderDetails.find((od) => od.product.id === item.product_id);
+                    if (!orderItem) throw new Error(`Product ID ${item.product_id} not found in order`);
+                    if (item.quantity > orderItem.quantity)
+                        throw new Error(`Return qty exceeds sold qty for product ${item.product_id}`);
+
+                    // Update stock (increase)
+                    const stock = await manager.findOne(Stock, {
+                        where: { product: { id: item.product_id } },
+                    });
+                    if (!stock) throw new Error(`Stock not found for product ${item.product_id}`);
+
+                    stock.quantity_on_hand += item.quantity;
+                    await manager.save(stock);
+
+                    const lineAmount = orderItem.unit_price * item.quantity;
+                    totalReturnAmount += lineAmount;
+                }
+
+                // Save sales return record
+                const salesReturn = manager.create(SalesReturn, {
+                    return_no: `SR-${Date.now()}`,
+                    salesOrder: { id: dto.sales_order_id },
+                    total_return_amount: Math.round(totalReturnAmount),
+                    company: { id: company_id },
+                    branch: salesOrder.branch ? { id: salesOrder.branch.id } : undefined,
+                    customer: salesOrder.customer ? { id: salesOrder.customer.id } : undefined,
+                    return_date: new Date(),
+                    created_by: { id: user_id }
+                });
+
+                const savedReturn = await manager.save(salesReturn);
+
+                // Save sales return details
+                for (const item of returnItems) {
+                    const orderItem = orderDetails.find((od) => od.product.id === item.product_id)!;
+                    const returnDetail = manager.create(SalesReturnDetail, {
+                        salesReturn: { id: savedReturn.id },
+                        product: { id: item.product_id },
+                        quantity: item.quantity,
+                        unit_price: orderItem.unit_price,
+                        total: orderItem.unit_price * item.quantity,
+                    });
+                    await manager.save(returnDetail);
+                }
+
+                // Adjust customer account
+                if (salesOrder.customer) {
+                    const customerAccount = await this.customerAccountRepo.findOne({
+                        where: { customer: { id: salesOrder.customer.id } },
+                    });
+
+                    if (customerAccount) {
+                        const newAmount = Math.round(
+                            (customerAccount.amount || 0) - totalReturnAmount
+                        );
+
+                        if (newAmount < 0) {
+                            throw new Error(
+                                `Invalid operation: customer's account balance cannot go negative.`
+                            );
+                        }
+                        
+                        await this.customerAccountRepo.update(
+                            { customer: { id: salesOrder.customer.id } },
+                            { amount: newAmount }
+                        );
+                    }
+                }
+
+                return {
+                    success: true,
+                    message: dto.is_full_return
+                        ? 'Full sale returned successfully'
+                        : 'Partial sale return processed successfully',
+                    return_id: savedReturn.id,
+                    sales_order_id: salesOrder.id,
+                    total_return_amount: totalReturnAmount,
+                };
+            });
+        } catch (error) {
+            return {
+                success: false,
+                message: error.message || 'Failed to process sale return',
+            };
+        }
+    }
+
 
 }
 
