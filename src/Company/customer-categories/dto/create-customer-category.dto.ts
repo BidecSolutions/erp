@@ -15,5 +15,4 @@ export class CreateCustomerCategoryDto {
   @IsNumber()
   discount_percent?: number;
 
-
 }

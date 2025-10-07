@@ -72,17 +72,17 @@ export class CreateEmployeeDto {
   @IsNotEmpty({ message: 'Date of joining is required' })
   dateOfJoining: string;
 
-  
+
   //   @IsString({ message: 'CV must be a valid string (file name)' })
   //   @IsNotEmpty({ message: 'CV is required' })
   // cv?: string; // file name after upload
 
- 
+
   // @IsString({ message: 'Photo must be a valid string (file name)' })
   //     @IsNotEmpty({ message: 'Photo is required' })
   // photo?: string;
 
-  
+
   // @IsString({ message: 'Academic Transcript must be a valid string (file name)' })
   //    @IsNotEmpty({ message: 'Academic Transcript is required' })
   // academic_transcript?: string;
@@ -154,7 +154,7 @@ export class CreateEmployeeDto {
   })
   is_system_user: boolean = false; // default value
 
- @ValidateIf((o) => o.emp_type === EmployeeType.PERMANENT)
+  @ValidateIf((o) => o.emp_type === EmployeeType.PERMANENT)
   @IsOptional({ message: 'annual_leave_id is required for permanent employees' })
   @IsInt({ message: 'annual_leave_id must be an integer number' })
   @Type(() => Number)
@@ -180,20 +180,14 @@ export class CreateEmployeeDto {
   role_id?: number;
 
 
-//   @IsNotEmpty({message : "Branch Id is Requeired"})
-// @IsArray()
-// @Type(() => Number)
-// // @IsNumber({}, { each: true })
-// branch_ids?: number[];
-
-   @IsEnum(EmployeeType, { message: 'emp_type must be PROBATION or PERMANENT' })
+  @IsEnum(EmployeeType, { message: 'emp_type must be PROBATION or PERMANENT' })
   @IsNotEmpty({ message: 'emp_type is required' })
   emp_type: EmployeeType;
 
 
-  @IsNotEmpty({message : "Branch Id is Requeired"})
+  @IsNotEmpty({ message: "Branch Id is Requeired" })
   @IsArray()
   @Type(() => Number)
-@IsNumber({}, { each: true })
-  branch_id : number[]
+  @IsNumber({}, { each: true })
+  branch_id: number[]
 }

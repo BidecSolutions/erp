@@ -316,7 +316,8 @@ export class AuthController {
     }
   }
 
-
-
-
+  @Post('assign-permissions')
+  async assignPermissions(@Body() body: any) {
+    return this.authService.createUserPermissions(body);
+  }
 }

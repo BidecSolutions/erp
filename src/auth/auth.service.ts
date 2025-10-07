@@ -150,8 +150,6 @@ export class AuthService {
         order: { periority: 'ASC' },
       });
     }
-
-    // 🚀 Build menu trees
     const menuTrees = await Promise.all(
       allMenus.map(async (menu) => {
         const subMenus = await this.subSideMenuRepository.find({
@@ -184,8 +182,6 @@ export class AuthService {
         };
       }),
     );
-
-    // 🚀 Group menus by key_name
     const groupedMenus = menuTrees.reduce((groups, menu) => {
       const key = menu.key_name || 'Others';
       if (!groups[key]) {
@@ -261,6 +257,39 @@ export class AuthService {
     }));
     return rolesWithMapping;
   }
+
+
+  async createUserPermissions(body: any) {
+    if (!body.permission || !Array.isArray(body.permission) || body.permission.length === 0) {
+      throw new BadRequestException('Please assign Side Menu Permissions to the user');
+    }
+
+    const user = await this.usersRepository.findOneBy({ id: body.user_id });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const existingPerms = await this.permissionRepository.findBy({ user_id: body.user_id });
+    if (existingPerms.length > 0) {
+      await this.permissionRepository.remove(existingPerms);
+    }
+    const userPermissions = body.permission.map((perm: any) =>
+      this.permissionRepository.create({
+        user_id: body.user_id,
+        menu_id: perm.menu_id,
+        sub_menu_id: perm.sub_menu_id,
+        module_permission: Array.isArray(perm.permission_id)
+          ? perm.permission_id
+          : [perm.permission_id],
+      }),
+    );
+    await this.permissionRepository.save(userPermissions);
+    return { message: 'Permissions assigned to user successfully' };
+  }
+
+
+
+
 
 
   async fetchUserBranches(userId: number) {
