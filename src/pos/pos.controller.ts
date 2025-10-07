@@ -15,10 +15,11 @@ export class PosController {
     }
 
 
-    @Get('customers')
-    async getAllCustomers() {
-        return this.posService.getAllCustomers();
-    }
+@Get('customers')
+async getAllCustomers(@Req() req) {
+  const companyId = req.user.company_id;  // 👈 get company_id from JWT user
+  return this.posService.getAllCustomers(companyId);
+}
 
     @Post('create-order')
     async createOrder(@Body() createPosDto: CreatePosDto, @Req() req:any) {

@@ -83,6 +83,7 @@ export class EmployeeService {
         "allowances",
         "shift",
         "branches",
+        "probationSetting",
       ],
     });
 
@@ -106,6 +107,7 @@ export class EmployeeService {
         daysPerWeek: emp.daysPerWeek,
         fixedSalary: emp.fixedSalary,
         shift: emp.shift?.name || null,
+        emp_type: emp.emp_type,
         document:
           documents.length > 0
             ? {
@@ -126,7 +128,29 @@ export class EmployeeService {
               academic_transcript: null,
             },
         bankDetails: emp.bankDetails || [],
-        annualLeave: emp.annualLeave || [],
+        annualLeave:
+          emp.emp_type === "PROBATION"
+            ? null
+            : emp.annualLeave
+              ? {
+                id: emp.annualLeave.id,
+                name: emp.annualLeave.name,
+                total_leave: emp.annualLeave.total_leave,
+                status: emp.annualLeave.status,
+              }
+              : null,
+        probationSetting:
+          emp.emp_type === "PROBATION"
+            ? emp.probationSetting
+              ? {
+                id: emp.probationSetting.id,
+                leave_days: emp.probationSetting.leave_days,
+                probation_period: emp.probationSetting.probation_period,
+                duration_type: emp.probationSetting.duration_type,
+                status: emp.probationSetting.status,
+              }
+              : null
+            : null,
         allowances:
           emp.allowances?.map((a) => ({
             id: a.id,
@@ -370,16 +394,16 @@ export class EmployeeService {
       }
 
       // Save branches
-      // if (dto.branch_ids?.length) {
-      //   const branches = await this.branchRepo.find({
-      //     where: { id: In(dto.branch_ids) },
-      //   });
-      //   if (branches.length !== dto.branch_ids.length) {
-      //     throw new NotFoundException("Some branches not found");
-      //   }
-      //   saved.branches = branches;
-      //   await this.employeeRepository.save(saved);
-      // }
+      if (dto.branch_id?.length) {
+        const branches = await this.branchRepo.find({
+          where: { id: In(dto.branch_id) },
+        });
+        if (branches.length !== dto.branch_id.length) {
+          throw new NotFoundException("Some branches not found");
+        }
+        saved.branches = branches;
+        await this.employeeRepository.save(saved);
+      }
       // Save documents
       if (files && Object.keys(files).length > 0) {
         // ab createOrUpdateMany use karo
@@ -530,14 +554,14 @@ export class EmployeeService {
       emp.allowances = allowances;
     }
 
-    // if (dto.branch_ids?.length) {
-    //   const branches = await this.branchRepo.find({
-    //     where: { id: In(dto.branch_ids) },
-    //   });
-    //   if (branches.length !== dto.branch_ids.length)
-    //     throw new NotFoundException("Some branches not found");
-    //   emp.branches = branches;
-    // }
+    if (dto.branch_id?.length) {
+      const branches = await this.branchRepo.find({
+        where: { id: In(dto.branch_id) },
+      });
+      if (branches.length !== dto.branch_id.length)
+        throw new NotFoundException("Some branches not found");
+      emp.branches = branches;
+    }
 
     // Update Employee fields
     Object.assign(emp, dto);

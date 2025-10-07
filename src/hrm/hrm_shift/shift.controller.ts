@@ -1,43 +1,92 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, Put, UseGuards, Query, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Put,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+  ParseIntPipe,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { ShiftService } from './shift.service';
 import { CreateShiftDto } from './dto/create-shift.dto';
 import { UpdateShiftDto } from './dto/update-shift.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
-
-UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard)
 @Controller('shifts')
 export class ShiftController {
-  constructor(private readonly shiftService: ShiftService) { }
+  constructor(private readonly shiftService: ShiftService) {}
 
+  //  Create Shift
   @Post('create')
-  create(@Body() dto: CreateShiftDto) {
-    return this.shiftService.create(dto);
+  async create(@Body() dto: CreateShiftDto, @Req() req: any) {
+    const companyId = req.user.company_id;
+    const shifts = await this.shiftService.create(dto, companyId);
+    return {
+      status: true,
+      message: 'Shift Created Successfully',
+      data: shifts,
+    };
   }
-  
- @Get('list')
-  findAll(@Query('status') status?: string) {
+
+  //  Get all Shifts (with optional status filter)
+  @Get('list')
+  async findAll(@Req() req: any, @Query('status') status?: string) {
+    const companyId = req.user.company_id;
     const filterStatus = status !== undefined ? Number(status) : undefined;
-    return this.shiftService.findAll(filterStatus);
+    const shifts = await this.shiftService.findAll(companyId, filterStatus);
+    return {
+      status: true,
+      message: 'Get All Shifts',
+      data: shifts,
+    };
   }
 
+  //  Get single shift
   @Get(':id/get')
-  findOne(@Param('id') id: number) {
-    return this.shiftService.findOne(+id);
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    const shift = await this.shiftService.findOne(id);
+    return {
+      status: true,
+      message: `Get Shift with ID ${id}`,
+      data: shift,
+    };
   }
 
+  // // Update Shift
   @Put(':id/update')
-  update(@Param('id') id: number, @Body() dto: UpdateShiftDto) {
-    return this.shiftService.update(+id, dto);
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateShiftDto,
+    @Req() req: any,
+  ) {
+    const companyId = req.user.company_id;
+    const updated = await this.shiftService.update(id, dto, companyId);
+    return {
+      status: true,
+      message: 'Shift Updated Successfully',
+      data: updated,
+    };
   }
 
-  @Delete(':id/delete')
-  remove(@Param('id') id: number) {
-    return this.shiftService.remove(+id);
-  }
+  // // // Delete Shift
+  // @Delete(':id/delete')
+  // async remove(@Param('id', ParseIntPipe) id: number) {
+  //   const deleted = await this.shiftService.remove(id);
+  //   return {
+  //     status: true,
+  //     message: `Shift ID ${id} Deleted Successfully`,
+  //     data: deleted,
+  //   };
+  // }
 
-    @Get('toogleStatus/:id')
-          statusChange(@Param('id', ParseIntPipe) id: number){
-            return this.shiftService.statusUpdate(id);
-          }
+  // // Toggle Status
+  @Get('toogleStatus/:id')
+  async statusChange(@Param('id', ParseIntPipe) id: number) {
+    return this.shiftService.statusUpdate(id);
+  }
 }

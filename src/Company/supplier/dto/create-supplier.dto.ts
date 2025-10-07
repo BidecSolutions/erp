@@ -2,8 +2,6 @@ import { IsNotEmpty, IsOptional } from "class-validator";
 
 export class CreateSupplierDto {
     @IsNotEmpty()
-    company_id: number;
-    @IsNotEmpty()
     supplier_category_id: number;
     @IsNotEmpty()
     supplier_code: string;

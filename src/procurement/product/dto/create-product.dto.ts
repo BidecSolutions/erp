@@ -50,8 +50,6 @@ export class CreateProductDto {
   @IsString({ each: true })
   images?: string[];
 
-  @IsNotEmpty()
-  company_id?: number;
 
   @IsNotEmpty()
   branch_id?: number;

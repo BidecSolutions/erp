@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn, JoinColumn } from 'typeorm';
 import { Product } from 'src/procurement/product/entities/product.entity';
+import { Company } from 'src/Company/companies/company.entity';
 
 @Entity('warranties')
 export class Warranty {
@@ -15,6 +16,13 @@ export class Warranty {
     @Column({ name: 'status',  default: 1 })
     status: number;
 
+     @ManyToOne(() => Company, { eager: true }) // eager true -> auto load
+      @JoinColumn({ name: 'company_id' })
+      company: Company;
+    
+      @Column()
+      company_id: number;
+      
     @CreateDateColumn()
     created_at: Date;
 

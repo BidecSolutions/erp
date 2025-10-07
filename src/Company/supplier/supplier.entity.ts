@@ -17,8 +17,12 @@ export class Supplier {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Company, (company) => company.suppliers, { onDelete: 'CASCADE' })
+   @ManyToOne(() => Company, { eager: true }) // eager true -> auto load
+  @JoinColumn({ name: 'company_id' })
   company: Company;
+
+  @Column()
+  company_id: number;
 
 
   @ManyToOne(() => SupplierCategory, (category) => category.suppliers, {

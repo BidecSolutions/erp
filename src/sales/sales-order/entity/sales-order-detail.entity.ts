@@ -71,7 +71,7 @@ export class SalesOrderDetail {
   @Column({ nullable: true })
   line_order: number;
 
-  // ✅ NEW STATUS & AUDIT COLUMNS
+  // // NEW STATUS & AUDIT COLUMNS
   @Column({
     type: 'smallint',
     default: 1,

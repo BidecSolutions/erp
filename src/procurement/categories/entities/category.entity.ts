@@ -15,12 +15,13 @@ export class Category {
   @PrimaryGeneratedColumn({ name: 'category_id' })
   id: number;
 
-  @Column({ name: 'company_id', nullable: false })
-    company_id:number;
-    @ManyToOne(() => Company)
-    @JoinColumn({name : 'company_id'})
-    Company: Company
+    @ManyToOne(() => Company, { eager: true }) // eager true -> auto load
+  @JoinColumn({ name: 'company_id' })
+  company: Company;
 
+  @Column()
+  company_id: number;
+  
    @Column({ name: 'branch_id', nullable: false })
     branch_id:number;
     @ManyToOne(() => Branch)

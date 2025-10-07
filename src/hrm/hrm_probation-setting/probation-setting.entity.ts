@@ -1,5 +1,6 @@
 import { IsIn, IsString } from 'class-validator';
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, BeforeInsert } from 'typeorm';
+import { Company } from 'src/Company/companies/company.entity';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, BeforeInsert, ManyToOne, JoinColumn } from 'typeorm';
 
 @Entity('hrm_probation_settings')
 export class ProbationSetting {
@@ -17,6 +18,12 @@ export class ProbationSetting {
 @IsIn(['days', 'months'], { message: 'Duration type must be days or months' })
 duration_type: 'days' | 'months';
 
+  @ManyToOne(() => Company, { eager: true }) // eager true -> auto load
+  @JoinColumn({ name: 'company_id' })
+  company: Company;
+
+  @Column()
+  company_id: number;
 
    @Column({
              type: 'int',

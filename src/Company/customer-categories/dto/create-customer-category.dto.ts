@@ -1,8 +1,6 @@
 import { IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
 
 export class CreateCustomerCategoryDto {
-  @IsNotEmpty()
-  company_id: number;
 
   @IsNotEmpty()
   category_code: string;

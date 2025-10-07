@@ -1,8 +1,6 @@
 import { IsOptional } from "class-validator";
 
 export class UpdateSupplierCategoryDto {
-  @IsOptional()
-  company_id?: number;
 
   @IsOptional()
   category_code?: string;
