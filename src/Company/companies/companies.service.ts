@@ -25,7 +25,7 @@ export class CompaniesService {
     private userRepo: Repository<User>,
 
     @InjectRepository(CustomerCategory)
-    private customerCategory : Repository<CustomerCategory>,
+    private customerCategory: Repository<CustomerCategory>,
 
     @InjectRepository(Customer)
     private customers: Repository<Customer>,
@@ -64,22 +64,21 @@ export class CompaniesService {
         company_id: savedCompany.id,
         branch_id: []
       });
-          await this.ucm.save(userMapping);
+      await this.ucm.save(userMapping);
 
       const customerCat = this.customerCategory.create({
-        category_code : '000',
-        category_name : 'Walking-Customer',
-        created_by : '1'
+        category_code: '000',
+        category_name: 'Walking-Customer',
+        description: 'Default Customer Category',
       })
       const savedCustomerCategory = await this.customerCategory.save(customerCat);
 
-
       const companyCustomer = this.customers.create({
-          customer_code: '000',
-          customer_name: 'Walking Customer', 
-          customer_type: '-',
-          category_customer: savedCustomerCategory,
-          company: savedCompany
+        customer_code: '000',
+        customer_name: 'Walking Customer',
+        customer_type: '-',
+        category_customer: savedCustomerCategory,
+        company: savedCompany
       });
 
       await this.customers.save(companyCustomer);

@@ -48,30 +48,45 @@ export class CategoriesService {
 }
 
   async findOne(id: number) {
-      try {
-        const category = await this.repo.findOneBy({ id });
-        if (!category) {
-          return errorResponse(`category #${id} not found`);
-        }
-    
-        return successResponse('category retrieved successfully!', category);
-      } catch (error) {
-        return errorResponse('Failed to retrieve category', error.message);
+    try {
+      const category = await this.repo
+        .createQueryBuilder("category")
+        .leftJoin("category.company", "company")
+        .select([
+          "category.id",
+          "category.category_code",
+          "category.category_name",
+          "category.description",
+          "category.status",
+          "company.company_name",
+        ])
+        .where("category.id = :id", { id })
+        .getRawOne();
+
+      if (!category) {
+        throw new NotFoundException(`Supplier category ID ${id} not found`);
       }
+
+      return category;
+    } catch (error) {
+      return { message: error.message };
     }
-  async update(id: number, updateDto: UpdateCategoryDto) {
-      try {
-        const existing = await this.repo.findOne({ where: { id } });
-        if (!existing) {
-          return errorResponse(`category #${id} not found`);
-        }
-    
-        const category = await this.repo.save({ id, ...updateDto });
-        return successResponse('category updated successfully!', category);
-      } catch (error) {
-        return errorResponse('Failed to update category', error.message);
+  }
+
+  async update(id: number, updateDto: UpdateCategoryDto, company_id: number) {
+    try {
+      const existing = await this.repo.findOne({ where: { id } });
+      if (!existing) {
+        return errorResponse(`category #${id} not found`);
       }
+
+      await this.repo.save({ id, ...updateDto });
+      const updated = await this.findAll(company_id);
+      return updated;
+    } catch (e) {
+      return { message: e.message };
     }
+  }
   async statusUpdate(id: number) {
   try {
     const category = await this.repo.findOne({ where: { id } });

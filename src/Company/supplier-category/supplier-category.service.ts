@@ -88,7 +88,7 @@ async findAll(company_id: number, filterStatus?: number) {
   async update(id: number, dto: UpdateSupplierCategoryDto, company_id:number) {
     try {
       const category = await this.supplierCategoryRepo.findOne({
-        where: { id, is_active: 1, company_id },
+        where: { id, is_active: 1 },
       });
       if (!category) return { success: false, message: 'Supplier category not found or inactive' };
 

@@ -30,7 +30,7 @@ export class CustomerCategoryService {
         description: dto.description,
         discount_percent: dto.discount_percent,
         is_active: 1,
-        company_id: companyId
+        company: company,
       });
 
       const savedCategory = await this.categoryRepo.save(category);
@@ -95,7 +95,8 @@ export class CustomerCategoryService {
   async update(id: number, dto: UpdateCustomerCategoryDto, company_id: number) {
     try {
       const category = await this.categoryRepo.findOne({
-        where: { id, company_id },
+        where: { id},
+     
       });
       if (!category)
         throw new NotFoundException(`Customer Category ID ${id} not found`);
