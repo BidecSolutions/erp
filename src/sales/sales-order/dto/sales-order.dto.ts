@@ -18,7 +18,7 @@ export class CreateSalesOrderDto {
   @IsNotEmpty()
   order_date: Date;
 
-  @IsEnum(SalesStatus)  // 👈 instead of IsString
+  @IsEnum(SalesStatus)
   @IsNotEmpty()
   sales_status: SalesStatus;
 

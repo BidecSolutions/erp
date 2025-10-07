@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BeforeInsert } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BeforeInsert, ManyToOne, JoinColumn } from 'typeorm';
 import { Employee } from '../hrm_employee/employee.entity';
+import { Company } from 'src/Company/companies/company.entity';
 
 @Entity('hrm_shift')
 export class Shift {
@@ -11,6 +12,14 @@ export class Shift {
 
    @OneToMany(() => Employee, (emp) => emp.shift)
   employees: Employee[];
+
+  @ManyToOne(() => Company, { eager: true }) // eager true -> auto load
+  @JoinColumn({ name: 'company_id' })
+  company: Company;
+
+  @Column()
+  company_id: number;
+
 
    @Column({
             type: 'int',

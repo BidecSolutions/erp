@@ -1,9 +1,12 @@
+import { Company } from 'src/Company/companies/company.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 
 @Entity('unit_of_measures')
@@ -23,11 +26,12 @@ export class UnitOfMeasure {
   @Column({ name: 'status', type: 'tinyint', default: 1 })
   status: number;
 
-  @Column({ name: 'company_id', nullable: false })
-  company_id:number;
-  // @ManyToOne(() => Branch)
-  // @JoinColumn({name : 'branch_id'})
-  // comapany: Comapany
+  @ManyToOne(() => Company, { eager: true }) // eager true -> auto load
+  @JoinColumn({ name: 'company_id' })
+  company: Company;
+
+  @Column()
+  company_id: number;
 
   @Column({ name: 'branch_id', nullable: false })
   branch_id:number;

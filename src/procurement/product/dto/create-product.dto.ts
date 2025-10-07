@@ -45,6 +45,9 @@ export class CreateProductDto {
   images?: string[];
 
   @IsNotEmpty()
+  company_id?: number;
+
+  @IsNotEmpty()
   branch_id?: number;
 
   @IsNotEmpty()

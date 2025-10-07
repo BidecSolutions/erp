@@ -325,7 +325,7 @@ async findAll(filterStatus?: number) {
     const requested = leaveRequest.number_of_leave;
 
     if (requested <= availableLeaves) {
-      // ✅ Enough leaves → Approve
+      // // Enough leaves → Approve
       leaveRequest.leave_status = LeaveStatus.APPROVED;
       await this.leaveRequestRepository.save(leaveRequest);
 
@@ -335,7 +335,7 @@ async findAll(filterStatus?: number) {
         notification_type_id: 1,
       });
     } else {
-      // ✅ Extra → Approve + mark unpaid
+      // // Extra → Approve + mark unpaid
       const unpaidDays = requested - availableLeaves;
 
       leaveRequest.leave_status = LeaveStatus.APPROVED;

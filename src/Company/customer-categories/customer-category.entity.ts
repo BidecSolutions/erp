@@ -5,6 +5,7 @@ import {
   ManyToOne,
   BeforeInsert,
   OneToMany,
+  JoinColumn,
 } from 'typeorm';
 import { Company } from '../companies/company.entity';
 import { Customer } from '../customers/customer.entity';
@@ -14,10 +15,14 @@ export class CustomerCategory {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Company, (company) => company.customerCategories, {
-    onDelete: 'CASCADE',
-  })
+  // @ManyToOne(() => Company, (company) => company.customerCategories, {onDelete: 'CASCADE',})
+    @ManyToOne(() => Company, { eager: true }) // eager true -> auto load
+  @JoinColumn({ name: 'company_id' })
   company: Company;
+  
+  @Column()
+  company_id: number;
+  
 
   @OneToMany(() => Customer, (customer) => customer.category_customer)
   customers: Customer[];
@@ -34,15 +39,13 @@ export class CustomerCategory {
   @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
   discount_percent: number;
 
+
   @Column({
     type: 'smallint',
     default: 1,
     comment: '1 = active, 2 = inactive',
   })
   is_active: number;
-
-  @Column()
-  created_by: string;
 
   @Column({ type: 'date' })
   created_date: string;

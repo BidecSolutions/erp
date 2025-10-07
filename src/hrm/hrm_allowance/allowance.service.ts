@@ -13,8 +13,6 @@ export class AllowanceService {
     @InjectRepository(Allowance)
     private readonly allowanceRepo: Repository<Allowance>,
 
-    @InjectRepository(Company)
-    private readonly companyRepo: Repository<Company>,
   ) {}
 
   //  Create allowance with company

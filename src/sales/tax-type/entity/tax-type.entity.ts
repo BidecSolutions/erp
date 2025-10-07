@@ -22,7 +22,7 @@ export class TaxType {
     @JoinColumn({ name: 'company_id' })
     company: Company;
 
-    // ✅ Relation with TaxSlabs
+    // // Relation with TaxSlabs
     @OneToMany(() => TaxSlab, (slab) => slab.taxType, { cascade: true })
     slabs: TaxSlab[];
 
@@ -38,7 +38,7 @@ export class TaxType {
     @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
     tax_rate: number;
 
-    // ✅ Status column
+    // // Status column
     @Column({
         type: 'smallint',
         default: 1,
@@ -51,14 +51,14 @@ export class TaxType {
     created_by: number;
 
 
-    // ✅ Audit columns
+    // // Audit columns
     @Column({ type: 'date', nullable: true })
     created_at: string;
 
     @Column({ type: 'date', nullable: true })
     updated_at: string;
 
-    // ✅ Before Insert only
+    // // Before Insert only
     @BeforeInsert()
     setCreateDateParts() {
         const today = new Date();

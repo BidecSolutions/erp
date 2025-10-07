@@ -58,14 +58,14 @@ async create(dto: CreateNotificationDto) {
     return await this.repo.remove(record);
   }
 
-  // ✅ Custom method to mark as read
+  // // Custom method to mark as read
   async markAsRead(id: number) {
     const record = await this.findOne(id);
     record.read_status = NotificationReadStatus.READ;
     return await this.repo.save(record);
   }
 
-  // ✅ Custom method to mark as unread
+  // // Custom method to mark as unread
   async markAsUnread(id: number) {
     const record = await this.findOne(id);
     record.read_status = NotificationReadStatus.UNREAD;

@@ -16,8 +16,8 @@ export class Permission {
   @Column({ type: 'int' })
   menu_id: number;
 
-  @Column({ type: 'int' })
-  sub_menu_id: number;
+  @Column({ type: 'int', nullable: true })
+  sub_menu_id: number | null;
 
 
   @Column({ type: 'int' })

@@ -25,12 +25,12 @@ async create(dto: CreateTaxSlabDto) {
     throw new BadRequestException(`from_amount must be less than to_amount`);
   }
 
-  // ✅ Either percentage or fixed required
+  // // Either percentage or fixed required
   if (!dto.tax_rate && !dto.fixed_amount) {
     throw new BadRequestException(`Either tax_rate or fixed_amount must be provided`);
   }
 
-  // ✅ Auto-calculate fixed_amount if tax_rate is provided
+  // // Auto-calculate fixed_amount if tax_rate is provided
   let fixedAmount = dto.fixed_amount;
   if (dto.tax_rate && dto.from_amount && dto.to_amount) {
     const taxableRange = dto.to_amount - dto.from_amount;
@@ -91,7 +91,7 @@ async update(id: number, dto: UpdateTaxSlabDto) {
     throw new BadRequestException(`Either tax_rate or fixed_amount must be provided`);
   }
 
-  // ✅ Auto calculate fixed_amount if tax_rate + range available
+  // // Auto calculate fixed_amount if tax_rate + range available
   let fixedAmount = dto.fixed_amount ?? existing.fixed_amount;
   const from = dto.from_amount ?? existing.from_amount;
   const to = dto.to_amount ?? existing.to_amount;
