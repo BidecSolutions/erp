@@ -89,84 +89,86 @@ export class EmployeeService {
 
     return employees.map((emp) => {
       const documents = emp.documents || [];
+ const baseData: any = {
+    id: emp.id,
+    name: emp.name,
+    phone: emp.phone,
+    gender: emp.gender,
+    is_system_user: emp.is_system_user,
+    address: emp.address,
+    dateOfBirth: emp.dateOfBirth,
+    locationType: emp.locationType,
+    department: emp.department?.name || null,
+    designation: emp.designation?.name || null,
+    dateOfJoining: emp.dateOfJoining,
+    employeeCode: emp.employeeCode,
+    hoursPerDay: emp.hoursPerDay,
+    daysPerWeek: emp.daysPerWeek,
+    fixedSalary: emp.fixedSalary,
+    shift: emp.shift?.name || null,
+    emp_type: emp.emp_type, // 👇 next field will depend on this
+  };
 
-      return {
-        id: emp.id,
-        name: emp.name,
-        phone: emp.phone,
-        gender: emp.gender,
-        is_system_user: emp.is_system_user,
-        address: emp.address,
-        dateOfBirth: emp.dateOfBirth,
-        locationType: emp.locationType,
-        department: emp.department?.name || null,
-        designation: emp.designation?.name || null,
-        dateOfJoining: emp.dateOfJoining,
-        employeeCode: emp.employeeCode,
-        hoursPerDay: emp.hoursPerDay,
-        daysPerWeek: emp.daysPerWeek,
-        fixedSalary: emp.fixedSalary,
-        shift: emp.shift?.name || null,
-        emp_type: emp.emp_type,
-        document:
-          documents.length > 0
-            ? {
-              cv: documents.find((d) => d.type === "cv")?.filePath || null,
-              photo: documents.find((d) => d.type === "photo")?.filePath || null,
-              identity_card:
-                documents
-                  .filter((d) => d.type === "identity_card")
-                  .map((d) => d.filePath) || [],
-              academic_transcript:
-                documents.find((d) => d.type === "academic_transcript")
-                  ?.filePath || null,
-            }
-            : {
-              cv: null,
-              photo: null,
-              identity_card: [],
-              academic_transcript: null,
-            },
-        bankDetails: emp.bankDetails || [],
-        annualLeave:
-          emp.emp_type === "PROBATION"
-            ? null
-            : emp.annualLeave
-              ? {
-                id: emp.annualLeave.id,
-                name: emp.annualLeave.name,
-                total_leave: emp.annualLeave.total_leave,
-                status: emp.annualLeave.status,
-              }
-              : null,
-        probationSetting:
-          emp.emp_type === "PROBATION"
-            ? emp.probationSetting
-              ? {
-                id: emp.probationSetting.id,
-                leave_days: emp.probationSetting.leave_days,
-                probation_period: emp.probationSetting.probation_period,
-                duration_type: emp.probationSetting.duration_type,
-                status: emp.probationSetting.status,
-              }
-              : null
-            : null,
-        allowances:
-          emp.allowances?.map((a) => ({
-            id: a.id,
-            title: a.title,
-            type: a.type,
-            amount: a.amount,
-            company_id: a.company_id,
-            status: a.status,
-          })) || [],
-        branches:
-          emp.branches?.map((b) => ({
-            id: b.id,
-            name: b.branch_name,
-          })) || [],
-        status: emp.status,
-      };
+  // ✅ insert annualLeave or probationSetting right after emp_type
+  if (emp.emp_type === "PROBATION" && emp.probationSetting) {
+    baseData.probationSetting = {
+      id: emp.probationSetting.id,
+      leave_days: emp.probationSetting.leave_days,
+      probation_period: emp.probationSetting.probation_period,
+      duration_type: emp.probationSetting.duration_type,
+      status: emp.probationSetting.status,
+    };
+  } else if (emp.emp_type === "PERMANENT" && emp.annualLeave) {
+    baseData.annualLeave = {
+      id: emp.annualLeave.id,
+      name: emp.annualLeave.name,
+      total_leave: emp.annualLeave.total_leave,
+      status: emp.annualLeave.status,
+    };
+  }
+
+  // 👇 remaining info
+  baseData.document =
+    documents.length > 0
+      ? {
+          cv: documents.find((d) => d.type === "cv")?.filePath || null,
+          photo: documents.find((d) => d.type === "photo")?.filePath || null,
+          identity_card:
+            documents
+              .filter((d) => d.type === "identity_card")
+              .map((d) => d.filePath) || [],
+          academic_transcript:
+            documents.find((d) => d.type === "academic_transcript")?.filePath ||
+            null,
+        }
+      : {
+          cv: null,
+          photo: null,
+          identity_card: [],
+          academic_transcript: null,
+        };
+
+  baseData.bankDetails = emp.bankDetails || [];
+
+  baseData.allowances =
+    emp.allowances?.map((a) => ({
+      id: a.id,
+      title: a.title,
+      type: a.type,
+      amount: a.amount,
+      company_id: a.company_id,
+      status: a.status,
+    })) || [];
+
+  baseData.branches =
+    emp.branches?.map((b) => ({
+      id: b.id,
+      name: b.branch_name,
+    })) || [];
+
+  baseData.status = emp.status;
+
+  return baseData; 
     });
   }
 

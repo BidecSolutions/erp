@@ -77,7 +77,7 @@ export class CategoriesService {
         .getRawOne();
 
       if (!category) {
-        throw new NotFoundException(`Supplier category ID ${id} not found`);
+        throw new NotFoundException(`category ID ${id} not found`);
       }
 
       return category;
