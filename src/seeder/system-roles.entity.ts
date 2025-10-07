@@ -28,6 +28,7 @@ export class userRoles {
             return;
         }
         await this.sideMenuRoleMapping.clear();
+        await this.userRepo.clear();
         const menuRoles: Partial<sidemunuRolesMapping>[] = [];
         const now = new Date();
         const formattedDate = now.toISOString().slice(0, 10);
