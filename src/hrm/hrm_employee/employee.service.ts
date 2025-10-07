@@ -66,49 +66,49 @@ export class EmployeeService {
     return `EMP-${String(newId).padStart(3, "0")}`;
   }
 
-async findAll(body) {
-  const employees = await this.employeeRepository.find({
-    where: {
-      status: body.status,
-      branch_id: Raw(
-        (alias) => `JSON_CONTAINS(${alias}, '${JSON.stringify([body.branch_id])}')`
-      ),
-    },
-    relations: [
-      "department",
-      "designation",
-      "documents",
-      "bankDetails",
-      "annualLeave",
-      "allowances",
-      "shift",
-      "branches",
-    ],
-  });
+  async findAll(body) {
+    const employees = await this.employeeRepository.find({
+      where: {
+        status: body.status,
+        branch_id: Raw(
+          (alias) => `JSON_CONTAINS(${alias}, '${JSON.stringify([body.branch_id])}')`
+        ),
+      },
+      relations: [
+        "department",
+        "designation",
+        "documents",
+        "bankDetails",
+        "annualLeave",
+        "allowances",
+        "shift",
+        "branches",
+      ],
+    });
 
-  return employees.map((emp) => {
-    const documents = emp.documents || [];
+    return employees.map((emp) => {
+      const documents = emp.documents || [];
 
-    return {
-      id: emp.id,
-      name: emp.name,
-      phone: emp.phone,
-      gender: emp.gender,
-      is_system_user: emp.is_system_user,
-      address: emp.address,
-      dateOfBirth: emp.dateOfBirth,
-      locationType: emp.locationType,
-      department: emp.department?.name || null,
-      designation: emp.designation?.name || null,
-      dateOfJoining: emp.dateOfJoining,
-      employeeCode: emp.employeeCode,
-      hoursPerDay: emp.hoursPerDay,
-      daysPerWeek: emp.daysPerWeek,
-      fixedSalary: emp.fixedSalary,
-      shift: emp.shift?.name || null,
-      document:
-        documents.length > 0
-          ? {
+      return {
+        id: emp.id,
+        name: emp.name,
+        phone: emp.phone,
+        gender: emp.gender,
+        is_system_user: emp.is_system_user,
+        address: emp.address,
+        dateOfBirth: emp.dateOfBirth,
+        locationType: emp.locationType,
+        department: emp.department?.name || null,
+        designation: emp.designation?.name || null,
+        dateOfJoining: emp.dateOfJoining,
+        employeeCode: emp.employeeCode,
+        hoursPerDay: emp.hoursPerDay,
+        daysPerWeek: emp.daysPerWeek,
+        fixedSalary: emp.fixedSalary,
+        shift: emp.shift?.name || null,
+        document:
+          documents.length > 0
+            ? {
               cv: documents.find((d) => d.type === "cv")?.filePath || null,
               photo: documents.find((d) => d.type === "photo")?.filePath || null,
               identity_card:
@@ -119,32 +119,32 @@ async findAll(body) {
                 documents.find((d) => d.type === "academic_transcript")
                   ?.filePath || null,
             }
-          : {
+            : {
               cv: null,
               photo: null,
               identity_card: [],
               academic_transcript: null,
             },
-      bankDetails: emp.bankDetails || [],
-      annualLeave: emp.annualLeave || [],
-      allowances:
-        emp.allowances?.map((a) => ({
-          id: a.id,
-          title: a.title,
-          type: a.type,
-          amount: a.amount,
-          company_id: a.company_id,
-          status: a.status,
-        })) || [],
-      branches:
-        emp.branches?.map((b) => ({
-          id: b.id,
-          name: b.branch_name,
-        })) || [],
-      status: emp.status,
-    };
-  });
-}
+        bankDetails: emp.bankDetails || [],
+        annualLeave: emp.annualLeave || [],
+        allowances:
+          emp.allowances?.map((a) => ({
+            id: a.id,
+            title: a.title,
+            type: a.type,
+            amount: a.amount,
+            company_id: a.company_id,
+            status: a.status,
+          })) || [],
+        branches:
+          emp.branches?.map((b) => ({
+            id: b.id,
+            name: b.branch_name,
+          })) || [],
+        status: emp.status,
+      };
+    });
+  }
 
 
   async findOne(id: number) {
@@ -222,7 +222,7 @@ async findAll(body) {
       photo?: Express.Multer.File[];
       academic_transcript?: Express.Multer.File[];
       identity_card?: Express.Multer.File[];
-    }, login_company_id:number 
+    }, login_company_id: number
   ) {
     try {
       const department = await this.departmentRepository.findOneBy({
@@ -286,7 +286,7 @@ async findAll(body) {
 
       const emp = this.employeeRepository.create({
         ...dto,
-          branch_id: Array.isArray(dto.branch_id) ? dto.branch_id.map(b => Number(b)) : [Number(dto.branch_id)],    
+        branch_id: Array.isArray(dto.branch_id) ? dto.branch_id.map(b => Number(b)) : [Number(dto.branch_id)],
         department,
         designation,
         shift,
@@ -346,11 +346,11 @@ async findAll(body) {
         //user company and branch Mapping
         const companyMapping = this.companyMaping.create({
           user_id: userid.id,
-          branch_id:Array.isArray(dto.branch_id) ? dto.branch_id.map(b => Number(b)) : [Number(dto.branch_id)],
-          company_id : login_company_id,
+          branch_id: Array.isArray(dto.branch_id) ? dto.branch_id.map(b => Number(b)) : [Number(dto.branch_id)],
+          company_id: login_company_id,
 
           //mujtaba 
-        
+
         });
         await this.companyMaping.save(companyMapping);
       }
@@ -392,72 +392,73 @@ async findAll(body) {
       }
 
       return {
-         success: true,
-  message: 'Employee created successfully',
-  data: {
-        id: saved.id,
-        name: saved.name,
-        phone: saved.phone,
-        gender: saved.gender,
-        // email: saved.email,
-        is_system_user: saved.is_system_user,
-        address: saved.address,
-        dateOfBirth: saved.dateOfBirth,
-        department: saved.department?.name,
-        designation: saved.designation?.name,
-        dateOfJoining: saved.dateOfJoining,
-        employeeCode: saved.employeeCode,
-        hoursPerDay: saved.hoursPerDay,
-        daysPerWeek: saved.daysPerWeek,
-        fixedSalary: saved.fixedSalary,
-        shift: saved.shift?.name,
-        // annualLeave: saved.annualLeave
-        //   ? {
-        //       id: saved.annualLeave.id,
-        //       name: saved.annualLeave.name,
-        //       total_leave: saved.annualLeave.total_leave,
-        //       status: saved.annualLeave.status,
-        //     }
-        //   : null,
-        ...(saved.emp_type === "PROBATION"
-          ? {
+        success: true,
+        message: 'Employee created successfully',
+        data: {
+          id: saved.id,
+          name: saved.name,
+          phone: saved.phone,
+          gender: saved.gender,
+          // email: saved.email,
+          is_system_user: saved.is_system_user,
+          address: saved.address,
+          dateOfBirth: saved.dateOfBirth,
+          department: saved.department?.name,
+          designation: saved.designation?.name,
+          dateOfJoining: saved.dateOfJoining,
+          employeeCode: saved.employeeCode,
+          hoursPerDay: saved.hoursPerDay,
+          daysPerWeek: saved.daysPerWeek,
+          fixedSalary: saved.fixedSalary,
+          shift: saved.shift?.name,
+          // annualLeave: saved.annualLeave
+          //   ? {
+          //       id: saved.annualLeave.id,
+          //       name: saved.annualLeave.name,
+          //       total_leave: saved.annualLeave.total_leave,
+          //       status: saved.annualLeave.status,
+          //     }
+          //   : null,
+          ...(saved.emp_type === "PROBATION"
+            ? {
               probationSetting: saved.probationSetting
                 ? {
-                    id: saved.probationSetting.id,
-                    leave_days: saved.probationSetting.leave_days,
-                    probation_period: saved.probationSetting.probation_period,
-                    duration_type: saved.probationSetting.duration_type,
-                    status: saved.probationSetting.status,
-                  }
+                  id: saved.probationSetting.id,
+                  leave_days: saved.probationSetting.leave_days,
+                  probation_period: saved.probationSetting.probation_period,
+                  duration_type: saved.probationSetting.duration_type,
+                  status: saved.probationSetting.status,
+                }
                 : null,
             }
-          : {
+            : {
               annualLeave: saved.annualLeave
                 ? {
-                    id: saved.annualLeave.id,
-                    name: saved.annualLeave.name,
-                    total_leave: saved.annualLeave.total_leave,
-                    status: saved.annualLeave.status,
-                  }
+                  id: saved.annualLeave.id,
+                  name: saved.annualLeave.name,
+                  total_leave: saved.annualLeave.total_leave,
+                  status: saved.annualLeave.status,
+                }
                 : null,
             }),
-        allowances: saved.allowances?.map((a) => ({
-          id: a.id,
-          title: a.title,
-          type: a.type,
-          amount: a.amount,
-          company_id: a.company_id,
-        })),
-        branches:
-          saved.branches?.map((b) => ({
-            id: b.id,
-            name: b.branch_name,
-          })) || [],
-        emp_type: saved.emp_type,
-        status: saved.status,
-        created_at: saved.created_at,
-        updated_at: saved.updated_at,
-    }};
+          allowances: saved.allowances?.map((a) => ({
+            id: a.id,
+            title: a.title,
+            type: a.type,
+            amount: a.amount,
+            company_id: a.company_id,
+          })),
+          branches:
+            saved.branches?.map((b) => ({
+              id: b.id,
+              name: b.branch_name,
+            })) || [],
+          emp_type: saved.emp_type,
+          status: saved.status,
+          created_at: saved.created_at,
+          updated_at: saved.updated_at,
+        }
+      };
     } catch (e) {
       console.error(e);
       throw new BadRequestException(e.message || "Something went wrong");
@@ -555,6 +556,7 @@ async findAll(body) {
           throw new NotFoundException(
             "Email and password required for system user"
           );
+
         const hashedPassword = await bcrypt.hash(dto.password, 10);
         const newUser = this.userRepository.create({
           name: emp.name,
@@ -595,49 +597,50 @@ async findAll(body) {
     if (!fullEmp) throw new NotFoundException("Employee not found after save");
 
     return {
-        success: true,
-  message: 'Employee updated successfully',
-  data: {
-      id: fullEmp.id,
-      name: fullEmp.name,
-      phone: fullEmp.phone,
-      gender: fullEmp.gender,
-      is_system_user: fullEmp.is_system_user,
-      address: fullEmp.address,
-      dateOfBirth: fullEmp.dateOfBirth,
-      department: fullEmp.department?.name,
-      designation: fullEmp.designation?.name,
-      dateOfJoining: fullEmp.dateOfJoining,
-      employeeCode: fullEmp.employeeCode,
-      hoursPerDay: fullEmp.hoursPerDay,
-      daysPerWeek: fullEmp.daysPerWeek,
-      fixedSalary: fullEmp.fixedSalary,
-      shift: fullEmp.shift?.name,
-      annualLeave: fullEmp.annualLeave
-        ? {
-          id: fullEmp.annualLeave.id,
-          name: fullEmp.annualLeave.name,
-          total_leave: fullEmp.annualLeave.total_leave,
-          status: fullEmp.annualLeave.status,
-        }
-        : null,
-      allowances:
-        fullEmp.allowances?.map((a) => ({
-          id: a.id,
-          title: a.title,
-          type: a.type,
-          amount: a.amount,
-          company_id: a.company_id,
-        })) || [],
-      branches:
-        fullEmp.branches?.map((b) => ({
-          id: b.id,
-          name: b.branch_name,
-        })) || [],
-      status: fullEmp.status,
-      created_at: fullEmp.created_at,
-      updated_at: fullEmp.updated_at,
-    }};
+      success: true,
+      message: 'Employee updated successfully',
+      data: {
+        id: fullEmp.id,
+        name: fullEmp.name,
+        phone: fullEmp.phone,
+        gender: fullEmp.gender,
+        is_system_user: fullEmp.is_system_user,
+        address: fullEmp.address,
+        dateOfBirth: fullEmp.dateOfBirth,
+        department: fullEmp.department?.name,
+        designation: fullEmp.designation?.name,
+        dateOfJoining: fullEmp.dateOfJoining,
+        employeeCode: fullEmp.employeeCode,
+        hoursPerDay: fullEmp.hoursPerDay,
+        daysPerWeek: fullEmp.daysPerWeek,
+        fixedSalary: fullEmp.fixedSalary,
+        shift: fullEmp.shift?.name,
+        annualLeave: fullEmp.annualLeave
+          ? {
+            id: fullEmp.annualLeave.id,
+            name: fullEmp.annualLeave.name,
+            total_leave: fullEmp.annualLeave.total_leave,
+            status: fullEmp.annualLeave.status,
+          }
+          : null,
+        allowances:
+          fullEmp.allowances?.map((a) => ({
+            id: a.id,
+            title: a.title,
+            type: a.type,
+            amount: a.amount,
+            company_id: a.company_id,
+          })) || [],
+        branches:
+          fullEmp.branches?.map((b) => ({
+            id: b.id,
+            name: b.branch_name,
+          })) || [],
+        status: fullEmp.status,
+        created_at: fullEmp.created_at,
+        updated_at: fullEmp.updated_at,
+      }
+    };
   }
 
   // async remove(id: number) {
