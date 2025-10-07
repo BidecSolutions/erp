@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Param, Body } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, Query } from '@nestjs/common';
 import { CustomerCategoryService } from './customer-category.service';
 import { CreateCustomerCategoryDto } from './dto/create-customer-category.dto';
 import { UpdateCustomerCategoryDto } from './dto/update-customer-category.dto';
@@ -13,8 +13,8 @@ export class CustomerCategoryController {
   }
 
   @Get('list')
-  findAll() {
-    return this.categoryService.findAll();
+  findAll(@Query('inactive') inactive?: number) {
+    return this.categoryService.findAll(inactive);
   }
 
   @Get('findBy/:id')

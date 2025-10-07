@@ -1,16 +1,17 @@
 import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator';
-import { InvoiceStatus, PaymentMethod } from 'src/sales/enums/sales-enums';
+// import { InvoiceStatus } from '../../../sales/enums/sales-enums';
+// import { PaymentMethod } from '../../../sales/enums/payment-method.enum';
 
 export class CreateCustomerInvoiceDto {
 
   @IsNotEmpty()
-  company_id: number;
+  company_id: number;x
 
   @IsNotEmpty()
   branch_id: number;
 
   @IsNotEmpty()
-  sales_order_id?: number;
+  sales_order_id?: number;  
 
   @IsNotEmpty()
   @IsString()
@@ -49,9 +50,9 @@ export class CreateCustomerInvoiceDto {
   // @Min(0)
   // paid_amount?: number;
 
-  @IsEnum(PaymentMethod)
-  @IsNotEmpty()
-  payment_method: PaymentMethod;   // ✅ payload se bhejna hoga
+  // @IsEnum(PaymentMethod)
+  // @IsNotEmpty()
+  // payment_method: PaymentMethod;  
 
   @IsOptional()
   @IsString()

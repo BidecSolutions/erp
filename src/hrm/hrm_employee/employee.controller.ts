@@ -12,6 +12,7 @@ import {
   UseGuards,
   Query,
   BadRequestException,
+  Req,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -91,7 +92,7 @@ export class EmployeeController {
   ),
 )
 create(
-  @Body() dto: CreateEmployeeDto,
+  @Body() dto: CreateEmployeeDto, @Req() req:Request ,
   @UploadedFiles()
   files: {
     cv?: Express.Multer.File[];
@@ -100,7 +101,8 @@ create(
     identity_card?: Express.Multer.File[];
   },
 ) {
-  return this.employeeService.create(dto, files);
+   const login_company_id = req["user"].company_id;
+  return this.employeeService.create(dto, files, login_company_id);
 }
 
   // @Get('list')

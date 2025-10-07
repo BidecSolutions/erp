@@ -17,6 +17,4 @@ export class CreateCustomerCategoryDto {
   @IsNumber()
   discount_percent?: number;
 
-  @IsOptional()
-  created_by: string;
 }

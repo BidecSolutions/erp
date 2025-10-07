@@ -9,11 +9,14 @@ import { Category } from '../categories/entities/category.entity';
 import { Brand } from '../brand/entities/brand.entity';
 import { UnitOfMeasure } from '../unit_of_measure/entities/unit_of_measure.entity';
 import { productVariant } from './entities/variant.entity';
+import { InstantProductStatus } from './enum';
+import { INSPECT_MAX_BYTES } from 'node:buffer';
 import { Warranty } from '../warranty/entities/warranty.entity';
 import { ModuleType } from '../module_type/entities/module_type.entity';
 
 @Injectable()
 export class ProductService {
+
   constructor(
     private readonly dataSource: DataSource,
     @InjectRepository(Product)
@@ -85,9 +88,10 @@ export class ProductService {
       }
       throw new BadRequestException(error.message || 'Failed to create product');
     }
-
-
   }
+
+
+  
   async findAll(filter?: number) {
     try {
       const where: any = {};
@@ -179,5 +183,11 @@ async update(id: number, updateDto: CreateProductDto, imagePath: string[]) {
     } catch (err) {
       return errorResponse('Something went wrong', err.message);
     }
+  }
+
+
+
+  findInstantProduct() {
+    return this.productRepo.find({ where: { is_instant_product: 1 } });
   }
 }

@@ -5,6 +5,7 @@ import { Category } from 'src/procurement/categories/entities/category.entity';
 import { UnitOfMeasure } from 'src/procurement/unit_of_measure/entities/unit_of_measure.entity';
 import { SalesOrderDetail } from 'src/sales/sales-order/entity/sales-order-detail.entity';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import { InstantProductStatus } from '../enum';
 
 
 @Entity('products')
@@ -34,16 +35,22 @@ export class Product {
   company_id: number;
   @ManyToOne(() => Company)
   @JoinColumn({ name: 'company_id' })
+  @JoinColumn({ name: 'company_id' })
   company: Company
 
   @Column()
   branch_id: number;
   @ManyToOne(() => Branch)
   @JoinColumn({ name: 'branch_id' })
+  @JoinColumn({ name: 'branch_id' })
   branch: Branch
 
   @Column({ length: 50 })
   sku: string;
+
+  @Column({ length: 255 })
+  @Column({ length: 50, unique: true })
+  product_code: string;
 
   @Column({ length: 255 })
   product_name: string;
@@ -91,7 +98,6 @@ export class Product {
   @Column({ type: 'json', nullable: true })
   images: string[];
 
-
   @Column({ nullable: true })
   created_by?: number;
 
@@ -104,7 +110,12 @@ export class Product {
   @Column({ type: 'datetime', nullable: true })
   updated_date?: Date;
 
-  // ✅ Relation with SalesOrderDetail
+  @Column({
+    type: 'int',
+    default: 0,
+  })
+  is_instant_product: number;
+
   @OneToMany(() => SalesOrderDetail, (detail) => detail.product, {
     cascade: true,
   })

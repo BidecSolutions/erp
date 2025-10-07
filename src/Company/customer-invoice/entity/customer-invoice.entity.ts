@@ -10,7 +10,7 @@ import {
 import { Company } from '../../companies/company.entity';
 import { Customer } from '../../customers/customer.entity';
 import { SalesOrder } from 'src/sales/sales-order/entity/sales-order.entity';
-import { InvoiceStatus, PaymentMethod } from 'src/sales/enums/sales-enums';
+// import { InvoiceStatus, PaymentMethod } from 'src/sales/enums/sales-enums';
 import { customer_invoice_items } from './customer-invoice-items.entity';
 
 @Entity('customer_invoice')
@@ -67,18 +67,18 @@ export class CustomerInvoice {
   @Column('decimal', { precision: 12, scale: 2, default: 0 })
   outstanding_amount: number;
 
-  @Column({
-    type: 'enum',
-    default: InvoiceStatus.UNPAID,
-    enum: InvoiceStatus,
-  })
-  invoice_status: InvoiceStatus;
+  // @Column({
+  //   type: 'enum',
+  //   default: InvoiceStatus.UNPAID,
+  //   enum: InvoiceStatus,
+  // })
+  // invoice_status: InvoiceStatus;
 
-  @Column({
-    type: 'enum',
-    enum: PaymentMethod,
-  })
-  payment_method: PaymentMethod;
+  // @Column({
+  //   type: 'enum',
+  //   enum: PaymentMethod,
+  // })
+  // payment_method: PaymentMethod;
 
   @Column({ nullable: true })
   notes: string;
