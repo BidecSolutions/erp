@@ -19,7 +19,7 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @Controller('customer-categories')
 export class CustomerCategoryController {
-  constructor(private readonly categoryService: CustomerCategoryService) { }
+  constructor(private readonly categoryService: CustomerCategoryService) {}
 
   //  Create category
   @Post('create')
@@ -29,7 +29,7 @@ export class CustomerCategoryController {
 
     return {
       status: true,
-      message: 'Customer category created successfully',
+      message:'Customer category created successfully',
       data: result,
     };
   }
@@ -38,11 +38,12 @@ export class CustomerCategoryController {
   @Get('list')
   async findAll(@Req() req: any, @Query('status') status?: string) {
     const companyId = req.user.company_id;
-    const result = await this.categoryService.findAll(companyId);
+    const filterStatus = status !== undefined ? Number(status) : undefined;
+    const result = await this.categoryService.findAll(companyId, filterStatus);
 
     return {
       status: true,
-      message: 'Get All Customer categories',
+      message:'Get All Customer categories',
       data: result,
     };
   }
@@ -54,7 +55,7 @@ export class CustomerCategoryController {
 
     return {
       status: true,
-      message: `Get Customer category with ID ${id}`,
+      message:`Get Customer category with ID ${id}`,
       data: result,
     };
   }
@@ -64,18 +65,20 @@ export class CustomerCategoryController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateCustomerCategoryDto,
+    @Req() req: any,
   ) {
-    const result = await this.categoryService.update(id, dto);
+    const companyId = req.user.company_id;
+    const result = await this.categoryService.update(id, dto, companyId);
 
     return {
       status: true,
-      message: 'Customer category updated successfully',
+      message:'Customer category updated successfully',
       data: result,
     };
   }
 
-  @Get('toogleStatus/:id')
-  async statusChange(@Param('id', ParseIntPipe) id: number) {
-    return this.categoryService.statusUpdate(id);
-  }
+      @Get('toogleStatus/:id')
+            async statusChange(@Param('id', ParseIntPipe) id: number) {
+              return this.categoryService.statusUpdate(id);
+            }
 }

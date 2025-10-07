@@ -19,10 +19,13 @@ export class CustomerCategoryService {
     private companyRepo: Repository<Company>,
   ) { }
 
-  async create(dto: CreateCustomerCategoryDto, companyId: any) {
+  async create(dto: CreateCustomerCategoryDto, company_id: number) {
     try {
-      const company = await this.companyRepo.findOne({ where: { id: companyId } });
-      if (!company) return { success: false, message: 'Company not found' };
+      const company = await this.companyRepo.findOne({ where: { id: company_id } });
+       if (!company)
+        throw new NotFoundException(
+          `Company ID ${company_id} not found`
+        );
 
       const category = this.categoryRepo.create({
         category_code: dto.category_code,
@@ -30,18 +33,19 @@ export class CustomerCategoryService {
         description: dto.description,
         discount_percent: dto.discount_percent,
         is_active: 1,
-        company: company,
+        company_id,
       });
 
-      const savedCategory = await this.categoryRepo.save(category);
-      return { success: true, message: 'Customer category created successfully', data: savedCategory };
-    } catch (error) {
-      console.error(error);
-      return { success: false, message: 'Failed to create customer category' };
+      await this.categoryRepo.save(category);
+      const savedCategory =await this.findAll(company_id);
+      return savedCategory;
+    } catch (e) {
+      return { message: e.message };
     }
   }
 
-  async findAll(company_id: number) {
+  async findAll(company_id: number, filterStatus?: number) {
+      const is_active = filterStatus !== undefined ? filterStatus : 1;
     try {
       const categories = await this.categoryRepo
         .createQueryBuilder("category")
@@ -57,6 +61,7 @@ export class CustomerCategoryService {
           "company.company_name",
         ])
         .where("category.company_id = :company_id", { company_id })
+        .andWhere("category.is_active = :is_active", { is_active })
         .orderBy("category.id", "DESC")
         .getRawMany();
 
@@ -92,10 +97,10 @@ export class CustomerCategoryService {
     }
   }
 
-  async update(id: number, dto: UpdateCustomerCategoryDto) {
+  async update(id: number, dto: UpdateCustomerCategoryDto, company_id: number) {
     try {
       const category = await this.categoryRepo.findOne({
-        where: { id,},
+        where: { id, company_id},
       });
       if (!category)
         throw new NotFoundException(`Customer Category ID ${id} not found`);
@@ -106,9 +111,10 @@ export class CustomerCategoryService {
       if (dto.discount_percent !== undefined)
         category.discount_percent = dto.discount_percent;
 
-      const saved = await this.categoryRepo.save(category);
+      await this.categoryRepo.save(category);
 
-      return saved;
+      const updatedList = await this.findAll(company_id);
+      return updatedList;
     } catch (e) {
       return { message: e.message };
     }
