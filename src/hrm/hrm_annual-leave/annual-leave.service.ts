@@ -25,7 +25,7 @@ export class AnnualLeaveService {
   
         return saved;
       } catch (e) {
-        return { message: e.message };
+         throw e;
       }
     }
 
@@ -49,7 +49,7 @@ async findAll(company_id: number, filterStatus?: number) {
 
       return annualLeave;
     } catch (e) {
-      return { message: e.message };
+       throw e;
     }
   }
 
@@ -74,7 +74,7 @@ async findAll(company_id: number, filterStatus?: number) {
 
     return annualLeave;
   } catch (e) {
-    return { message: e.message };
+     throw e;
   }
 }
 
@@ -96,7 +96,7 @@ async update(id: number, dto: UpdateAnnualLeaveDto, company_id: number) {
     const updated = await this.findAll(company_id);
     return updated;
   } catch (e) {
-    return { message: e.message };
+     throw e;
   }
 }
 

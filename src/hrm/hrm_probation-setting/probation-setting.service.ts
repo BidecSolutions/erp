@@ -33,7 +33,7 @@ export class ProbationSettingService {
     const saved = await this.findAll(company_id);
     return saved;
   } catch (e) {
-    return { message: e.message };
+     throw e;
   }
 }
 
@@ -59,7 +59,7 @@ export class ProbationSettingService {
 
     return settings;
   } catch (e) {
-    return { message: e.message };
+     throw e;
   }
 }
 
@@ -83,7 +83,7 @@ export class ProbationSettingService {
 
     return setting;
   } catch (e) {
-    return { message: e.message };
+     throw e;
   }
 }
 
@@ -113,7 +113,7 @@ async update(
     const updated = await this.findAll(company_id);
     return updated;
   } catch (e) {
-    return { message: e.message };
+     throw e;
   }
 }
 

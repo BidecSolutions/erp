@@ -29,7 +29,7 @@ export class NotificationTypeService {
       const saved = await this.findAll(company_id);
       return saved;
     } catch (e) {
-      return { message: e.message };
+       throw e;
     }
   }
 
@@ -53,7 +53,7 @@ export class NotificationTypeService {
 
       return types;
     } catch (e) {
-      return { message: e.message };
+       throw e;
     }
   }
 
@@ -75,7 +75,7 @@ export class NotificationTypeService {
       if (!type) throw new NotFoundException(`Notification Type ID ${id} not found`);
       return type;
     } catch (e) {
-      return { message: e.message };
+       throw e;
     }
   }
 
@@ -91,7 +91,7 @@ export class NotificationTypeService {
       const updated = await this.findAll(company_id);
       return updated;
     } catch (e) {
-      return { message: e.message };
+       throw e;
     }
   }
 

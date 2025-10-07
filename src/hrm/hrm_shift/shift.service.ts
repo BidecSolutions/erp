@@ -24,7 +24,7 @@ async create(dto: CreateShiftDto, company_id: number) {
     const saved = await this.findAll(company_id);
     return saved;
   } catch (e) {
-    return { message: e.message };
+     throw e;
   }
 }
 
@@ -48,7 +48,7 @@ async create(dto: CreateShiftDto, company_id: number) {
 
     return shifts;
   } catch (e) {
-    return { message: e.message };
+     throw e;
   }
 }
 
@@ -71,7 +71,7 @@ async create(dto: CreateShiftDto, company_id: number) {
 
     return shift;
   } catch (e) {
-    return { message: e.message };
+     throw e;
   }
 }
 
@@ -88,7 +88,7 @@ async update(id: number, dto: UpdateShiftDto, company_id: number) {
     const updated = await this.findAll(company_id);
     return updated;
   } catch (e) {
-    return { message: e.message };
+     throw e;
   }
 }
 

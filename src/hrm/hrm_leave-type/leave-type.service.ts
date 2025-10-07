@@ -29,7 +29,7 @@ export class LeaveTypeService {
       const saved = await this.findAll(company_id);
       return saved;
     } catch (e) {
-      return { message: e.message };
+       throw e;
     }
   }
 
@@ -53,7 +53,7 @@ export class LeaveTypeService {
 
       return leaveTypes;
     } catch (e) {
-      return { message: e.message };
+       throw e;
     }
   }
 
@@ -76,7 +76,7 @@ export class LeaveTypeService {
 
       return leaveType;
     } catch (e) {
-      return { message: e.message };
+       throw e;
     }
   }
 
@@ -92,7 +92,7 @@ export class LeaveTypeService {
       const updated = await this.findAll(company_id);
       return updated;
     } catch (e) {
-      return { message: e.message };
+       throw e;
     }
   }
 

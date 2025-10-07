@@ -38,7 +38,7 @@ export class DesignationService {
       const savedDesignation = await this.findAll();
       return savedDesignation;
     } catch (e) {
-      return { message: e.message };
+       throw e;
     }
   }
 
@@ -61,7 +61,7 @@ export class DesignationService {
 
       return designations;
     } catch (e) {
-      return { message: e.message };
+       throw e;
     }
   }
 
@@ -85,7 +85,7 @@ export class DesignationService {
 
       return designation;
     } catch (e) {
-      return { message: e.message };
+       throw e;
     }
   }
 
@@ -121,7 +121,7 @@ export class DesignationService {
       const updatedDesignation = await this.findAll();
       return updatedDesignation;
     } catch (e) {
-      return { message: e.message };
+       throw e;
     }
   }
 

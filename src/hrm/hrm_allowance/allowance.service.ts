@@ -29,7 +29,7 @@ export class AllowanceService {
       const saved = await this.findAll(company_id);
       return saved;
     } catch (e) {
-      return { message: e.message };
+       throw e;
     }
   }
 
@@ -55,7 +55,7 @@ export class AllowanceService {
 
       return allowances;
     } catch (e) {
-      return { message: e.message };
+       throw e;
     }
   }
 
@@ -80,7 +80,7 @@ export class AllowanceService {
 
       return allowance;
     } catch (e) {
-      return { message: e.message };
+       throw e;
     }
   }
 
@@ -99,7 +99,7 @@ export class AllowanceService {
       const updated = await this.findAll(company_id);
       return updated;
     } catch (e) {
-      return { message: e.message };
+       throw e;
     }
   }
 

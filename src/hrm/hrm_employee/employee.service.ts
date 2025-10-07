@@ -109,7 +109,7 @@ export class EmployeeService {
     emp_type: emp.emp_type, // 👇 next field will depend on this
   };
 
-  // ✅ insert annualLeave or probationSetting right after emp_type
+  //  insert annualLeave or probationSetting right after emp_type
   if (emp.emp_type === "PROBATION" && emp.probationSetting) {
     baseData.probationSetting = {
       id: emp.probationSetting.id,
@@ -503,7 +503,7 @@ export class EmployeeService {
   ) {
     const emp = await this.employeeRepository.findOne({
       where: { id },
-      relations: ["department", "designation", "shift", "bankDetails"],
+      relations: ["department", "designation", "shift", "bankDetails","user","branches"],
     });
     if (!emp) throw new NotFoundException(`Employee ID ${id} not found`);
 
@@ -556,14 +556,26 @@ export class EmployeeService {
       emp.allowances = allowances;
     }
 
-    if (dto.branch_id?.length) {
-      const branches = await this.branchRepo.find({
-        where: { id: In(dto.branch_id) },
-      });
-      if (branches.length !== dto.branch_id.length)
-        throw new NotFoundException("Some branches not found");
-      emp.branches = branches;
-    }
+//  Update branches in employee
+if (dto.branch_id && dto.branch_id.length > 0) {
+  const branches = await this.branchRepo.find({
+    where: { id: In(dto.branch_id) },
+  });
+  emp.branches = branches;
+  await this.employeeRepository.save(emp);
+}
+
+//  Now update mapping table manually
+const mapping = await this.companyMaping.findOne({
+  where: { user_id: emp.user?.id },
+});
+
+if (mapping) {
+mapping.branch_id = (dto.branch_id ?? []).map((b) => Number(b));
+  await this.companyMaping.save(mapping);
+}
+
+
 
     // Update Employee fields
     Object.assign(emp, dto);
@@ -630,7 +642,7 @@ export class EmployeeService {
         name: fullEmp.name,
         phone: fullEmp.phone,
         gender: fullEmp.gender,
-        is_system_user: fullEmp.is_system_user,
+        is_system_user:  fullEmp.is_system_user,
         address: fullEmp.address,
         dateOfBirth: fullEmp.dateOfBirth,
         department: fullEmp.department?.name,
