@@ -180,11 +180,11 @@ export class CreateEmployeeDto {
   role_id?: number;
 
 
-@IsOptional()
-@IsArray()
-@Type(() => Number)
-@IsNumber({}, { each: true })
-branch_ids?: number[];
+//   @IsNotEmpty({message : "Branch Id is Requeired"})
+// @IsArray()
+// @Type(() => Number)
+// // @IsNumber({}, { each: true })
+// branch_ids?: number[];
 
    @IsEnum(EmployeeType, { message: 'emp_type must be PROBATION or PERMANENT' })
   @IsNotEmpty({ message: 'emp_type is required' })
@@ -193,5 +193,7 @@ branch_ids?: number[];
 
   @IsNotEmpty({message : "Branch Id is Requeired"})
   @IsArray()
-  branch_id : number
+  @Type(() => Number)
+@IsNumber({}, { each: true })
+  branch_id : number[]
 }

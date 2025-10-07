@@ -83,6 +83,7 @@ async findAll(body) {
       "allowances",
       "shift",
       "branches",
+      "probationSetting", 
     ],
   });
 
@@ -106,6 +107,7 @@ async findAll(body) {
       daysPerWeek: emp.daysPerWeek,
       fixedSalary: emp.fixedSalary,
       shift: emp.shift?.name || null,
+      emp_type: emp.emp_type,
       document:
         documents.length > 0
           ? {
@@ -126,7 +128,29 @@ async findAll(body) {
               academic_transcript: null,
             },
       bankDetails: emp.bankDetails || [],
-      annualLeave: emp.annualLeave || [],
+       annualLeave:
+        emp.emp_type === "PROBATION"
+          ? null
+          : emp.annualLeave
+          ? {
+              id: emp.annualLeave.id,
+              name: emp.annualLeave.name,
+              total_leave: emp.annualLeave.total_leave,
+              status: emp.annualLeave.status,
+            }
+          : null,
+      probationSetting:
+        emp.emp_type === "PROBATION"
+          ? emp.probationSetting
+            ? {
+                id: emp.probationSetting.id,
+                leave_days: emp.probationSetting.leave_days,
+                probation_period: emp.probationSetting.probation_period,
+                duration_type: emp.probationSetting.duration_type,
+                status: emp.probationSetting.status,
+              }
+            : null
+          : null,
       allowances:
         emp.allowances?.map((a) => ({
           id: a.id,
@@ -366,11 +390,11 @@ async findAll(body) {
       }
 
       // Save branches
-      if (dto.branch_ids?.length) {
+      if (dto.branch_id?.length) {
         const branches = await this.branchRepo.find({
-          where: { id: In(dto.branch_ids) },
+          where: { id: In(dto.branch_id) },
         });
-        if (branches.length !== dto.branch_ids.length) {
+        if (branches.length !== dto.branch_id.length) {
           throw new NotFoundException("Some branches not found");
         }
         saved.branches = branches;
@@ -525,11 +549,11 @@ async findAll(body) {
       emp.allowances = allowances;
     }
 
-    if (dto.branch_ids?.length) {
+    if (dto.branch_id?.length) {
       const branches = await this.branchRepo.find({
-        where: { id: In(dto.branch_ids) },
+        where: { id: In(dto.branch_id) },
       });
-      if (branches.length !== dto.branch_ids.length)
+      if (branches.length !== dto.branch_id.length)
         throw new NotFoundException("Some branches not found");
       emp.branches = branches;
     }
