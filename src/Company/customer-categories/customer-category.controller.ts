@@ -64,10 +64,8 @@ export class CustomerCategoryController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateCustomerCategoryDto,
-    @Req() req: any,
   ) {
-    const companyId = req.user.company_id;
-    const result = await this.categoryService.update(id, dto, companyId);
+    const result = await this.categoryService.update(id, dto);
 
     return {
       status: true,

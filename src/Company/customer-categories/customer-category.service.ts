@@ -92,11 +92,10 @@ export class CustomerCategoryService {
     }
   }
 
-  async update(id: number, dto: UpdateCustomerCategoryDto, company_id: number) {
+  async update(id: number, dto: UpdateCustomerCategoryDto) {
     try {
       const category = await this.categoryRepo.findOne({
-        where: { id},
-     
+        where: { id,},
       });
       if (!category)
         throw new NotFoundException(`Customer Category ID ${id} not found`);
@@ -107,10 +106,9 @@ export class CustomerCategoryService {
       if (dto.discount_percent !== undefined)
         category.discount_percent = dto.discount_percent;
 
-      await this.categoryRepo.save(category);
+      const saved = await this.categoryRepo.save(category);
 
-      const updatedList = await this.findAll(company_id);
-      return updatedList;
+      return saved;
     } catch (e) {
       return { message: e.message };
     }

@@ -88,7 +88,7 @@ export class CategoriesService {
 
   async update(id: number, updateDto: UpdateCategoryDto, company_id: number) {
     try {
-      const existing = await this.repo.findOne({ where: { id } });
+      const existing = await this.repo.findOne({ where: { id, company_id } });
       if (!existing) {
         return errorResponse(`category #${id} not found`);
       }

@@ -162,7 +162,7 @@ async create(dto: CreateSupplierDto, company_id: number) {
 
     async update(id: number, dto: UpdateSupplierDto,  company_id:number) {
         try {
-            const supplier = await this.supplierRepo.findOne({ where: { id, is_active: 1,  } });
+            const supplier = await this.supplierRepo.findOne({ where: { id, is_active: 1, company_id } });
             if (!supplier) return { success: false, message: 'Supplier not found or inactive' };
 
             if (dto.supplier_category_id) {
