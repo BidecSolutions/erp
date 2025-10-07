@@ -19,9 +19,9 @@ export class CustomerCategoryService {
     private companyRepo: Repository<Company>,
   ) { }
 
-  async create(dto: CreateCustomerCategoryDto) {
+  async create(dto: CreateCustomerCategoryDto, companyId: any) {
     try {
-      const company = await this.companyRepo.findOne({ where: { id: dto.company_id } });
+      const company = await this.companyRepo.findOne({ where: { id: companyId } });
       if (!company) return { success: false, message: 'Company not found' };
 
       const category = this.categoryRepo.create({
@@ -30,7 +30,7 @@ export class CustomerCategoryService {
         description: dto.description,
         discount_percent: dto.discount_percent,
         is_active: 1,
-        company_id,
+        company_id: companyId
       });
 
       const savedCategory = await this.categoryRepo.save(category);
@@ -41,15 +41,11 @@ export class CustomerCategoryService {
     }
   }
 
-  async findAll(inactive?: number) {
+  async findAll(company_id: number) {
     try {
-      const isActive = inactive ? inactive : 1;
       const categories = await this.categoryRepo
         .createQueryBuilder("category")
         .leftJoin("category.company", "company")
-        .createQueryBuilder('category')
-        .leftJoin('category.company', 'company')
-        .where('category.is_active = :isActive', { isActive })
         .orderBy('category.id', 'DESC')
         .select([
           "category.id",
@@ -61,7 +57,6 @@ export class CustomerCategoryService {
           "company.company_name",
         ])
         .where("category.company_id = :company_id", { company_id })
-        .andWhere("category.is_active = :is_active", { is_active })
         .orderBy("category.id", "DESC")
         .getRawMany();
 

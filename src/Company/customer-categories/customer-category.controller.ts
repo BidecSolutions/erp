@@ -38,8 +38,7 @@ export class CustomerCategoryController {
   @Get('list')
   async findAll(@Req() req: any, @Query('status') status?: string) {
     const companyId = req.user.company_id;
-    const filterStatus = status !== undefined ? Number(status) : undefined;
-    const result = await this.categoryService.findAll(companyId, filterStatus);
+    const result = await this.categoryService.findAll(companyId);
 
     return {
       status: true,
