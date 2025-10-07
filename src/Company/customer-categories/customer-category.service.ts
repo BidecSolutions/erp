@@ -95,7 +95,7 @@ export class CustomerCategoryService {
   async update(id: number, dto: UpdateCustomerCategoryDto, company_id: number) {
     try {
       const category = await this.categoryRepo.findOne({
-        where: { id, company_id },
+        where: { id},
       });
       if (!category)
         throw new NotFoundException(`Customer Category ID ${id} not found`);

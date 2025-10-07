@@ -106,7 +106,7 @@ async findOne(id: number) {
 
   async update(id: number, updateDto: UpdateWarrantyDto, company_id: number) {
       try {
-        const existing = await this.repo.findOne({ where: { id, company_id } });
+        const existing = await this.repo.findOne({ where: { id, } });
         if (!existing) {
           return errorResponse(`warranty #${id} not found`);
         }
