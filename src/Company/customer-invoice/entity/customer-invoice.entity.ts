@@ -10,7 +10,6 @@ import {
 import { Company } from '../../companies/company.entity';
 import { Customer } from '../../customers/customer.entity';
 import { SalesOrder } from 'src/sales/sales-order/entity/sales-order.entity';
-// import { InvoiceStatus, PaymentMethod } from 'src/sales/enums/sales-enums';
 import { customer_invoice_items } from './customer-invoice-items.entity';
 import { InvoiceStatus, PaymentMethod } from 'src/sales/enums/sales-enums';
 
