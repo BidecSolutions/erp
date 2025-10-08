@@ -71,7 +71,7 @@ export class SupplierService {
           "supplier.contact_person as contact_person",
           "supplier.designation as designation",
           "supplier.email as email",
-          "supplier.phone as phone",
+          "supplier.phone as phone",  
           "supplier.mobile as mobile",
           "supplier.website as website",
           "supplier.address_line1 as address_line1",
