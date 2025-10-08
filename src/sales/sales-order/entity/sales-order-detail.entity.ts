@@ -17,13 +17,13 @@ export class SalesOrderDetail {
   id: number;
 
 
- @ManyToOne(() => SalesOrder, (order) => order.salesOrderDetails, {
+  @ManyToOne(() => SalesOrder, (order) => order.salesOrderDetails, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'order_id' })  // 👈 order_id column generate hoga
   salesOrder: SalesOrder;            // 👈 single relation rakho
 
-  
+
   @Column()
   product_id: number;
   @ManyToOne(() => Product, (product) => product.salesOrderDetails, {
@@ -85,6 +85,9 @@ export class SalesOrderDetail {
 
   @Column({ type: 'date', nullable: true })
   updated_at: string;
+
+  @Column({ type: 'int', default: 0 })
+  returned_quantity: number;
 
 
   @BeforeInsert()

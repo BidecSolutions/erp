@@ -277,27 +277,55 @@ export class PosService {
                     throw new Error('No items found in sales order');
                 }
 
-                let returnItems = dto.return_items || [];
+                // Ensure return_items exist
+                if (!dto.return_items || dto.return_items.length === 0) {
+                    throw new Error('No return items provided');
+                }
+
+                // DUPLICATE CHECK HERE
+                const productIds = dto.return_items.map((i) => i.product_id);
+                const uniqueIds = new Set(productIds);
+                if (uniqueIds.size !== productIds.length) {
+                    throw new Error('Duplicate product IDs are not allowed in return items');
+                }
+
+
                 let totalReturnAmount = 0;
 
-                // Handle full return
-                if (dto.is_full_return) {
-                    returnItems = orderDetails.map((d) => ({
-                        product_id: d.product.id,
-                        quantity: d.quantity,
-                    }));
-                }
-
-                if (!dto.is_full_return && (!dto.return_items || dto.return_items.length === 0)) {
-                    throw new Error('No return items provided for partial return');
-                }
 
                 // Validate & process return items
-                for (const item of returnItems) {
+                for (const item of dto.return_items) {
                     const orderItem = orderDetails.find((od) => od.product.id === item.product_id);
                     if (!orderItem) throw new Error(`Product ID ${item.product_id} not found in order`);
-                    if (item.quantity > orderItem.quantity)
-                        throw new Error(`Return qty exceeds sold qty for product ${item.product_id}`);
+
+
+                    // Calculate remaining available for return
+                    const alreadyReturned = orderItem.returned_quantity || 0;
+                    const availableForReturn = orderItem.quantity - alreadyReturned;
+
+                    // Validation: don't allow return greater than available qty
+                    if (item.quantity > availableForReturn) {
+                        throw new Error(
+                            `Cannot return ${item.quantity}. Only ${availableForReturn} left for product ${item.product_id}`
+                        );
+                    }
+
+                    // Update returned quantity
+                    orderItem.returned_quantity += item.quantity;
+                    await manager.save(orderItem);
+
+
+                    // if (item.quantity > orderItem.quantity)
+                    //     throw new Error(`Return qty exceeds sold qty for product ${item.product_id}`);
+
+                    // NEW VALIDATION — prevent return if quantity would become 0 or below
+                    const remainingQty = orderItem.quantity - item.quantity;
+                    if (remainingQty <= 0) {
+                        throw new Error(
+                            `Invalid return: product ID ${item.product_id} remaining quantity would become 0 or negative`
+                        );
+                    }
+
 
                     // Update stock (increase)
                     const stock = await manager.findOne(Stock, {
@@ -321,13 +349,13 @@ export class PosService {
                     branch: salesOrder.branch ? { id: salesOrder.branch.id } : undefined,
                     customer: salesOrder.customer ? { id: salesOrder.customer.id } : undefined,
                     return_date: new Date(),
-                    created_by: { id: user_id }
+                    // created_by: { id: user_id }
                 });
 
                 const savedReturn = await manager.save(salesReturn);
 
                 // Save sales return details
-                for (const item of returnItems) {
+                for (const item of dto.return_items) {
                     const orderItem = orderDetails.find((od) => od.product.id === item.product_id)!;
                     const returnDetail = manager.create(SalesReturnDetail, {
                         salesReturn: { id: savedReturn.id },
@@ -355,7 +383,7 @@ export class PosService {
                                 `Invalid operation: customer's account balance cannot go negative.`
                             );
                         }
-                        
+
                         await this.customerAccountRepo.update(
                             { customer: { id: salesOrder.customer.id } },
                             { amount: newAmount }
@@ -365,9 +393,7 @@ export class PosService {
 
                 return {
                     success: true,
-                    message: dto.is_full_return
-                        ? 'Full sale returned successfully'
-                        : 'Partial sale return processed successfully',
+                    message: 'Sale return processed successfully',
                     return_id: savedReturn.id,
                     sales_order_id: salesOrder.id,
                     total_return_amount: totalReturnAmount,
