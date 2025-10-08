@@ -576,49 +576,83 @@ export class AuthService {
 
 
   async getUserPermissions(userId: number, roleId: number) {
+    // Fetch user
     const user = await this.usersRepository.findOne({ where: { id: userId } });
-    if (!user) return { success: false, message: 'User not found' };
+    if (!user) throw new NotFoundException('User not found');
 
-    // Get menus assigned to this role
+    // Admin or superadmin bypass
+    if (roleId === 1 || roleId === 2) {
+      return { success: true, data: 'Admin has all permissions' };
+    }
+
+    // ✅ Step 1: Get menus assigned to this role
     const roleMenus = await this.sideMenuMapppingRepository.find({
       where: { role_id: roleId, status: 1 },
     });
-
     const sideMenuIds = roleMenus.map((r) => r.side_menu_id);
-    const allSubPermissions = await this.subMenuPermRepository.find({
-      where: { sub_menu_id: In(sideMenuIds), status: 1 },
+
+    // ✅ Step 2: Fetch all side menus assigned to the role
+    const allMenus = await this.sideMenuRepository.find({
+      where: { id: In(sideMenuIds), status: 1 },
     });
 
-    // Get user’s saved permissions
+    // ✅ Step 3: Fetch user-specific saved permissions
     const userPermissions = await this.permissionRepository.find({
       where: { user_id: userId },
     });
 
-    // Construct hierarchical response
-    const data = sideMenuIds.map((menuId) => {
-      const submenuActions = allSubPermissions
-        .filter((s) => s.sub_menu_id === menuId)
-        .map((s) => {
-          const userPerm = userPermissions.find(
-            (up) =>
-              up.menu_id === menuId &&
-              up.module_permission.includes(s.name),
-          );
-
-          return {
-            action_name: s.name,
-            isChecked: !!userPerm,
-          };
+    // ✅ Step 4: Build menu → submenu → permissions tree
+    const menuTrees = await Promise.all(
+      allMenus.map(async (menu) => {
+        // Get all submenus under this menu
+        const subMenus = await this.subSideMenuRepository.find({
+          where: { menu_id: menu.id, status: 1 },
         });
 
-      return {
-        menu_id: menuId,
-        actions: submenuActions,
-      };
-    });
+        // For each submenu, get its permissions
+        const subMenusWithPerms = await Promise.all(
+          subMenus.map(async (sm) => {
+            const perms = await this.subMenuPermRepository.find({
+              where: { sub_menu_id: sm.id, status: 1 },
+            });
 
-    return { success: true, data };
+            // Map permissions and check if user has them
+            const permissions = perms.map((p) => {
+              const userHas = userPermissions.some(
+                (up) =>
+                  up.menu_id === menu.id &&
+                  up.sub_menu_id === sm.id &&
+                  up.module_permission.includes(p.name),
+              );
+              return {
+                id: p.id,
+                name: p.name,
+                isChecked: userHas,
+              };
+            });
+
+            return {
+              id: sm.id,
+              name: sm.name,
+              link: sm.link,
+              permissions,
+            };
+          }),
+        );
+
+        return {
+          id: menu.id,
+          name: menu.name,
+          key_name: menu.key_name ?? 'Others',
+          subMenus: subMenusWithPerms,
+        };
+      }),
+    );
+
+    // ✅ Step 5: Return formatted response
+    return { success: true, data: menuTrees };
   }
+
 
 
 
