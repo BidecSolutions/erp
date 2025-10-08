@@ -1,34 +1,50 @@
-// import { Controller, Post, Get, Param, Delete, Body, Put } from '@nestjs/common';
-// import { AttendanceService } from './mark-attendance.service';
-// import { CreateAttendanceDto } from './dto/create-mark-attendance.dto';
-// import { UpdateAttendanceDto } from './dto/update-mark-attendance.dto';
+import { Controller, Post, Body, Get, Param, Req, UseGuards } from '@nestjs/common';
+import { AttendanceService } from './attendance.service';
+import { AttendanceConfigDto } from './dto/attendance-config.dto';
+import { CreateAttendanceDto } from './dto/create-attendance.dto';
+import { AttendanceConfig } from './attendance-config.entity';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
-// @Controller('markattendance')
-// export class AttendanceController {
-//   constructor(private readonly attendanceService: AttendanceService) {}
+@UseGuards(JwtAuthGuard)
+@Controller('attendance')
+export class AttendanceController {
+  constructor(private readonly attendanceService: AttendanceService) {}
 
-//   @Post('create')
-//   create(@Body() dto: CreateAttendanceDto) {
-//     return this.attendanceService.create(dto);
-//   }
+  @Post('config')
+  async createOrUpdate(@Body() dto: Partial<AttendanceConfig>, @Req() req: any) {
+    const company_id = req.user.company_id;
+    const config = await this.attendanceService.createOrUpdateConfig(dto, company_id);
+    return { status: true, message: 'Config saved successfully', data: config };
+  }
 
-//   @Get('list')
-//   findAll() {
-//     return this.attendanceService.findAll();
-//   }
+  @Get('config/get')
+ async get(@Req() req: any) {
+    const company_id = req.user.company_id;
+    const config = await this.attendanceService.getActiveConfig(company_id);
+    return { status: true, message: 'Config fetched successfully', data: config };
+  }
+  @Post('mark')
+async mark(
+  @Body() dto: CreateAttendanceDto,
+  @Req() req: any, // JWT guard ensures req.user exists
+) {
+  const company_id = req.user.company_id; // 👈 automatically from token
+  return this.attendanceService.markAttendance(dto, company_id);
+}
 
-//   @Get(':id/get')
-//   findOne(@Param('id') id: number) {
-//     return this.attendanceService.findOne(id);
-//   }
+  @Get(':employeeId/:date')
+  getDay(
+    @Param('employeeId') employeeId: number,
+    @Param('date') date: string,
+  ) {
+    return this.attendanceService.getAttendanceByEmployeeAndDate(employeeId, date);
+  }
 
-//   @Put(':id/update')
-//   update(@Param('id') id: number, @Body() dto: UpdateAttendanceDto) {
-//     return this.attendanceService.update(id, dto);
-//   }
-
-//   @Delete(':id/delete')
-//   remove(@Param('id') id: number) {
-//     return this.attendanceService.remove(id);
-//   }
-// }
+  @Get('report/:employeeId/:month')
+  getReport(
+    @Param('employeeId') employeeId: number,
+    @Param('month') month: string,
+  ) {
+    return this.attendanceService.getMonthlyReport(employeeId, month);
+  }
+}

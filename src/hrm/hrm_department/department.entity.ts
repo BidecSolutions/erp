@@ -1,4 +1,4 @@
-import { Company } from "src/Company/companies/company.entity";
+import { Company } from 'src/Company/companies/company.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -6,9 +6,9 @@ import {
   ManyToOne,
   JoinColumn,
   BeforeInsert,
-} from "typeorm";
+} from 'typeorm';
 
-@Entity("hrm_departments")
+@Entity('hrm_departments')
 export class Department {
   @PrimaryGeneratedColumn()
   id: number;
@@ -17,29 +17,29 @@ export class Department {
   name: string;
 
   @ManyToOne(() => Company, { eager: true })
-  @JoinColumn({ name: "company_id" })
+  @JoinColumn({ name: 'company_id' })
   company: Company;
 
-  @Column({ name: "company_id" })
+  @Column({ name: 'company_id' })
   company_id: number;
 
   @Column({
-    type: "int",
-    comment: "0 = inactive, 1 = active",
+    type: 'int',
+    comment: '0 = inactive, 1 = active',
     default: 1,
   })
   status: number;
 
-  @Column({ type: "date" })
+  @Column({ type: 'date' })
   created_at: string;
 
-  @Column({ type: "date" })
+  @Column({ type: 'date' })
   updated_at: string;
 
   @BeforeInsert()
   setDefaults() {
     const now = new Date();
-    this.created_at = now.toISOString().split("T")[0];
-    this.updated_at = now.toISOString().split("T")[0];
+    this.created_at = now.toISOString().split('T')[0];
+    this.updated_at = now.toISOString().split('T')[0];
   }
 }

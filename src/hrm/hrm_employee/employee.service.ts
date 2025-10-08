@@ -57,7 +57,7 @@ export class EmployeeService {
     private readonly companyMaping: Repository<userCompanyMapping>
   ) {}
 
-  private async generateEmployeeCode(): Promise<string> {
+  private async generateEmployeeCode() {
     const lastEmployee = await this.employeeRepository.find({
       order: { id: "DESC" },
       take: 1,
@@ -107,7 +107,7 @@ export class EmployeeService {
         daysPerWeek: emp.daysPerWeek,
         fixedSalary: emp.fixedSalary,
         shift: emp.shift?.name || null,
-        emp_type: emp.emp_type, // 👇 next field will depend on this
+        emp_type: emp.emp_type, //  next field will depend on this
       };
 
       //  insert annualLeave or probationSetting right after emp_type
@@ -128,7 +128,7 @@ export class EmployeeService {
         };
       }
 
-      // 👇 remaining info
+    
       baseData.document =
         documents.length > 0
           ? {
@@ -381,7 +381,7 @@ export class EmployeeService {
             : [Number(dto.branch_id)],
           company_id: login_company_id,
 
-          //mujtaba
+          
         });
         await this.companyMaping.save(companyMapping);
       }
@@ -689,12 +689,6 @@ export class EmployeeService {
     };
   }
 
-  // async remove(id: number) {
-  //   const emp = await this.employeeRepository.findOneBy({ id });
-  //   if (!emp) throw new NotFoundException(`Employee ID ${id} not found`);
-  //   await this.employeeRepository.remove(emp);
-  //   return { message: `Employee ID ${id} deleted successfully` };
-  // }
   async statusUpdate(id: number) {
     try {
       const emp = await this.employeeRepository.findOne({

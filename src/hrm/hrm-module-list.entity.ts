@@ -1,5 +1,6 @@
 import { AllowanceModule } from "./hrm_allowance/allowance.module";
 import { AnnualLeaveModule } from "./hrm_annual-leave/annual-leave.module";
+import { AttendanceModule } from "./hrm_attendance/attendance.module";
 import { BankDetailModule } from "./hrm_bank-details/bank-details.module";
 // import { BulkAttendanceModule } from "./hrm_bulk-attendance/bulk-attendance.module";
 import { DepartmentModule } from "./hrm_department/department.module";
@@ -28,7 +29,7 @@ export const HRM = [
     AllowanceModule,
     // LoanOptionModule,
     // LoanModule,
-    // AttendanceModule,
+    AttendanceModule,
     // BulkAttendanceModule,
     BankDetailModule,
     ShiftModule,

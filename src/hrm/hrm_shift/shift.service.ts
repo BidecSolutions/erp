@@ -40,6 +40,8 @@ export class ShiftService {
         .select([
           "shift.id",
           "shift.name",
+          "shift.start_time",
+          "shift.end_time",
           "shift.status",
           "company.company_name as company_name",
         ])
@@ -62,6 +64,8 @@ export class ShiftService {
         .select([
           "shift.id",
           "shift.name",
+          "shift.start_time",
+          "shift.end_time",
           "shift.status",
           "company.company_name as company_name",
         ])

@@ -1,35 +1,23 @@
-import { IsString, IsOptional, IsInt, IsArray } from 'class-validator';
-import { Type } from 'class-transformer';
-
+import {
+  IsString,
+  IsInt,
+  IsOptional,
+  IsBoolean,
+  IsArray,
+} from 'class-validator';
 
 export class AttendanceConfigDto {
-@IsString()
-office_start_time: string;
 
+  @IsInt()
+  grace_period_minutes: number;
 
-@IsString()
-office_end_time: string;
+  @IsInt()
+  half_day_after_minutes: number;
 
+  @IsInt()
+  overtime_after_minutes: number;
 
-@IsOptional()
-@IsInt()
-@Type(() => Number)
-grace_period_minutes?: number;
-
-
-@IsOptional()
-@IsInt()
-@Type(() => Number)
-half_day_after_minutes?: number;
-
-
-@IsOptional()
-@IsInt()
-@Type(() => Number)
-overtime_after_minutes?: number;
-
-
-@IsOptional()
-@IsArray()
-weekly_offs?: string[];
+  @IsArray()
+  @IsOptional()
+  weekends?: string[];
 }
