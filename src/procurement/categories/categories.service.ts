@@ -12,9 +12,9 @@ export class CategoriesService {
     @InjectRepository(Category)
     private readonly repo: Repository<Category>,
   ) { }
-  async create(createDto: CreateCategoryDto) {
+  async create(createDto: CreateCategoryDto, companyId:number) {
     try {
-      const category = this.repo.create(createDto);
+      const category = this.repo.create();
       await this.repo.save(category);
       return successResponse('category created successfully!', category);
 
@@ -28,8 +28,6 @@ export class CategoriesService {
   async findAll(companyID: number, filter?: number) {
     try {
       const where: any = {};
-
-      // ✅ Apply filter (status)
       if (filter !== undefined) {
         where.status = filter; // 👈 match your column name
       }
@@ -73,26 +71,17 @@ export class CategoriesService {
     }
   }
   async statusUpdate(id: number) {
-    try {
-      const category = await this.repo.findOne({ where: { id } });
-      if (!category) throw new NotFoundException('category not found');
-    try {
-      const category = await this.repo.findOne({ where: { id } });
-      if (!category) throw new NotFoundException('category not found');
+    try { 
+        const category = await this.repo.findOne({ where: { id } });
+        if (!category) throw new NotFoundException('category not found');
 
-      category.status = category.status === 0 ? 1 : 0;
-      const saved = await this.repo.save(category);
+        category.status = category.status === 0 ? 1 : 0;
+        const saved = await this.repo.save(category);
 
-      return toggleStatusResponse('category', saved.status);
-    } catch (err) {
-      return errorResponse('Something went wrong', err.message);
+        return toggleStatusResponse('category', saved.status);
     }
+       catch (err) {
+        return errorResponse('Something went wrong', err.message);
+      }
   }
-      return toggleStatusResponse('category', saved.status);
-    } catch (err) {
-      return errorResponse('Something went wrong', err.message);
-    }
-  }
-
-
 }

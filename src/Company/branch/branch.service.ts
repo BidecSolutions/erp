@@ -25,7 +25,6 @@ export class BranchService {
 
         const company = await this.companyRepo.findOneBy({ id: dto.companyId });
         if (!company) return { success: false, message: `Company with ID ${dto.companyId} not found` };
-    // const branchCode = await generateCode('branch', this.dataSource);
     const branchCode = await generateCode('branch', 'BRN', this.dataSource);
 
         const branch = this.branchRepo.create({

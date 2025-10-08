@@ -18,9 +18,10 @@ export class CategoriesController {
   }
 
   @Get('list')
-  findAll(@Query('filter') filter?: string) {
+  findAll(@Req() req : Request ,@Query('filter') filter?: string) {
+     const companyId = req["user"].company_id;
     return this.categoriesService.findAll(
-      filter !== undefined ? Number(filter) : undefined,
+     companyId, filter !== undefined ? Number(filter) : undefined,
     );
   }
   @Get(':id')
