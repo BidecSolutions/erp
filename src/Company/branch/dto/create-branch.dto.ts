@@ -1,8 +1,7 @@
 import { IsNotEmpty, IsOptional, IsNumber, IsBoolean } from 'class-validator';
 
 export class CreateBranchDto {
-  @IsNotEmpty()
-  companyId: number;
+
 
   @IsNotEmpty()
   branch_code: string;

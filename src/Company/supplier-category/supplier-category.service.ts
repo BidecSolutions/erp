@@ -42,12 +42,12 @@ export class SupplierCategoryService {
         .createQueryBuilder("category")
         .leftJoin("category.company", "company")
         .select([
-          "category.id",
-          "category.category_code",
-          "category.category_name",
-          "category.description",
-          "category.is_active",
-          "company.company_name",
+          "category.id as id",
+          "category.category_code as category_code",
+          "category.category_name as category_name",
+          "category.description as description",
+          "category.is_active as is_active",
+          "company.company_name as company_name",
         ])
         .where("category.company_id = :company_id", { company_id })
         .andWhere("category.is_active = :status", { status })
@@ -67,12 +67,12 @@ export class SupplierCategoryService {
         .createQueryBuilder("category")
         .leftJoin("category.company", "company")
         .select([
-          "category.id",
-          "category.category_code",
-          "category.category_name",
-          "category.description",
-          "category.is_active",
-          "company.company_name",
+          "category.id as id",
+          "category.category_code as category_code",
+          "category.category_name as category_name",
+          "category.description as description",
+          "category.is_active as is_active",
+          "company.company_name as company_name",
         ])
         .where("category.id = :id", { id })
         .getRawOne();

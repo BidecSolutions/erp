@@ -13,9 +13,10 @@ export class BranchController {
     @Post('create')
     create(@Body() dto: CreateBranchDto, @Req() req: Request) {
         const userId = req['user'].user.id;
-        return this.branchService.create(dto, userId);
+        const compnayId = req['user'].company_id;
+        return this.branchService.create(dto, userId, compnayId);
     }
- 
+
     @Get('list')
     findAll(@Req() req: Request) {
         const userId = req['user'].user.id;
@@ -30,7 +31,8 @@ export class BranchController {
     @Put('updateby/:id')
     update(@Param('id') id: number, @Body() dto: UpdateBranchDto, @Req() req: Request) {
         const userId = req['user'].user.id;
-        return this.branchService.update(id, dto, userId);
+        const compnayId = req['user'].company_id;
+        return this.branchService.update(id, dto, userId, compnayId);
     }
 
     // Soft delete

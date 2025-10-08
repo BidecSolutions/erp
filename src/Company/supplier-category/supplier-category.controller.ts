@@ -19,12 +19,12 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @Controller('supplier-categories')
 export class SupplierCategoryController {
-  constructor(private readonly supplierCategoryService: SupplierCategoryService) {}
+  constructor(private readonly supplierCategoryService: SupplierCategoryService) { }
 
   // Create supplier category
   @Post('create')
   async create(@Body() dto: CreateSupplierCategoryDto, @Req() req: any) {
-    const companyId = req.user.company_id;
+    const companyId = req["user"].company_id;
     const categories = await this.supplierCategoryService.create(dto, companyId);
     return {
       status: true,
@@ -36,7 +36,7 @@ export class SupplierCategoryController {
   // Get all supplier categories for company
   @Get('list')
   async findAll(@Req() req: any, @Query('status') status?: string) {
-    const companyId = req.user.company_id;
+    const companyId = req["user"].company_id;
     const filterStatus = status !== undefined ? Number(status) : undefined;
     const categories = await this.supplierCategoryService.findAll(companyId, filterStatus);
     return {
@@ -64,7 +64,7 @@ export class SupplierCategoryController {
     @Body() dto: UpdateSupplierCategoryDto,
     @Req() req: any,
   ) {
-    const companyId = req.user.company_id;
+    const companyId = req["user"].company_id;
     const updated = await this.supplierCategoryService.update(id, dto, companyId);
     return {
       status: true,
