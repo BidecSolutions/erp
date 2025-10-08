@@ -4,7 +4,10 @@ import { Repository } from "typeorm";
 import { LeaveType } from "./leave-type.entity";
 import { CreateLeaveTypeDto } from "./dto/create-leave-type.dto";
 import { UpdateLeaveTypeDto } from "./dto/update-leave-type.dto";
-import { errorResponse, toggleStatusResponse } from "src/commonHelper/response.util";
+import {
+  errorResponse,
+  toggleStatusResponse,
+} from "src/commonHelper/response.util";
 import { Company } from "src/Company/companies/company.entity";
 
 @Injectable()
@@ -14,7 +17,7 @@ export class LeaveTypeService {
     private leaveTypeRepo: Repository<LeaveType>,
 
     @InjectRepository(Company)
-    private readonly companyRepo: Repository<Company>,
+    private readonly companyRepo: Repository<Company>
   ) {}
 
   // Create LeaveType with company
@@ -29,7 +32,7 @@ export class LeaveTypeService {
       const saved = await this.findAll(company_id);
       return saved;
     } catch (e) {
-       throw e;
+      throw e;
     }
   }
 
@@ -41,10 +44,10 @@ export class LeaveTypeService {
         .createQueryBuilder("leave_type")
         .leftJoin("leave_type.company", "company")
         .select([
-          "leave_type.id",
-          "leave_type.leave_type",
-          "leave_type.status",
-          "company.company_name",
+          "leave_type.id as id",
+          "leave_type.leave_type as leave_type",
+          "leave_type.statusnotific as status",
+          "company.company_name as company_name",
         ])
         .where("leave_type.company_id = :company_id", { company_id })
         .andWhere("leave_type.status = :status", { status })
@@ -53,7 +56,7 @@ export class LeaveTypeService {
 
       return leaveTypes;
     } catch (e) {
-       throw e;
+      throw e;
     }
   }
 
@@ -64,27 +67,31 @@ export class LeaveTypeService {
         .createQueryBuilder("leave_type")
         .leftJoin("leave_type.company", "company")
         .select([
-          "leave_type.id",
-               "leave_type.leave_type",
-          "leave_type.status",
-          "company.company_name",
+          "leave_type.id as id",
+          "leave_type.leave_type as leave_type",
+          "leave_type.status as status",
+          "company.company_name as company_name",
         ])
         .where("leave_type.id = :id", { id })
         .getRawOne();
 
-      if (!leaveType) throw new NotFoundException(`Leave Type ID ${id} not found`);
+      if (!leaveType)
+        throw new NotFoundException(`Leave Type ID ${id} not found`);
 
       return leaveType;
     } catch (e) {
-       throw e;
+      throw e;
     }
   }
 
   // Update LeaveType
   async update(id: number, dto: UpdateLeaveTypeDto, company_id: number) {
     try {
-      const leaveType = await this.leaveTypeRepo.findOne({ where: { id, company_id } });
-      if (!leaveType) throw new NotFoundException(`Leave Type ID ${id} not found`);
+      const leaveType = await this.leaveTypeRepo.findOne({
+        where: { id, company_id },
+      });
+      if (!leaveType)
+        throw new NotFoundException(`Leave Type ID ${id} not found`);
 
       if (dto.leave_type) leaveType.leave_type = dto.leave_type;
 
@@ -92,10 +99,9 @@ export class LeaveTypeService {
       const updated = await this.findAll(company_id);
       return updated;
     } catch (e) {
-       throw e;
+      throw e;
     }
   }
-
 
   // Toggle status
   async statusUpdate(id: number) {
