@@ -17,7 +17,7 @@ export class SupplierCategoryService {
 
   async create(dto: CreateSupplierCategoryDto, company_id: number) {
     try {
-      //  Create supplier category with direct company_id assignment
+      //  Create supplier category with direct company_id assignments
       const category = this.supplierCategoryRepo.create({
         ...dto,
         company: { id: company_id } as Company
