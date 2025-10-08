@@ -47,23 +47,32 @@ export async function getActiveList<T extends ObjectLiteral>(
   });
 }
 
+
+
 export async function generateCode(
   module_name: string,
+  prefix: string,
   dataSource: DataSource,
 ): Promise<string> {
   const repo = dataSource.getRepository(CodeSequence);
 
+  // Check if sequence exists
   let sequence = await repo.findOne({ where: { module_name } });
 
+  // If not exists — create new
   if (!sequence) {
-    const prefix = module_name.substring(0, 3).toUpperCase();
+    // Check if prefix already used
+    const existingPrefix = await repo.findOne({ where: { prefix } });
+    if (existingPrefix) {
+      throw new Error(`Prefix '${prefix}' is already used by another module`);
+    }
+
     sequence = repo.create({ module_name, prefix, last_number: 0 });
     await repo.save(sequence);
   }
 
+  // Increment
   const newNumber = sequence.last_number + 1;
-
-  // ✅ Added dash here
   const newCode = `${sequence.prefix}-${String(newNumber).padStart(4, '0')}`;
 
   sequence.last_number = newNumber;
@@ -71,5 +80,6 @@ export async function generateCode(
 
   return newCode;
 }
+
 
 

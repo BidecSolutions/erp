@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository,DataSource } from 'typeorm';
 import { Branch } from '../branch/branch.entity';
 import { CreateBranchDto } from '../branch/dto/create-branch.dto';
 import { UpdateBranchDto } from '../branch/dto/update-branch.dto';
 import { Company } from '../companies/company.entity';
 import { userCompanyMapping } from 'src/entities/user-company-mapping.entity';
+import { generateCode } from 'src/commonHelper/response.util';
 
 @Injectable()
 export class BranchService {
@@ -16,6 +17,7 @@ export class BranchService {
         private companyRepo: Repository<Company>,
         @InjectRepository(userCompanyMapping)
         private ucm: Repository<userCompanyMapping>,
+        private readonly dataSource: DataSource,
 
     ) { }
 
@@ -23,10 +25,13 @@ export class BranchService {
 
         const company = await this.companyRepo.findOneBy({ id: dto.companyId });
         if (!company) return { success: false, message: `Company with ID ${dto.companyId} not found` };
+    // const branchCode = await generateCode('branch', this.dataSource);
+    const branchCode = await generateCode('branch', 'BRN', this.dataSource);
 
         const branch = this.branchRepo.create({
             ...dto,
             company: { id: dto.companyId } as Company,
+            branch_code:branchCode,
             is_active: 1,
         });
         const savedBranch = await this.branchRepo.save(branch);

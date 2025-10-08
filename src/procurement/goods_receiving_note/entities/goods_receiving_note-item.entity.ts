@@ -26,8 +26,6 @@ export class PurchaseGrnItem {
   @Column()
   variant_id: number;
 
-  @Column()
-  received_qty: number;
 
   @Column({ type: 'decimal', precision: 12, scale: 2 })
   unit_price: number;
@@ -45,12 +43,16 @@ export class PurchaseGrnItem {
   @Column()
   ordered_qty: number;
 
+   @Column()
+  received_qty: number;
+
   @Column()
   accepted_qty: number;
 
   @Column()
   rejected_qty: number
-  
+
+
   @Column({ nullable: true })
   remarks: string;
 

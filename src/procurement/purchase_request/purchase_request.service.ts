@@ -8,6 +8,8 @@ import { errorResponse, getActiveList, successResponse, toggleStatusResponse } f
 import { PurchaseRequestItem } from './entities/purchase-request-item.entity';
 import { PurchaseRequestStatus } from '../enums/purchase-request.enum';
 import { ModuleType } from '../module_type/entities/module_type.entity';
+import { Warehouse } from '../warehouse/entities/warehouse.entity';
+import { Stock } from '../stock/entities/stock.entity';
 
 @Injectable()
 export class PurchaseRequestService {
@@ -19,6 +21,8 @@ export class PurchaseRequestService {
     private readonly pr_itemsRepo: Repository<PurchaseRequestItem>,
     @InjectRepository(ModuleType)
     private readonly moduleTypeRepo: Repository<ModuleType>,
+    @InjectRepository(Stock)
+    private readonly stockRepo: Repository<Stock>,
     private readonly dataSource: DataSource,
   ) { }
   async create() {
@@ -31,33 +35,32 @@ export class PurchaseRequestService {
       return errorResponse('Failed to load masters', error.message);
     }
   }
-  async store(createDto: CreatePurchaseRequestDto) {
-    
+  async store(createDto: CreatePurchaseRequestDto, userId:number, companyId:number) {
     try {
-      return await this.dataSource.transaction(async (manager) => {
-        const purchaseRequest = manager.getRepository(PurchaseRequest).create(createDto);
-        const savedPurchaseRequest = await manager.getRepository(PurchaseRequest).save(purchaseRequest);
-        let savedItems: PurchaseRequestItem[] = [];
+      const purchaseRequest = this.prRepo.create({
+        ...createDto,
+        company_id: companyId,
+        user_id: userId
+      });
+      const savedPurchaseRequest = await this.prRepo.save(purchaseRequest);
+      let savedItems: PurchaseRequestItem[] = [];
 
-        // Save Items
-        if (createDto.items && createDto.items.length > 0) {
-          const purchaseRequestItems = createDto.items.map((item) =>
-            manager.getRepository(PurchaseRequestItem).create({
-              ...item,
-              purchase_request: savedPurchaseRequest,
-              company_id: savedPurchaseRequest.company_id,
-              branch_id: savedPurchaseRequest.branch_id,
-            }),
-          );
-          await manager.getRepository(PurchaseRequestItem).save(purchaseRequestItems);
-          savedItems = await manager.getRepository(PurchaseRequestItem).find({
-            where: { purchase_request: { id: savedPurchaseRequest.id } },
-          });
-        }
-        return successResponse('Purchase request created successfully!', {
-          purchaseRequest: savedPurchaseRequest,
-          purchaseRequestItems: savedItems,
+      if (createDto.items && createDto.items.length > 0) {
+        const purchaseRequestItems = createDto.items.map((item) =>
+          this.pr_itemsRepo.create({
+            ...item,
+            purchase_request: savedPurchaseRequest,
+          }),
+        );
+        await this.pr_itemsRepo.save(purchaseRequestItems);
+
+        savedItems = await this.pr_itemsRepo.find({
+          where: { purchase_request: { id: savedPurchaseRequest.id } },
         });
+      }
+      return successResponse('Purchase request created successfully!', {
+        purchaseRequest: savedPurchaseRequest,
+        purchaseRequestItems: savedItems,
       });
     } catch (error) {
       throw new BadRequestException(error.message || 'Failed to create purchase request');
@@ -128,8 +131,7 @@ export class PurchaseRequestService {
             manager.getRepository(PurchaseRequestItem).create({
               ...item,
               purchase_request: updatedPR,
-              company_id: updatedPR.company_id,
-              branch_id: updatedPR.branch_id,
+
             }),
           );
 
@@ -163,18 +165,45 @@ export class PurchaseRequestService {
       return errorResponse('Something went wrong', err.message);
     }
   }
-  async approvePr(id: number) {
-    const existing = await this.prRepo.findOne({ where: { id } });
-    if (!existing) {
-      return errorResponse(`purchase request #${id} not found`);
-    }
-
-    const purchase_request = await this.prRepo.save({
-      ...existing,
-      pr_status: PurchaseRequestStatus.APPROVED,
+async approvePr(id: number) {
+    const pr = await this.prRepo.findOne({
+      where: { id },
+      relations: ['items'],
     });
+    if (!pr) {
+      return errorResponse(`Purchase Request #${id} not found`);
+    }
+  await this.prRepo.update(id, { pr_status: PurchaseRequestStatus.APPROVED });
+  
+    for (const item of pr.items) {
+      const stock = await this.stockRepo.findOne({
+        where: {
+          company_id: pr.company_id,
+          variant_id: item.variant_id,
+        },
+      });
+
+      if (stock && stock.quantity_on_hand >= item.qty_requested) {
+              item.pr_item_status = 'fullfilled';
+        await this.pr_itemsRepo.save(item);
+        // const transfer = this.stockTransferRepo.create({
+        //   company_id: companyId,
+        //   branch_id: existing.branch_id,
+        //   variant_id: item.variant_id,
+        //   quantity: item.quantity,
+        //   status: 'pending_dispatch',
+        //   reference_type: 'purchase_request',
+        //   reference_id: existing.id,
+        //   created_by: userId,
+        // });
+        // await this.stockTransferRepo.save(transfer);
+      } else {
+        item.pr_item_status = 'require_supplier';
+        await this.pr_itemsRepo.save(item);
+      }
+    }
     return successResponse(
-      `Purchase Request approved`,
+      `Purchase Request #${id} approved and stock checked successfully!`
     );
   }
 }

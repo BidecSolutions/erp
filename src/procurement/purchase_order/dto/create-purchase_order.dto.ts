@@ -14,10 +14,6 @@ export class CreatePurchaseOrderDto {
 
     @IsNumber()
     @IsNotEmpty()
-    company_id: number;
-
-    @IsNumber()
-    @IsNotEmpty()
     branch_id: number;
 
     @IsDateString()
@@ -28,7 +24,6 @@ export class CreatePurchaseOrderDto {
     @IsNotEmpty()
     expected_delivery_date: string;
 
-    
 
     @ValidateNested({ each: true })
     @Type(() => CreatePurchaseOrderItemDto)

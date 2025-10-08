@@ -74,12 +74,6 @@ export class Product {
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
   maximum_stock_level?: number;
 
-  @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  reorder_level?: number;
-
-  @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  reorder_quantity?: number;
-
 
   @Column({ nullable: true })
   warranty_type?: number;
@@ -111,8 +105,10 @@ export class Product {
   })
   is_instant_product: number;
 
-  @Column({ default: false })
-  has_variant: boolean;
+    @Column({
+    type: 'int',
+  })
+  has_variant: number;
 
   @OneToMany(() => productVariant, (variant) => variant.product)
   variants: productVariant[];

@@ -8,10 +8,7 @@ export class CreateSupplierInvoiceDto {
   @IsDateString()
   invoice_date: string;
 
-  @IsOptional()
-  @IsString()
-  invoice_number?: string;
-
+ 
   @IsNotEmpty()
   @IsDateString()
   due_date: string;

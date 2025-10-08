@@ -12,112 +12,62 @@ constructor(
       @InjectRepository(Warranty)
     private readonly repo: Repository<Warranty>) {}
     
-  async store(createDto: CreateWarrantyDto, company_id:number) {
-      try {
-        const warranty = this.repo.create({...createDto, company_id});
-        await this.repo.save(warranty);
-         const saved = await this.findAll(company_id);
-        return saved;
-        } catch (e) {
-      return { message: e.message };
+   async create(dto: CreateWarrantyDto, companyId: number) {
+     try {
+       const warranty = this.repo.create({
+         ...dto,
+         company_id:companyId
+       });
+       await this.repo.save(warranty);
+       return successResponse('warranty created successfully!', warranty);
+ 
+     } catch (error) {
+       throw new BadRequestException(error.message || 'Failed to create warranty');
+     }
+   }
+  async findAll(filter?: number) {
+    try {
+      const where: any = {};
+      if (filter !== undefined) {
+        where.status = filter; // filter apply
+      }
+      const [warranty, total] = await this.repo.findAndCount({
+        where,
+      });
+      return successResponse('warranty retrieved successfully!', {
+        total_record: total,
+        warranty,
+      });
+    } catch (error) {
+      return errorResponse('Failed to retrieve warranty', error.message);
     }
-    }
-
-    async findAll(company_id: number, filterStatus?: number) {
-  const status = filterStatus !== undefined ? filterStatus : 1; // default active
-  try {
-    const warranty = await this.repo
-      .createQueryBuilder("warranty")
-      .leftJoin("warranty.company", "company")
-      .select([
-        "warranty.id",
-        "warranty.warranty_type",
-        "warranty.duration",
-        "warranty.status",
-        "company.company_name",
-      ])
-      .where("warranty.company_id = :company_id", { company_id })
-      .andWhere("warranty.status = :status", { status })
-      .orderBy("warranty.id", "DESC")
-      .getRawMany();
-
-     return {total_record: warranty.length, warranty: warranty,}
-  } catch (error) {
-    return { message: error.message };
   }
-}
 
-async findOne(id: number) {
-  try {
-    const warranty = await this.repo
-      .createQueryBuilder("warranty")
-      .leftJoin("warranty.company", "company")
-      .select([
-        "warranty.id",
-        "warranty.warranty_type",      
-        "warranty.duration",
-        "warranty.status",
-        "company.company_name",
-      ])
-      .where("warranty.id = :id", { id })
-      .getRawOne();
+  async findOne(id: number) {
+    try {
+      const warranty = await this.repo.findOneBy({ id });
+      if (!warranty) {
+        return errorResponse(`warranty #${id} not found`);
+      }
 
-    if (!warranty) {
-      throw new NotFoundException(`Warranty ID ${id} not found`);
+      return successResponse('warranty retrieved successfully!', warranty);
+    } catch (error) {
+      return errorResponse('Failed to retrieve warranty', error.message);
     }
-
-    return warranty;
-  } catch (error) {
-    return { message: error.message };
   }
-}
+  async update(id: number, updateDto: UpdateWarrantyDto) {
+    try {
+      const existing = await this.repo.findOne({ where: { id } });
+      if (!existing) {
+        return errorResponse(`warranty #${id} not found`);
+      }
 
-
-  // async findAll(filter?: number) {
-  //     try {
-  //       const where: any = {};
-  //       if (filter !== undefined) {
-  //         where.status = filter; // filter apply
-  //       }
-  //       const [warranty, total] = await this.repo.findAndCount({
-  //         where,
-  //       });
-  //       return successResponse('warranty retrieved successfully!', {
-  //         total_record: total,
-  //         warranty,
-  //       });
-  //     } catch (error) {
-  //       return errorResponse('Failed to retrieve warranty', error.message);
-  //     }
-  //   }
-  // async findOne(id: number) {
-  //     try {
-  //       const warranty = await this.repo.findOneBy({ id });
-  //       if (!warranty) {
-  //         return errorResponse(`warranty #${id} not found`);
-  //       }
-    
-  //       return successResponse('warranty retrieved successfully!', warranty);
-  //     } catch (error) {
-  //       return errorResponse('Failed to retrieve warranty', error.message);
-  //     }
-  //   }
-
-
-  async update(id: number, updateDto: UpdateWarrantyDto, company_id: number) {
-      try {
-        const existing = await this.repo.findOne({ where: { id, } });
-        if (!existing) {
-          return errorResponse(`warranty #${id} not found`);
-        }
-    
-         await this.repo.save({ id, ...updateDto });
-       const updated = await this.findAll(company_id);
-      return updated;
-    } catch (e) {
-      return { message: e.message };
+      const warranty = await this.repo.save({ id, ...updateDto });
+      return successResponse('warranty updated successfully!', warranty);
+    } catch (error) {
+      return errorResponse('Failed to update warranty', error.message);
     }
-    }
+  }
   async statusUpdate(id: number) {
   try {
     const warranty = await this.repo.findOne({ where: { id } });

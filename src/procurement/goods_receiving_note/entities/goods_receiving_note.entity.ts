@@ -44,6 +44,9 @@ export class PurchaseGrn {
     warehouse: Warehouse
 
     @Column()
+    user_id: number;
+
+    @Column()
     grn_date: Date;
 
     @Column({ nullable: true })

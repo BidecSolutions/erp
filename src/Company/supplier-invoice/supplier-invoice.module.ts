@@ -7,9 +7,10 @@ import { Supplier } from '../supplier/supplier.entity';
 import { SupplierInvoice } from './entities/supplier-invoice.entity';
 import { SupplierInvoiceItem } from './entities/supplier-invoice-item';
 import { PurchaseOrder } from 'src/procurement/purchase_order/entities/purchase_order.entity';
+import { PurchaseGrn } from 'src/procurement/goods_receiving_note/entities/goods_receiving_note.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([SupplierInvoice, PurchaseOrder, SupplierInvoiceItem, Company, Supplier])],
+  imports: [TypeOrmModule.forFeature([SupplierInvoice, PurchaseOrder, SupplierInvoiceItem, Company, Supplier ,PurchaseOrder,PurchaseGrn])],
   controllers: [SupplierInvoiceController],
   providers: [SupplierInvoiceService],
   exports: [SupplierInvoiceService],

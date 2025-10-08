@@ -30,6 +30,8 @@ import { POS } from './pos/POS-module-file.module';
       autoLoadEntities: true,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
+      dropSchema: false,
+      migrationsRun: false,
 
     }),
     TypeOrmModule.forFeature([subSideMenuPermission, User, Role, userRoleMapping, sideMenus, subSideMenus, sidemunuRolesMapping]),

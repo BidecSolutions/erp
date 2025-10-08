@@ -9,16 +9,11 @@ export class CreatePurchaseGrnDto {
   @IsNotEmpty()
   grn_date: Date;
 
-
   @IsString()
   remarks?: string;
 
-
   @IsNumber()
   warehouse_id: number
-
-  @IsInt()
-  company_id: number
 
   @IsInt()
   branch_id: number
@@ -29,7 +24,6 @@ export class CreatePurchaseGrnDto {
   items: CreatePurchaseGrnItemDto[];
 }
 
-
 export class CreatePurchaseGrnItemDto {
   @IsNumber()
   product_id: number;
@@ -37,11 +31,12 @@ export class CreatePurchaseGrnItemDto {
   @IsNumber()
   variant_id: number;
 
-  @IsNumber()
-  received_qty: number;
+
 
   @IsNumber()
   unit_price: number;
+    @IsNumber()
+  received_qty: number;
 
   @IsString()
   remarks?: string;
@@ -52,12 +47,6 @@ export class CreatePurchaseGrnItemDto {
   @IsNotEmpty()
   @IsNumber()
   accepted_qty: number;
-
-  @IsOptional()
-  @IsNumber()
-  rejected_qty: number;
-
-
 
 }
 

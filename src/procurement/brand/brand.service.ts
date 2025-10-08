@@ -18,7 +18,7 @@ export class BrandService {
 
   async create(dto: CreateBrandDto, companyId: number) {
 
-    const brandCode = await generateCode('brand', this.dataSource);
+const brandCode = await generateCode('brand', 'BRA', this.dataSource);
     try {
       const brand = this.repo.create({
         ...dto,

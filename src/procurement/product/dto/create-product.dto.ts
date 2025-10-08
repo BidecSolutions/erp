@@ -1,5 +1,5 @@
-import { Type } from 'class-transformer';
-import { IsNotEmpty, IsOptional, IsNumber, IsString, IsDecimal, ValidateNested, IsArray, IsInt } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsNotEmpty, IsOptional, IsNumber, IsString, IsDecimal, ValidateNested, IsArray, IsInt, IsBoolean } from 'class-validator';
 
 export class CreateProductDto {
 
@@ -26,12 +26,7 @@ export class CreateProductDto {
 
   @IsOptional()
   maximum_stock_level?: number;
-
-  @IsOptional()
-  reorder_level?: number;
-
-  @IsOptional()
-  reorder_quantity?: number;
+ 
 
   @IsOptional()
   warranty_type?: number;
@@ -60,7 +55,7 @@ export class CreateProductDto {
   uom_id?: number;
 
   @IsNotEmpty()
-  has_variant?: boolean;
+  has_variant: number
 
   @IsOptional()
   @ValidateNested({ each: true })
