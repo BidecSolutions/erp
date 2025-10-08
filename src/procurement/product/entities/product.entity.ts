@@ -118,6 +118,8 @@ export class Product {
   @OneToMany(() => productVariant, (variant) => variant.product)
   variants: productVariant[];
 
+  @OneToMany(() => SalesReturnDetail, (detail) => detail.product)
+  salesReturnDetails: SalesReturnDetail[];
 
   @OneToMany(() => SalesOrderDetail, (detail) => detail.product, {
     cascade: true,

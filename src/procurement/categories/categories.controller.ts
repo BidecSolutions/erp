@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Query, UseGuards, Req } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -7,7 +7,7 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @Controller('categories')
 export class CategoriesController {
-  constructor(private readonly categoriesService: CategoriesService) {}
+  constructor(private readonly categoriesService: CategoriesService) { }
 
   // Create category
   @Post('store')
@@ -17,7 +17,7 @@ export class CategoriesController {
 
   // Get all categories with optional filter
   @Get('list')
-  async findAll(@Re() req: any, @Query('filter') filter?: string) {
+  async findAll(@Req() req: any, @Query('filter') filter?: string) {
     const companyId = req.user.company_id;
     const filterStatus = filter !== undefined ? Number(filter) : undefined;
     const categories = await this.categoriesService.findAll(companyId, filterStatus);
