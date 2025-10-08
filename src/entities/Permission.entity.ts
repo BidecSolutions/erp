@@ -23,7 +23,7 @@ export class Permission {
   @Column({ type: 'int' })
   user_id: number;
 
-  @Column('json', { nullable: true })
+  @Column('json')
   module_permission: string[];
 
   @Column({

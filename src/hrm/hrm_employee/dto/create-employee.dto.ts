@@ -180,6 +180,8 @@ export class CreateEmployeeDto {
   role_id?: number;
 
 
+
+
   @IsEnum(EmployeeType, { message: 'emp_type must be PROBATION or PERMANENT' })
   @IsNotEmpty({ message: 'emp_type is required' })
   emp_type: EmployeeType;
