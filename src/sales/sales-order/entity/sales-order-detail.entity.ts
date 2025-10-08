@@ -35,11 +35,11 @@ export class SalesOrderDetail {
 
 
   @Column()
-  varient_id: number;
+  variant_id: number;
   @ManyToOne(()=> productVariant, (productVariant)=> productVariant.salesOrderDetails,{
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'varient_id' })
+  @JoinColumn({ name: 'variant_id' })
   productVariant: productVariant;
 
 
