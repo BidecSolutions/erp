@@ -11,48 +11,26 @@ export class CategoriesController {
 
   // Create category
   @Post('store')
-  create(@Body() createCategoryDto: CreateCategoryDto) {
-    return this.categoriesService.create(createCategoryDto);
+  create(@Body() createCategoryDto: CreateCategoryDto ,@Req() req: Request) {
+      const companyId = req["user"].company_id;
+        console.log("companyId" , companyId);
+    return this.categoriesService.create(createCategoryDto ,companyId);
   }
 
-  // Get all categories with optional filter
   @Get('list')
-  async findAll(@Req() req: any, @Query('filter') filter?: string) {
-    const companyId = req.user.company_id;
-    const filterStatus = filter !== undefined ? Number(filter) : undefined;
-    const categories = await this.categoriesService.findAll(companyId, filterStatus);
-    return {
-      status: true,
-      message: 'Get All Categories successfully',
-      data: categories,
-    };
+  findAll(@Query('filter') filter?: string) {
+    return this.categoriesService.findAll(
+      filter !== undefined ? Number(filter) : undefined,
+    );
+  }
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.categoriesService.findOne(+id);
   }
 
-  // Get single category by ID
-  @Get(':id/')
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    const category = await this.categoriesService.findOne(id);
-    return {
-      status: true,
-      message: `Get Category with ID ${id}`,
-      data: category,
-    };
-  }
-
-  // Update category
-  @Patch(':id/')
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateCategoryDto,
-    @Req() req: any,
-  ) {
-    const companyId = req.user.company_id;
-    const updated = await this.categoriesService.update(id, dto, companyId);
-    return {
-      status: true,
-      message: 'Category Updated Successfully',
-      data: updated,
-    };
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() UpdateCategoryDto: UpdateCategoryDto) {
+    return this.categoriesService.update(+id, UpdateCategoryDto);
   }
 
   // Toggle category status

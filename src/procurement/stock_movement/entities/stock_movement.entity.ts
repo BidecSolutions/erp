@@ -2,6 +2,7 @@ import { Branch } from 'src/Company/branch/branch.entity';
 import { Company } from 'src/Company/companies/company.entity';
 import { MovementType } from 'src/procurement/enums/stock-movement.enum';
 import { Product } from 'src/procurement/product/entities/product.entity';
+import { productVariant } from 'src/procurement/product/entities/variant.entity';
 import { Warehouse } from 'src/procurement/warehouse/entities/warehouse.entity';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
@@ -18,16 +19,20 @@ export class StockMovement {
   @JoinColumn({ name: 'product_id' })
   product: Product;
 
+    @Column()
+  variant_id: number;
+  @ManyToOne(() => Product)
+  @JoinColumn({ name: 'variant_id' })
+  variant: productVariant;
+
   @Column({ nullable: true })
   from_warehouse_id: number;
-
   @ManyToOne(() => Warehouse)
   @JoinColumn({ name: 'from_warehouse_id' })
   fromWarehouse: Warehouse;
 
   @Column({ nullable: true })
   to_warehouse_id: number;
-
   @ManyToOne(() => Warehouse)
   @JoinColumn({ name: 'to_warehouse_id' })
   toWarehouse: Warehouse;
@@ -45,19 +50,15 @@ export class StockMovement {
   })
   movement_type: MovementType;
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
-  reference_number: string;
 
   @Column({ name: 'company_id', nullable: false })
   company_id: number;
-
   @ManyToOne(() => Company)
   @JoinColumn({ name: 'company_id' })
   company: Company;
 
   @Column({ name: 'branch_id', nullable: false })
   branch_id: number;
-
   @ManyToOne(() => Branch)
   @JoinColumn({ name: 'branch_id' })
   branch: Branch;
@@ -77,4 +78,7 @@ export class StockMovement {
 
   @Column({ type: 'int', default: 1 })
   status: number;
+
+  @Column()
+  user_id:number
 }

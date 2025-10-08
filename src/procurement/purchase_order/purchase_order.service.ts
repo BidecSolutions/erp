@@ -15,6 +15,8 @@ export class PurchaseOrderService {
   constructor(
     @InjectRepository(PurchaseOrder)
     private readonly purchaseOrderRepo: Repository<PurchaseOrder>,
+    @InjectRepository(PurchaseQuotation)
+    private readonly purchasequotationRepo: Repository<PurchaseQuotation>,
     @InjectRepository(PurchaseOrderItem)
     private readonly purchaseOrderItemRepo: Repository<PurchaseOrderItem>,
     @InjectRepository(PurchaseRequest)
@@ -31,11 +33,11 @@ export class PurchaseOrderService {
   //     //   return errorResponse("Can't create purchase order, purchase request still pending");
   //     // }
   //     return await this.dataSource.transaction(async (manager) => {
-  //        const prItems = await manager.getRepository(PurchaseRequest).find({
+  //        const prItems = await this.prRepo.find({
   //               where: { id: createDto.pr_id },
   //               order: { id: 'ASC' },
   //             });
-        
+
 
   //       const totalAmount = createDto.items.reduce(
   //         (sum, item) => sum + item.quantity * item.unit_price,
@@ -72,19 +74,17 @@ export class PurchaseOrderService {
   //     throw new Error(`Failed to create Purchase Order: ${error.message}`);
   //   }
   // }
-  async store(createDto: CreatePurchaseOrderDto) {
-  try {
-    return await this.dataSource.transaction(async (manager) => {
+  async store(createDto: CreatePurchaseOrderDto ,userId:number, companyId:number) {
+    try {
+
       // 1) Check PR exist
-      const pr = await manager.getRepository(PurchaseRequest).findOne({
+      const pr = await this.prRepo.findOne({
         where: { id: createDto.pr_id },
       });
       if (!pr) {
         return errorResponse(`Purchase Request #${createDto.pr_id} not found`);
       }
-
-      // 2) Check Supplier ke liye Approved Quotation
-      const quotation = await manager.getRepository(PurchaseQuotation).findOne({
+      const quotation = await this.purchasequotationRepo.findOne({
         where: {
           purchase_request_id: createDto.pr_id,
           supplier_id: createDto.supplier_id,
@@ -104,21 +104,22 @@ export class PurchaseOrderService {
       );
 
       // 4) Create Purchase Order
-      const po = manager.getRepository(PurchaseOrder).create({
+      const po = this.purchaseOrderRepo.create({
         pr_id: createDto.pr_id,
         supplier_id: createDto.supplier_id,
-        company_id: createDto.company_id,
+        company_id: companyId,
+        user_id:userId,
         branch_id: createDto.branch_id,
         order_date: createDto.order_date,
         expected_delivery_date: createDto.expected_delivery_date,
         total_amount: totalAmount,
         po_status: PurchaseOrderStatus.PENDING,
       });
-      const savedPO = await manager.save(po);
+      const savedPO = await this.purchaseOrderRepo.save(po);
 
       // 5) PO Items = Approved Quotation Items
       const poItems = quotation.quotation_items.map((qItem) =>
-        manager.getRepository(PurchaseOrderItem).create({
+        this.purchaseOrderItemRepo.create({
           purchase_order_id: savedPO.id,
           product_id: qItem.product_id,
           variant_id: qItem.variant_id,
@@ -127,19 +128,19 @@ export class PurchaseOrderService {
           total_amount: qItem.quantity * qItem.unit_price,
         }),
       );
-      await manager.save(poItems);
+      await this.purchaseOrderItemRepo.save(poItems);
 
       return successResponse('Purchase Order created successfully', {
         po: savedPO,
         items: poItems,
       });
-    });
-  } catch (error) {
-    throw new BadRequestException(
-      error.message || 'Failed to create Purchase Order',
-    );
+
+    } catch (error) {
+      throw new BadRequestException(
+        error.message || 'Failed to create Purchase Order',
+      );
+    }
   }
-}
 
   async findAll(filter?: number) {
     try {

@@ -4,13 +4,14 @@ import { Repository, DataSource } from 'typeorm';
 import { CreateSupplierInvoiceDto } from './dto/create-supplier-invoice.dto';
 import { Company } from '../companies/company.entity';
 import { Supplier } from '../supplier/supplier.entity';
-import { errorResponse, successResponse, toggleStatusResponse } from 'src/commonHelper/response.util';
+import { errorResponse, generateCode, successResponse, toggleStatusResponse } from 'src/commonHelper/response.util';
 import { SupplierInvoice } from './entities/supplier-invoice.entity';
 import { SupplierInvoiceItem } from './entities/supplier-invoice-item';
 import { response } from 'express';
 import { UpdateSupplierInvoiceDto } from './dto/update-supplier-invoice.dto';
 import { supplierInvoice } from 'src/procurement/enums/supplier-invoice.enum';
 import { PurchaseOrder } from 'src/procurement/purchase_order/entities/purchase_order.entity';
+import { PurchaseGrn } from 'src/procurement/goods_receiving_note/entities/goods_receiving_note.entity';
 
 @Injectable()
 export class SupplierInvoiceService {
@@ -19,13 +20,15 @@ export class SupplierInvoiceService {
     private invoiceRepo: Repository<SupplierInvoice>,
     @InjectRepository(PurchaseOrder)
     private poRepo: Repository<PurchaseOrder>,
+    @InjectRepository(PurchaseGrn)
+    private grnRepo: Repository<PurchaseGrn>,
     private readonly dataSource: DataSource,
 
   ) { }
 
-  async store(dto: CreateSupplierInvoiceDto) {
+  async store(dto: CreateSupplierInvoiceDto, userId: number, companyId: number) {
     try {
-         const po = await this.poRepo.findOneBy({ id: dto.purchase_order_id });
+      const po = await this.poRepo.findOneBy({ id: dto.purchase_order_id });
       if (!po) {
         return errorResponse(`Purchase Request #${dto.purchase_order_id} not found`);
       }
@@ -33,7 +36,7 @@ export class SupplierInvoiceService {
       //   return errorResponse("Can't create Invoice, purchase order still pending");
       // }
       return await this.dataSource.transaction(async (manager) => {
-          const po = await this.poRepo.findOne({
+        const po = await this.poRepo.findOne({
           where: { id: dto.purchase_order_id },
           relations: ['items'],
         });
@@ -41,28 +44,37 @@ export class SupplierInvoiceService {
         if (!po) {
           throw new Error(`Purchase Order #${dto.purchase_order_id} not found`);
         }
-        const netAmount = po.total_amount + (dto.tax_amount || 0) - (dto.discount_amount || 0);
+        const grn = await this.grnRepo.findOne({
+          where: { po_id: po.id },
+          relations: ['items'],
+        });
 
-        const outstandingAmount=0;
+        if (!grn) {
+          throw new NotFoundException(`GRN for PO #${po.id} not found`);
+        }
+        const netAmount = po.total_amount + (dto.tax_amount || 0) - (dto.discount_amount || 0);
+        const invoiceNumber = await generateCode('supplier invoice', 'INV', this.dataSource);
         const invoice = manager.create(SupplierInvoice, {
-            supplier: { id: po.supplier_id },
-            company: { id: po.company_id },
-            branch: { id: po.branch_id },
-            purchaseOrder: { id: po.id },
-            invoice_date: dto.invoice_date,
-            invoice_number: dto.invoice_number,
-            due_date: dto.due_date,
-            payment_terms: dto.payment_terms,
-            total_amount:po.total_amount,
-            tax_amount: dto.tax_amount ?? 0,
-            discount_amount: dto.discount_amount ?? 0,
-            net_amount:netAmount,
-            notes: dto.notes,
-            inv_status :supplierInvoice.UNPAID,
-            payment_method:dto.payment_method,
-            outstanding_amount :netAmount,
-            attachment_path: dto.attachment_path,
-           
+          supplier: { id: po.supplier_id },
+          company_id: companyId,
+          user_id :userId,
+          branch: { id: po.branch_id },
+          purchaseOrder: { id: po.id },
+          invoice_date: dto.invoice_date,
+          invoice_number: invoiceNumber,
+          due_date: dto.due_date,
+          payment_terms: dto.payment_terms,
+          total_amount: po.total_amount,
+          tax_amount: dto.tax_amount ?? 0,
+          discount_amount: dto.discount_amount ?? 0,
+          net_amount: netAmount,
+          notes: dto.notes,
+          inv_status: supplierInvoice.UNPAID,
+          payment_method: dto.payment_method,
+          outstanding_amount: netAmount,
+          attachment_path: dto.attachment_path,
+
+
         });
         const savedInvoice = await manager.save(invoice);
 
@@ -71,9 +83,14 @@ export class SupplierInvoiceService {
             invoice_id: savedInvoice.id,
             product_id: item.product_id,
             variant_id: item.variant_id,
-            quantity: item.quantity,
             unit_price: item.unit_price,
-            total_price: item.quantity * item.unit_price
+            total_price: item.quantity * item.unit_price,
+            ordered_qty:item.quantity,
+            received_qty:0,
+            accept_qty:0,
+            reject_qty:0
+
+        
           });
           await manager.save(invoiceItem);
         }
@@ -86,6 +103,8 @@ export class SupplierInvoiceService {
       throw new BadRequestException(error.message || 'Failed to create Inovoice');
     }
   }
+ 
+
   async findAll(filter?: number) {
     try {
       const where: any = {};

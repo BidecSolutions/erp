@@ -1,15 +1,22 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Query, Req, UseGuards } from '@nestjs/common';
 import { CreatePurchaseGrnDto } from './dto/create-goods_receiving_note.dto';
 import { GoodsReceivingNoteService } from './goods_receiving_note.service';
 import { UpdatePurchaseGrnDto } from './dto/update-goods_receiving_note.dto';
+import { JwtEmployeeAuth } from 'src/auth/jwt-employee.guard';
 
+@UseGuards(JwtEmployeeAuth)
 @Controller('grn')
 export class GoodsReceivingNoteController {
   constructor(private readonly goodsReceivingNoteService: GoodsReceivingNoteService) { }
 
   @Post('store')
-  create(@Body() createGoodsReceivingNoteDto: CreatePurchaseGrnDto) {
-    return this.goodsReceivingNoteService.store(createGoodsReceivingNoteDto);
+  create(@Body() createGoodsReceivingNoteDto: CreatePurchaseGrnDto,
+     @Req() req: Request) {
+        const userData = req["user"];
+        const userId = userData?.user?.id;
+        const companyId = userData?.company_id;
+        console.log("data" , userId ,companyId)
+    return this.goodsReceivingNoteService.store(createGoodsReceivingNoteDto ,userId ,companyId);
   }
 
   @Get('list')

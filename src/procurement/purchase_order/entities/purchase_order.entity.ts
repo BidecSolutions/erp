@@ -37,6 +37,9 @@ export class PurchaseOrder {
     @JoinColumn({ name: 'branch_id' })
     branch: Branch
 
+    @Column()
+    user_id:number
+
     // Entity
     @Column({ type: 'date' })
     order_date: string;

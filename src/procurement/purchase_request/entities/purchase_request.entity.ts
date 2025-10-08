@@ -60,7 +60,7 @@ export class PurchaseRequest {
   @UpdateDateColumn({ name: 'updated_date', type: 'timestamp', nullable: true })
   updated_date?: Date;
 
-  @OneToMany(() => PurchaseRequestItem, (item) => item.purchase_request, { cascade: true })
+  @OneToMany(() => PurchaseRequestItem, (item) => item.purchase_request)
    items: PurchaseRequestItem[];
   
 

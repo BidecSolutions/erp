@@ -9,17 +9,13 @@ export class CreatePurchaseQuotationDto {
   purchase_request_id: number;
 
   @IsNumber()
-  company_id: number;
-
-  @IsNumber()
   branch_id: number;
-
-  
-
 
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => SupplierQuotationDto)
   suppliers: SupplierQuotationDto[];
 }
+
+
 

@@ -111,6 +111,8 @@ export class SupplierInvoice {
   @Column({ name: 'status', type: 'tinyint', default: 1 })
   status: number;
 
+  @Column()
+  user_id:number;
 
 
 

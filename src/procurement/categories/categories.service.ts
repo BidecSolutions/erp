@@ -3,8 +3,8 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from './entities/category.entity';
-import { Repository } from 'typeorm';
-import { errorResponse, successResponse, toggleStatusResponse } from 'src/commonHelper/response.util';
+import { Repository, DataSource } from 'typeorm';
+import { errorResponse, generateCode, successResponse, toggleStatusResponse } from 'src/commonHelper/response.util';
 
 @Injectable()
 export class CategoriesService {
@@ -49,45 +49,33 @@ export class CategoriesService {
 
   async findOne(id: number) {
     try {
-      const category = await this.repo
-        .createQueryBuilder("category")
-        .leftJoin("category.company", "company")
-        .select([
-          "category.id",
-          "category.category_code",
-          "category.category_name",
-          "category.description",
-          "category.status",
-          "company.company_name",
-        ])
-        .where("category.id = :id", { id })
-        .getRawOne();
-
+      const category = await this.repo.findOneBy({ id });
       if (!category) {
-        throw new NotFoundException(`Supplier category ID ${id} not found`);
+        return errorResponse(`category #${id} not found`);
       }
 
-      return category;
+      return successResponse('category retrieved successfully!', category);
     } catch (error) {
-      return { message: error.message };
+      return errorResponse('Failed to retrieve category', error.message);
     }
   }
-
-  async update(id: number, updateDto: UpdateCategoryDto, company_id: number) {
+  async update(id: number, updateDto: UpdateCategoryDto) {
     try {
       const existing = await this.repo.findOne({ where: { id } });
       if (!existing) {
         return errorResponse(`category #${id} not found`);
       }
 
-      await this.repo.save({ id, ...updateDto });
-      const updated = await this.findAll(company_id);
-      return updated;
-    } catch (e) {
-      return { message: e.message };
+      const category = await this.repo.save({ id, ...updateDto });
+      return successResponse('category updated successfully!', category);
+    } catch (error) {
+      return errorResponse('Failed to update category', error.message);
     }
   }
   async statusUpdate(id: number) {
+    try {
+      const category = await this.repo.findOne({ where: { id } });
+      if (!category) throw new NotFoundException('category not found');
     try {
       const category = await this.repo.findOne({ where: { id } });
       if (!category) throw new NotFoundException('category not found');
@@ -95,6 +83,11 @@ export class CategoriesService {
       category.status = category.status === 0 ? 1 : 0;
       const saved = await this.repo.save(category);
 
+      return toggleStatusResponse('category', saved.status);
+    } catch (err) {
+      return errorResponse('Something went wrong', err.message);
+    }
+  }
       return toggleStatusResponse('category', saved.status);
     } catch (err) {
       return errorResponse('Something went wrong', err.message);

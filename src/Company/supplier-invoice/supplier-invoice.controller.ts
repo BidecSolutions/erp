@@ -1,15 +1,21 @@
-import { Controller, Post, Body, Query, Param, Get, Patch, ParseIntPipe } from '@nestjs/common';
+import { Controller, Post, Body, Query, Param, Get, Patch, ParseIntPipe, Req, UseGuards } from '@nestjs/common';
 import { SupplierInvoiceService } from './supplier-invoice.service';
 import { CreateSupplierInvoiceDto } from './dto/create-supplier-invoice.dto';
 import { UpdateSupplierInvoiceDto } from './dto/update-supplier-invoice.dto';
-
+import { JwtEmployeeAuth } from 'src/auth/jwt-employee.guard';
+@UseGuards(JwtEmployeeAuth)
 @Controller('supplier-invoices')
 export class SupplierInvoiceController {
   constructor(private readonly invoiceService: SupplierInvoiceService) { }
 
   @Post('store')
-  store(@Body() dto: CreateSupplierInvoiceDto) {
-    return this.invoiceService.store(dto);
+  store(@Body() dto: CreateSupplierInvoiceDto
+  , @Req() req: Request) {
+      const userData = req["user"];
+      const userId = userData?.user?.id;
+      const companyId = userData?.company_id;
+      console.log("data" ,userId , companyId)
+    return this.invoiceService.store(dto , userId, companyId);
   }
   @Get('list')
   findAll(@Query('filter') filter?: string) {

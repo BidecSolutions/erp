@@ -54,18 +54,21 @@ export class ProductService {
   async store(createDto: CreateProductDto, imagePath: string[], companyId: number) {
     try {
       return await this.dataSource.transaction(async (manager) => {
-        if (createDto.has_variant && createDto.has_variant !== true) {
-          createDto.cost_price == null,
-            createDto.unit_price == null
-        } else {
-          if (!createDto.unit_price || !createDto.cost_price) {
-            throw new BadRequestException(
-              'unit_price and cost_price are required when product has no variants',
-            );
+          if (createDto.has_variant == 1) {
+            // product has variants → ignore unit/cost price
+            createDto.unit_price = 0;
+            createDto.cost_price = 0;
+          } else {
+            // product has no variants → require them
+            if (!createDto.unit_price || !createDto.cost_price) {
+              throw new BadRequestException(
+                'unit_price and cost_price are required when product has no variants',
+              );
+            }
           }
-        }
+
         const productRepo = manager.getRepository(Product);
-        const productCode = await generateCode('product', this.dataSource);
+        const productCode = await generateCode('product', 'PRO', this.dataSource);
         const product = productRepo.create({
           ...createDto,
           images: imagePath,
@@ -77,7 +80,7 @@ export class ProductService {
         let savedVariant: productVariant[] = [];
         if (createDto.variants && createDto.variants.length > 0) {
           const variantRepo = manager.getRepository(productVariant);
-          const variantCode = await generateCode('variant', this.dataSource);
+          const variantCode = await generateCode('variant', 'VAR', this.dataSource);
           const variantsData = createDto.variants.map((variant) =>
             variantRepo.create({
               ...variant,
@@ -117,7 +120,7 @@ export class ProductService {
       if (total == 0) {
         return successResponse('No record found!')
       }
-      return successResponse('product retrieved rrsuccessfully!', {
+      return successResponse('product retrieved successfully!', {
         total_record: total,
         product,
       });
@@ -125,7 +128,7 @@ export class ProductService {
       return errorResponse('Failed to retrieve product', error.message);
     }
   }
-  
+
   async findOne(id: number) {
     try {
       const product = await this.productRepo.findOne({
@@ -269,8 +272,6 @@ export class ProductService {
       return errorResponse('Something went wrong', err.message);
     }
   }
-
-
 
   findInstantProduct() {
     return this.productRepo.find({ where: { is_instant_product: 1 } });
