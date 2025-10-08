@@ -17,12 +17,11 @@ export class Supplier {
   @PrimaryGeneratedColumn()
   id: number;
 
-   @ManyToOne(() => Company, { eager: true }) // eager true -> auto load
+  @ManyToOne(() => Company, { eager: true }) // eager true -> auto load
   @JoinColumn({ name: 'company_id' })
   company: Company;
 
-  @Column()
-  company_id: number;
+
 
 
   @ManyToOne(() => SupplierCategory, (category) => category.suppliers, {

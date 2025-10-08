@@ -20,7 +20,7 @@ export class CustomerService {
     private categoryRepo: Repository<CustomerCategory>,
     @InjectRepository(CustomerAccount)
     private customerAccountRepo: Repository<CustomerAccount>
-  ) {}
+  ) { }
 
   // async create(dto: CreateCustomerDto) {
   //     try {
@@ -92,7 +92,7 @@ export class CustomerService {
       const customer = this.customerRepo.create({
         ...dto,
         category_customer: { id: dto.category_customer } as CustomerCategory,
-        company_id,
+        company: { id: company_id } as Company,
         is_active: 1,
       });
 
@@ -333,66 +333,67 @@ export class CustomerService {
   }
 
   async update(id: number, dto: UpdateCustomerDto, company_id: number) {
-    try {
-      const customer = await this.customerRepo.findOne({
-        where: { id, is_active: 1, company_id },
-      });
-      if (!customer)
-        return { success: false, message: "Customer not found or inactive" };
+    // try {
+    //   const customer = await this.customerRepo.findOne({
+    //     where: {
+    //       id, is_active: 1, company: { id: company_id },
+    //     })};
+    //   if (!customer)
+    //     return { success: false, message: "Customer not found or inactive" };
 
-      // Check if company exists and is active
-      // const company = await this.companyRepo.findOne({
-      //     where: { id: dto.company_id, status: 1 },
-      // });
-      // if (!company) {
-      //     return { success: false, message: `Company with ID ${dto.company_id} not found or inactive` };
-      // }
+    //   // Check if company exists and is active
+    //   // const company = await this.companyRepo.findOne({
+    //   //     where: { id: dto.company_id, status: 1 },
+    //   // });
+    //   // if (!company) {
+    //   //     return { success: false, message: `Company with ID ${dto.company_id} not found or inactive` };
+    //   // }
 
-      // Check if category_customer exists and is active
-      const category = await this.categoryRepo.findOne({
-        where: { id: dto.category_customer, is_active: 1 },
-      });
-      if (!category) {
-        return {
-          success: false,
-          message: `Customer category with ID ${dto.category_customer} not found or inactive`,
-        };
-      }
+    //   // Check if category_customer exists and is active
+    //   const category = await this.categoryRepo.findOne({
+    //     where: { id: dto.category_customer, is_active: 1 },
+    //   });
+    //   if (!category) {
+    //     return {
+    //       success: false,
+    //       message: `Customer category with ID ${dto.category_customer} not found or inactive`,
+    //     };
+    //   }
 
-      // Update relations if provided
-      // if (dto.company_id) customer.company = { id: dto.company_id } as Company;
-      if (dto.category_customer)
-        customer.category_customer = {
-          id: dto.category_customer,
-        } as CustomerCategory;
+    //   // Update relations if provided
+    //   // if (dto.company_id) customer.company = { id: dto.company_id } as Company;
+    //   if (dto.category_customer)
+    //     customer.category_customer = {
+    //       id: dto.category_customer,
+    //     } as CustomerCategory;
 
-      Object.assign(customer, dto);
+    //   Object.assign(customer, dto);
 
-      // const updated = await this.customerRepo.save(customer);
-      //     return { success: true, message: 'Customer updated successfully', data: updated };
-      // } catch (error) {
-      //     return { success: false, message: 'Failed to update customer', error };
-      await this.customerRepo.save(customer);
+    //   // const updated = await this.customerRepo.save(customer);
+    //   //     return { success: true, message: 'Customer updated successfully', data: updated };
+    //   // } catch (error) {
+    //   //     return { success: false, message: 'Failed to update customer', error };
+    //   await this.customerRepo.save(customer);
 
-      const updated = await this.findAll(company_id);
-      return updated;
-    } catch (e) {
-      return { message: e.message };
-    }
+    //   const updated = await this.findAll(company_id);
+    //   return updated;
+    // } catch (e) {
+    //   return { message: e.message };
+    // }
   }
 
 
   async statusUpdate(id: number) {
-            try {
-              const cus = await this.customerRepo.findOneBy({ id });
-              if (!cus) throw new NotFoundException("Customer not found");
-        
-              cus.is_active = cus.is_active === 0 ? 1 : 0;
-              await this.customerRepo.save(cus);
-        
-              return toggleStatusResponse("Customer", cus.is_active);
-            } catch (err) {
-              return errorResponse("Something went wrong", err.message);
-            }
-          }
+    try {
+      const cus = await this.customerRepo.findOneBy({ id });
+      if (!cus) throw new NotFoundException("Customer not found");
+
+      cus.is_active = cus.is_active === 0 ? 1 : 0;
+      await this.customerRepo.save(cus);
+
+      return toggleStatusResponse("Customer", cus.is_active);
+    } catch (err) {
+      return errorResponse("Something went wrong", err.message);
+    }
+  }
 }
