@@ -19,13 +19,12 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @Controller('customers')
 export class CustomerController {
-  constructor(private readonly customerService: CustomerService) { }
+  constructor(private readonly customerService: CustomerService) {}
 
   // Create customer
   @Post('create')
   async create(@Body() dto: CreateCustomerDto, @Req() req: any) {
-    const companyId = req["user"].company_id;
-    console.log(companyId);
+    const companyId =  req["user"].company_id;;
     const customer = await this.customerService.create(dto, companyId);
     return {
       status: true,
@@ -37,9 +36,7 @@ export class CustomerController {
   // Get all customers for company (optional status filter)
   @Get('list')
   async findAll(@Req() req: any, @Query('status') status?: string) {
-    const companyId = req["user"].company_id;
-
-    console.log(companyId);
+    const companyId =  req["user"].company_id;;
     const filterStatus = status !== undefined ? Number(status) : undefined;
     const customers = await this.customerService.findAll(companyId, filterStatus);
     return {
@@ -67,7 +64,7 @@ export class CustomerController {
     @Body() dto: UpdateCustomerDto,
     @Req() req: any,
   ) {
-    const companyId = req.user.company_id;
+    const companyId =  req["user"].company_id;
     const updated = await this.customerService.update(id, dto, companyId);
     return {
       status: true,
@@ -76,8 +73,8 @@ export class CustomerController {
     };
   }
 
-  @Get('toogleStatus/:id')
-  async statusChange(@Param('id', ParseIntPipe) id: number) {
-    return this.customerService.statusUpdate(id);
-  }
+    @Get('toogleStatus/:id')
+            async statusChange(@Param('id', ParseIntPipe) id: number) {
+              return this.customerService.statusUpdate(id);
+            }
 }

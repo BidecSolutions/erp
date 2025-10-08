@@ -24,7 +24,7 @@ export class CustomerCategoryController {
   //  Create category
   @Post('create')
   async create(@Body() dto: CreateCustomerCategoryDto, @Req() req: any) {
-    const companyId = req.user.company_id;
+    const companyId =  req["user"].company_id;
     const result = await this.categoryService.create(dto, companyId);
 
     return {
@@ -37,7 +37,7 @@ export class CustomerCategoryController {
   //  List all categories
   @Get('list')
   async findAll(@Req() req: any, @Query('status') status?: string) {
-    const companyId = req.user.company_id;
+    const companyId =  req["user"].company_id;
     const result = await this.categoryService.findAll(companyId);
 
     return {
@@ -66,7 +66,7 @@ export class CustomerCategoryController {
     @Body() dto: UpdateCustomerCategoryDto,
     @Req() req: any,
   ) {
-    const companyId = req.user.company_id;
+    const companyId =  req["user"].company_id;
     const result = await this.categoryService.update(id, dto, companyId);
 
     return {
