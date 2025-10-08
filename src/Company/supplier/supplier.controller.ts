@@ -73,14 +73,9 @@ export class SupplierController {
     };
   }
 
-  // Delete supplier (soft delete)
-  @Delete(':id/delete')
-  async remove(@Param('id', ParseIntPipe) id: number) {
-    const deleted = await this.supplierService.remove(id);
-    return {
-      status: true,
-      message: 'Supplier Deleted Successfully',
-      data: deleted,
-    };
+  @Get('toggleStatus/:id')
+  async toggleStatus(@Param('id', ParseIntPipe) id: number) {
+    return this.supplierService.toggleStatus(id);
   }
+
 }

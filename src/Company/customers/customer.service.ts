@@ -171,55 +171,81 @@ export class CustomerService {
     }
   }
 
-  async update(id: number, dto: UpdateCustomerDto, company_id: number) {
-    // try {
-    //   const customer = await this.customerRepo.findOne({
-    //     where: {
-    //       id, is_active: 1, company: { id: company_id },
-    //     })};
-    //   if (!customer)
-    //     return { success: false, message: "Customer not found or inactive" };
+  // async update(id: number, dto: UpdateCustomerDto, company_id: number) {
+  //   // try {
+  //   //   const customer = await this.customerRepo.findOne({
+  //   //     where: {
+  //   //       id, is_active: 1, company: { id: company_id },
+  //   //     })};
+  //   //   if (!customer)
+  //   //     return { success: false, message: "Customer not found or inactive" };
 
-    //   // Check if company exists and is active
-    //   // const company = await this.companyRepo.findOne({
-    //   //     where: { id: dto.company_id, status: 1 },
-    //   // });
-    //   // if (!company) {
-    //   //     return { success: false, message: `Company with ID ${dto.company_id} not found or inactive` };
-    //   // }
+  //   //   // Check if company exists and is active
+  //   //   // const company = await this.companyRepo.findOne({
+  //   //   //     where: { id: dto.company_id, status: 1 },
+  //   //   // });
+  //   //   // if (!company) {
+  //   //   //     return { success: false, message: `Company with ID ${dto.company_id} not found or inactive` };
+  //   //   // }
 
-    //   // Check if category_customer exists and is active
-    //   const category = await this.categoryRepo.findOne({
-    //     where: { id: dto.category_customer, is_active: 1 },
-    //   });
-    //   if (!category) {
-    //     return {
-    //       success: false,
-    //       message: `Customer category with ID ${dto.category_customer} not found or inactive`,
-    //     };
-    //   }
+  //   //   // Check if category_customer exists and is active
+  //   //   const category = await this.categoryRepo.findOne({
+  //   //     where: { id: dto.category_customer, is_active: 1 },
+  //   //   });
+  //   //   if (!category) {
+  //   //     return {
+  //   //       success: false,
+  //   //       message: `Customer category with ID ${dto.category_customer} not found or inactive`,
+  //   //     };
+  //   //   }
 
-    //   // Update relations if provided
-    //   // if (dto.company_id) customer.company = { id: dto.company_id } as Company;
-    //   if (dto.category_customer)
-    //     customer.category_customer = {
-    //       id: dto.category_customer,
-    //     } as CustomerCategory;
+  //   //   // Update relations if provided
+  //   //   // if (dto.company_id) customer.company = { id: dto.company_id } as Company;
+  //   //   if (dto.category_customer)
+  //   //     customer.category_customer = {
+  //   //       id: dto.category_customer,
+  //   //     } as CustomerCategory;
 
-    //   Object.assign(customer, dto);
+  //   //   Object.assign(customer, dto);
 
-    //   // const updated = await this.customerRepo.save(customer);
-    //   //     return { success: true, message: 'Customer updated successfully', data: updated };
-    //   // } catch (error) {
-    //   //     return { success: false, message: 'Failed to update customer', error };
-    //   await this.customerRepo.save(customer);
+  //   //   // const updated = await this.customerRepo.save(customer);
+  //   //   //     return { success: true, message: 'Customer updated successfully', data: updated };
+  //   //   // } catch (error) {
+  //   //   //     return { success: false, message: 'Failed to update customer', error };
+  //   //   await this.customerRepo.save(customer);
 
-    //   const updated = await this.findAll(company_id);
-    //   return updated;
-    // } catch (e) {
-    //   return { message: e.message };
-    // }
+  //   //   const updated = await this.findAll(company_id);
+  //   //   return updated;
+  //   // } catch (e) {
+  //   //   return { message: e.message };
+  //   // }
+  // }
+
+  async update(id: number, dto: UpdateCustomerDto, companyId: number) {
+    try {
+      // Find the customer first to ensure it exists and belongs to the same company
+      const customer = await this.customerRepo.findOne({
+        where: { id, company: { id: companyId } },
+        relations: ['company'],
+      });
+
+      if (!customer) {
+        throw new Error('Customer not found or does not belong to this company');
+      }
+
+      // Merge the new data into the existing entity
+      Object.assign(customer, dto);
+
+      // Save updated record
+      const updatedCustomer = await this.customerRepo.save(customer);
+
+      return updatedCustomer;
+    } catch (error) {
+      console.error('Error updating customer:', error.message);
+      throw new Error('Failed to update customer');
+    }
   }
+
 
 
   async statusUpdate(id: number) {

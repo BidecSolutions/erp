@@ -7,6 +7,7 @@ import { UpdateSupplierDto } from './dto/update-supplier.dto';
 import { Company } from '../companies/company.entity';
 import { SupplierCategory } from '../supplier-category/supplier-category.entity';
 import { SupplierAccount } from './supplier.supplier_account.entity';
+import { errorResponse, toggleStatusResponse } from "src/commonHelper/response.util";
 
 @Injectable()
 export class SupplierService {
@@ -71,7 +72,7 @@ export class SupplierService {
           "supplier.contact_person as contact_person",
           "supplier.designation as designation",
           "supplier.email as email",
-          "supplier.phone as phone",  
+          "supplier.phone as phone",
           "supplier.mobile as mobile",
           "supplier.website as website",
           "supplier.address_line1 as address_line1",
@@ -182,17 +183,21 @@ export class SupplierService {
     }
   }
 
-  async remove(id: number) {
+  async toggleStatus(id: number) {
     try {
-      const supplier = await this.supplierRepo.findOne({ where: { id, is_active: 1 } });
-      if (!supplier) return { success: false, message: 'Supplier not found or already inactive' };
+      const supplier = await this.supplierRepo.findOneBy({ id });
+      if (!supplier) throw new NotFoundException("Supplier not found");
 
-      supplier.is_active = 2;
+      // Toggle the status
+      supplier.is_active = supplier.is_active === 0 ? 1 : 0;
+
       await this.supplierRepo.save(supplier);
 
-      return { success: true, message: 'Supplier deleted successfully (soft delete)', data: supplier };
-    } catch (error) {
-      return { success: false, message: 'Failed to delete supplier', error };
+      // Use your existing response helper (like in Customer)
+      return toggleStatusResponse("Supplier", supplier.is_active);
+    } catch (err) {
+      return errorResponse("Something went wrong", err.message);
     }
   }
+
 }
