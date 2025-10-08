@@ -12,6 +12,7 @@ import { ChartOfAccount } from '../chart-of-accounts/chart-of-account.entity';
 import { SystemConfiguration } from '../system_configuration/system_configuration.entity';
 import { SalesOrder } from 'src/sales/sales-order/entity/sales-order.entity';
 import { TaxType } from 'src/sales/tax-type/entity/tax-type.entity';
+import { SalesReturn } from 'src/pos/entities/sales-return.entity';
 
 @Entity('companies')
 export class Company {
@@ -143,6 +144,9 @@ export class Company {
   // One company can have many chart of accounts
   @OneToMany(() => ChartOfAccount, (chart) => chart.company)
   chartOfAccounts: ChartOfAccount[];
+
+  @OneToMany(() => SalesReturn, (salesReturn) => salesReturn.company)
+  salesReturns: SalesReturn[];
 
   @BeforeInsert()
   setCreateDate() {

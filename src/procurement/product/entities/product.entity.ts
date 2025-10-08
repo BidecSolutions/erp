@@ -6,6 +6,7 @@ import { UnitOfMeasure } from 'src/procurement/unit_of_measure/entities/unit_of_
 import { SalesOrderDetail } from 'src/sales/sales-order/entity/sales-order-detail.entity';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { InstantProductStatus } from '../enum';
+import { SalesReturnDetail } from 'src/pos/entities/sales-return-detail.entity';
 
 
 @Entity('products')
@@ -44,6 +45,9 @@ export class Product {
   @JoinColumn({ name: 'branch_id' })
   @JoinColumn({ name: 'branch_id' })
   branch: Branch
+
+  @OneToMany(() => SalesReturnDetail, (detail) => detail.product)
+  salesReturnDetails: SalesReturnDetail[];
 
   @Column({ length: 50 })
   sku: string;

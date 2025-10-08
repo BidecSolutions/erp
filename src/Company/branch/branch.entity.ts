@@ -1,6 +1,7 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, BeforeInsert, OneToMany } from 'typeorm';
 import { Company } from '../companies/company.entity';
 import { SalesOrder } from 'src/sales/sales-order/entity/sales-order.entity';
+import { SalesReturn } from 'src/pos/entities/sales-return.entity';
 
 @Entity()
 export class Branch {
@@ -13,6 +14,9 @@ export class Branch {
   // 👇 Relation with sale-orders
   @OneToMany(() => SalesOrder, (salesOrder) => salesOrder.branch)
   salesOrders: SalesOrder[];
+
+  @OneToMany(() => SalesReturn, (salesReturn) => salesReturn.branch)
+  salesReturns: SalesReturn[];
 
   @Column()
   branch_code: string;

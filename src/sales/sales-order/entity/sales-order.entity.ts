@@ -15,6 +15,7 @@ import { Customer } from 'src/Company/customers/customer.entity';
 import { CustomerInvoice } from 'src/Company/customer-invoice/entity/customer-invoice.entity';
 import { SalesStatus } from 'src/sales/enums/sales-enums';
 import { customer_invoice_items } from 'src/Company/customer-invoice/entity/customer-invoice-items.entity';
+import { SalesReturn } from 'src/pos/entities/sales-return.entity';
 
 @Entity('sales_orders')
 export class SalesOrder {
@@ -45,6 +46,8 @@ export class SalesOrder {
   @OneToMany(() => CustomerInvoice, (invoice) => invoice.salesOrder)
   customerInvoices: CustomerInvoice[];
 
+  @OneToMany(() => SalesReturn, (salesReturn) => salesReturn.salesOrder)
+  salesReturns: SalesReturn[];
 
 
 

@@ -14,6 +14,7 @@ import { CustomerPayment } from '../customer-payment/customer-payment.entity';
 import { CustomerInvoice } from '../customer-invoice/entity/customer-invoice.entity';
 import { CustomerAccount } from './customer.customer_account.entity';
 import { SalesOrder } from 'src/sales/sales-order/entity/sales-order.entity';
+import { SalesReturn } from 'src/pos/entities/sales-return.entity';
 
 @Entity()
 export class Customer {
@@ -22,12 +23,12 @@ export class Customer {
 
   // @ManyToOne(() => Company, (company) => company.customers, { onDelete: 'CASCADE' })
   // company: Company;
-    @ManyToOne(() => Company, { eager: true }) // eager true -> auto load
-    @JoinColumn({ name: 'company_id' })
-    company: Company;
-    
-    @Column()
-    company_id: number;
+  @ManyToOne(() => Company, { eager: true }) // eager true -> auto load
+  @JoinColumn({ name: 'company_id' })
+  company: Company;
+
+  @Column()
+  company_id: number;
 
   @ManyToOne(() => CustomerCategory, (category) => category.customers, {
     onDelete: 'CASCADE',
@@ -48,6 +49,9 @@ export class Customer {
   // 👇 Relation with sale-order
   @OneToMany(() => SalesOrder, (salesOrder) => salesOrder.customer)
   salesOrders: SalesOrder[];
+
+  @OneToMany(() => SalesReturn, (salesReturn) => salesReturn.customer)
+  salesReturns: SalesReturn[];
 
   @Column()
   customer_code: string;
