@@ -21,7 +21,7 @@ export class BranchService {
 
     ) { }
 
-    async create(dto: CreateBranchDto, userID: number) {
+    async create(dto: CreateBranchDto, userID: number, companyID:number) {
 
         const company = await this.companyRepo.findOneBy({ id: dto.companyId });
         if (!company) return { success: false, message: `Company with ID ${dto.companyId} not found` };
