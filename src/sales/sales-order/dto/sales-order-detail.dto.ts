@@ -13,34 +13,17 @@ export class CreateSalesOrderDetailDto {
   @IsNumber()
   product_id: number;
 
-  @IsString()
-  @IsOptional()
-  description?: string;
+  @IsNumber()
+  variant_id: number;
 
   @IsNumber()
   @Min(1, { message: 'Quantity must be greater than 0' })
   quantity: number;
 
-  @IsNumber()
-  @Min(0, { message: 'Unit price must not be negative' })
-  unit_price: number;
-
-  @IsNumber()
-  @IsOptional()
-  @Min(0, { message: 'Discount % must not be negative' })
-  discount_percent?: number;
-
   // @IsNumber()
   // @IsOptional()
   // @Min(0, { message: 'Discount amount must not be negative' })
   // discount_amount?: number;
-
-
-
-  @IsNumber()
-  @IsOptional()
-  @Min(0, { message: 'Tax rate must not be negative' })
-  tax_rate?: number;
 
   // @IsNumber()
   // @IsOptional()
@@ -77,5 +60,5 @@ export class UpdateSalesOrderDetailDto extends PartialType(
 
   @IsOptional()
   @IsInt()
-  id: number; 
+  id: number;
 }

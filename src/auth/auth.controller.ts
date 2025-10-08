@@ -320,4 +320,30 @@ export class AuthController {
   async assignPermissions(@Body() body: any) {
     return this.authService.createUserPermissions(body);
   }
+
+
+
+  @UseGuards(JwtAuthGuard)
+  @Post('get-user')
+  async getUser(@Body() body: any, @Req() req: Request) {
+    const companyID = req['user']?.company_id;
+    const user = await this.authService.getAllUsers(companyID);
+    return {
+      status: true,
+      message: 'User fetched successfully',
+      data: user,
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('get-user-permission')
+  async getUserPermission(@Body() body: any, @Req() req: Request) {
+    const user = await this.authService.getUserPermissions(body.userID, body.roleID);
+    return {
+      status: true,
+      message: 'User Permission fetched successfully',
+      data: user,
+    };
+  }
+
 }

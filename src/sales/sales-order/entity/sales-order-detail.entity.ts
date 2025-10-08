@@ -1,5 +1,6 @@
 
 import { Product } from 'src/procurement/product/entities/product.entity';
+import { productVariant } from 'src/procurement/product/entities/variant.entity';
 import { SalesOrder } from 'src/sales/sales-order/entity/sales-order.entity';
 import {
   Entity,
@@ -32,8 +33,15 @@ export class SalesOrderDetail {
   @JoinColumn({ name: 'product_id' })
   product: Product;
 
-  @Column({ type: 'text', nullable: true })
-  description: string;
+
+  @Column()
+  varient_id: number;
+  @ManyToOne(()=> productVariant, (productVariant)=> productVariant.salesOrderDetails,{
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'varient_id' })
+  productVariant: productVariant;
+
 
   @Column({ nullable: false })
   quantity: number;
@@ -41,17 +49,11 @@ export class SalesOrderDetail {
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
   unit_price: number;
 
-  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
-  discount_percent: number;
-
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   discount_amount: number;
 
   // @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   // line_total: number;
-
-  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
-  tax_rate: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   tax_amount: number;

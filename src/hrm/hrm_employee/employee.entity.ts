@@ -63,8 +63,8 @@ export class Employee {
   })
   locationType?: 'residential' | 'postal' | 'work address';
 
-    @Column({ type: 'json' })
-    branch_id: number[];
+  @Column({ type: 'json' })
+  branch_id: number[];
 
   @ManyToOne(() => Department, { nullable: false })
   @JoinColumn({ name: 'departmentId' })
@@ -91,8 +91,8 @@ export class Employee {
   fixedSalary: number;
 
 
-// @Column({ type: 'simple-json', nullable: true })
-// branch_id: number[];
+  // @Column({ type: 'simple-json', nullable: true })
+  // branch_id: number[];
 
 
 
@@ -125,35 +125,35 @@ export class Employee {
   })
   allowances: Allowance[];
 
-  
-@ManyToMany(() => Branch)
-@JoinTable({
-  name: "hrm_employee_branches",   // junction table ka naam
-  joinColumn: { name: "employee_id", referencedColumnName: "id" },
-  inverseJoinColumn: { name: "branch_id", referencedColumnName: "id" },
-})
-branches: Branch[];
+
+  @ManyToMany(() => Branch)
+  @JoinTable({
+    name: "hrm_employee_branches",   // junction table ka naam
+    joinColumn: { name: "employee_id", referencedColumnName: "id" },
+    inverseJoinColumn: { name: "branch_id", referencedColumnName: "id" },
+  })
+  branches: Branch[];
 
   @OneToMany(() => LeaveRequest, (leaveRequest) => leaveRequest.employee)
   leaveRequests: LeaveRequest[];
 
-  @OneToOne(() => User, (user) => user.employee, { cascade:true,  onDelete: 'SET NULL' })
+  @OneToOne(() => User, (user) => user.employee, { cascade: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-@ManyToOne(() => ProbationSetting, { nullable: true })
-@JoinColumn({ name: 'probation_setting_id' })
-probationSetting?: ProbationSetting;
+  @ManyToOne(() => ProbationSetting, { nullable: true })
+  @JoinColumn({ name: 'probation_setting_id' })
+  probationSetting?: ProbationSetting;
 
-@Column({ type: 'int', nullable: true })
-probation_setting_id?: number;
+  @Column({ type: 'int', nullable: true })
+  probation_setting_id?: number;
 
-@Column({
-  type: 'enum',
-  enum: EmployeeType,
-  nullable: false //  required bana diya
-})
-emp_type: EmployeeType;
+  @Column({
+    type: 'enum',
+    enum: EmployeeType,
+    nullable: false //  required bana diya
+  })
+  emp_type: EmployeeType;
 
 
   @Column({

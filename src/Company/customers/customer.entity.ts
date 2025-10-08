@@ -27,8 +27,6 @@ export class Customer {
   @JoinColumn({ name: 'company_id' })
   company: Company;
 
-  @Column()
-  company_id: number;
 
   @ManyToOne(() => CustomerCategory, (category) => category.customers, {
     onDelete: 'CASCADE',
