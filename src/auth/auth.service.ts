@@ -341,7 +341,7 @@ export class AuthService {
   }
   //login End
 
-  //Create Menus 
+  //Create Menus # 1 
   async createMenuOrSubMenus(body: any) {
     // 1. create the menu
     const menu = this.sideMenuRepository.create({
@@ -371,7 +371,7 @@ export class AuthService {
   }
   //End Menus
 
-  //Start Get All Menus
+  //Start Get All Menus # 2
   async getSideMenus() {
     const sideMenus = await this.sideMenuRepository.find({
       order: { periority: 'ASC' },
@@ -410,7 +410,7 @@ export class AuthService {
   }
   //End Get ALl Menus
 
-  //create Roles and Role Mapping
+  //create Roles and Role Mapping # 3 
   async createRoles(body: any) {
     try {
       if (!body.permission || !Array.isArray(body.permission) || body.permission.length === 0) {
@@ -431,7 +431,7 @@ export class AuthService {
   }
   //End Roles and Role Mapping
 
-  //Get All Roles
+  //Get All Roles # 4
   async getAllRoles(body: any) {
     return await this.usersRoles.find({ where: { status: body.status, id: Not(In([1, 2])), } });
   }
@@ -517,7 +517,7 @@ export class AuthService {
   }
   //end create User Permissions
 
-  //get Roles 
+  //get All Users 
   async getAllUsers(company: number) {
     const branches = await this.userCompanyMap.find({ where: { company_id: company } })
     const users = Promise.all(branches.map(async (b) => {
@@ -548,7 +548,7 @@ export class AuthService {
     }))
     return users
   }
-  //end get Roles
+  //end get All Users 
 
 
 
