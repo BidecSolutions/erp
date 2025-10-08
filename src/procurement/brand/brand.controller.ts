@@ -1,16 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Query, UseGuards, Req } from '@nestjs/common';
 import { BrandService } from './brand.service';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('brand')
 
 export class BrandController {
   constructor(private readonly brandService: BrandService) { }
 
   @Post('store')
-  create(@Body() createBrandDto: CreateBrandDto) {
-    return this.brandService.create(createBrandDto);
+  create(@Body() createBrandDto: CreateBrandDto , @Req() req: Request) {
+      const companyId = req["user"].company_id;
+    return this.brandService.create(createBrandDto,companyId);
   }
 
   @Get('list')
