@@ -51,7 +51,7 @@ export class productVariant {
 
     @OneToMany(() => SalesOrderDetail, (detail) => detail.productVariant, {
         cascade: true,
-      })
-      salesOrderDetails: SalesOrderDetail[];
+    })
+    salesOrderDetails: SalesOrderDetail[];
 
 }
