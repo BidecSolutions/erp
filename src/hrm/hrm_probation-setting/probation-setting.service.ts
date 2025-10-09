@@ -67,30 +67,33 @@ export class ProbationSettingService {
   }
 
   async findAll(company_id: number, filterStatus?: number) {
-    const status = filterStatus !== undefined ? filterStatus : 1;
-    try {
-      const settings = await this.probationRepo
-        .createQueryBuilder("probation_setting")
-        .leftJoin("probation_setting.company", "company")
-        .select([
-          "probation_setting.id as id ",
-          "probation_setting.leave_days as leave_days",
-          "probation_setting.probation_period as probation_period",
-          "probation_setting.duration_type as duration_type",
-          "probation_setting.status as status",
-          "company.company_name as company_name",
-        ])
-        .where("probation_setting.company_id = :company_id", { company_id })
-        .andWhere("probation_setting.status = :status", { status })
-        .orderBy("probation_setting.id", "DESC")
-        .getRawMany();
+  try {
+    const query = this.probationRepo
+      .createQueryBuilder("probation_setting")
+      .leftJoin("probation_setting.company", "company")
+      .select([
+        "probation_setting.id as id",
+        "probation_setting.leave_days as leave_days",
+        "probation_setting.probation_period as probation_period",
+        "probation_setting.duration_type as duration_type",
+        "probation_setting.status as status",
+        "company.company_name as company_name",
+      ])
+      .where("probation_setting.company_id = :company_id", { company_id });
 
-      return settings;
-    } catch (e) {
-      throw e;
+    // ✅ Apply status filter only if provided
+    if (filterStatus !== undefined) {
+      query.andWhere("probation_setting.status = :status", { status: filterStatus });
     }
-  }
 
+    query.orderBy("probation_setting.id", "DESC");
+
+    const settings = await query.getRawMany();
+    return settings;
+  } catch (e) {
+    throw e;
+  }
+}
   async findOne(id: number) {
     try {
       const setting = await this.probationRepo

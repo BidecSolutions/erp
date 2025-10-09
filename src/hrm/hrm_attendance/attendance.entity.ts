@@ -25,9 +25,11 @@ export class Attendance {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Employee, { nullable: false })
-  @JoinColumn({ name: 'employee_id' })
-  employee: Employee;
+  @Column({ type: 'int' })
+  employee_id: number;
+  
+  @Column({ type: 'int' })
+  company_id: number; 
 
   @Column({ type: 'date' })
   date: string;
@@ -54,11 +56,8 @@ export class Attendance {
   @Column({ type: 'int', nullable: true })
   work_duration_minutes?: number;
 
-  @ManyToOne(() => AttendanceConfig, (config) => config.attendances, {
-    nullable: true,
-  })
-  @JoinColumn({ name: 'config_id' })
-  config: AttendanceConfig;
+ @Column({ type: 'int', nullable: true })
+  config_id?: number;
 
   
    @Column({

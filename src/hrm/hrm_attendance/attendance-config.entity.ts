@@ -26,10 +26,6 @@ export class AttendanceConfig {
   @Column({ type: 'simple-array', nullable: true })
   weekends?: string[];
 
-  @OneToMany(() => Attendance, (attendance) => attendance.config)
-  attendances: Attendance[];
-
-
   @Column({ type: 'int' })
   company_id: number; // 
   @Column({

@@ -8,6 +8,7 @@ import { DesignationModule } from "./hrm_designation/designation.module";
 import { DocumentModule } from "./hrm_document/document.module";
 import { EmployeeSalaryModule } from "./hrm_employee-salary/employee-salary.module";
 import { EmployeeModule } from "./hrm_employee/employee.module";
+import { HolidayModule } from "./hrm_holiday/holiday.module";
 import { LeaveRequestModule } from "./hrm_leave-request/leave-request.module";
 import { LeaveTypeModule } from "./hrm_leave-type/leave-type.module";
 // import { LoanOptionModule } from "./hrm_loan-option/loan-option.module";
@@ -43,4 +44,5 @@ export const HRM = [
     LeaveRequestModule,
      ProbationSettingModule,
       LoanRequestModule,
+          HolidayModule,
 ]

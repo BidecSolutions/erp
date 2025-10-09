@@ -53,7 +53,9 @@ export class DesignationService {
           "designation.id",
           "designation.name",
           "designation.status",
-          "department.name", // sirf department ka name
+           "department.id", 
+          "department.name", 
+
         ])
         .where("designation.status = :status", { status })
         .orderBy("designation.id", "DESC")
@@ -74,7 +76,8 @@ export class DesignationService {
           "designation.id",
           "designation.name",
           "designation.status",
-          "department.name", // sirf department ka name
+          "department.id",
+          "department.name",
         ])
         .where("designation.id = :id", { id })
         .getRawOne();
