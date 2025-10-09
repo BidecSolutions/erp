@@ -7,6 +7,7 @@ import { SalesOrderDetail } from 'src/sales/sales-order/entity/sales-order-detai
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { InstantProductStatus } from '../enum';
 import { SalesReturnDetail } from 'src/pos/entities/sales-return-detail.entity';
+import { productVariant } from './variant.entity';
 
 
 @Entity('products')
@@ -36,21 +37,15 @@ export class Product {
   company_id: number;
   @ManyToOne(() => Company)
   @JoinColumn({ name: 'company_id' })
-  @JoinColumn({ name: 'company_id' })
   company: Company
 
   @Column()
   branch_id: number;
   @ManyToOne(() => Branch)
   @JoinColumn({ name: 'branch_id' })
-  @JoinColumn({ name: 'branch_id' })
   branch: Branch
 
-  @OneToMany(() => SalesReturnDetail, (detail) => detail.product)
-  salesReturnDetails: SalesReturnDetail[];
 
-  @Column({ length: 50 })
-  sku: string;
 
   @Column({ length: 255 })
   @Column({ length: 50, unique: true })
@@ -65,11 +60,11 @@ export class Product {
   @Column({ type: 'text', nullable: true })
   description?: string;
 
-  @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  unit_price?: number;
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  unit_price: number | null;
 
-  @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  cost_price?: number;
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  cost_price: number | null;
 
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
   mrp?: number;
@@ -80,12 +75,6 @@ export class Product {
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
   maximum_stock_level?: number;
 
-  @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  reorder_level?: number;
-
-  @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  reorder_quantity?: number;
-
 
   @Column({ nullable: true })
   warranty_type?: number;
@@ -93,9 +82,6 @@ export class Product {
 
   @Column({ type: 'int', default: 1 })
   status: number;
-
-  @Column({ length: 50, nullable: true })
-  product_status?: string;
 
   @Column({ length: 50, nullable: true })
   barcode?: string;
@@ -119,6 +105,17 @@ export class Product {
     default: 0,
   })
   is_instant_product: number;
+
+    @Column({
+    type: 'int',
+  })
+  has_variant: number;
+
+  @OneToMany(() => productVariant, (variant) => variant.product)
+  variants: productVariant[];
+
+  @OneToMany(() => SalesReturnDetail, (detail) => detail.product)
+  salesReturnDetails: SalesReturnDetail[];
 
   @OneToMany(() => SalesOrderDetail, (detail) => detail.product, {
     cascade: true,

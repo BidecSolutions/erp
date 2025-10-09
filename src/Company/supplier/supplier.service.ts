@@ -7,6 +7,7 @@ import { UpdateSupplierDto } from './dto/update-supplier.dto';
 import { Company } from '../companies/company.entity';
 import { SupplierCategory } from '../supplier-category/supplier-category.entity';
 import { SupplierAccount } from './supplier.supplier_account.entity';
+import { errorResponse, toggleStatusResponse } from "src/commonHelper/response.util";
 
 @Injectable()
 export class SupplierService {
@@ -65,37 +66,37 @@ export class SupplierService {
         .leftJoin("supplier.company", "company")
         .leftJoin("supplier.category", "category")
         .select([
-          "supplier.id",
-          "supplier.supplier_code",
-          "supplier.supplier_name",
-          "supplier.contact_person",
-          "supplier.designation",
-          "supplier.email",
-          "supplier.phone",
-          "supplier.mobile",
-          "supplier.website",
-          "supplier.address_line1",
-          "supplier.address_line2",
-          "supplier.city",
-          "supplier.state",
-          "supplier.country",
-          "supplier.postal_code",
-          "supplier.payment_terms",
-          "supplier.credit_days",
-          "supplier.tax_id",
-          "supplier.gst_no",
-          "supplier.pan_no",
-          "supplier.opening_balance",
-          "supplier.balance_type",
-          "supplier.supplier_status",
-          "supplier.registration_date",
-          "supplier.notes",
-          "supplier.bank_account_no",
-          "supplier.bank_name",
-          "supplier.ifsc_code",
-          "supplier.is_active",
-          "company.company_name",
-          "category.category_name",
+          "supplier.id as id",
+          "supplier.supplier_code as supplier_code",
+          "supplier.supplier_name as supplier_name",
+          "supplier.contact_person as contact_person",
+          "supplier.designation as designation",
+          "supplier.email as email",
+          "supplier.phone as phone",
+          "supplier.mobile as mobile",
+          "supplier.website as website",
+          "supplier.address_line1 as address_line1",
+          "supplier.address_line2 as address_line2",
+          "supplier.city as city",
+          "supplier.state as state",
+          "supplier.country as country",
+          "supplier.postal_code as postal_code",
+          "supplier.payment_terms as payment_terms",
+          "supplier.credit_days as credit_days",
+          "supplier.tax_id as tax_id",
+          "supplier.gst_no as gst_no",
+          "supplier.pan_no as pan_no",
+          "supplier.opening_balance as opening_balance",
+          "supplier.balance_type as balance_type",
+          "supplier.supplier_status as supplier_status",
+          "supplier.registration_date as registration_date",
+          "supplier.notes as notes",
+          "supplier.bank_account_no as bank_account_no",
+          "supplier.bank_name as bank_name",
+          "supplier.ifsc_code as ifsc_code",
+          "supplier.is_active as is_active",
+          "company.company_name as company_name",
+          "category.category_name as category_name",
         ])
         .where("supplier.company_id = :company_id", { company_id })
         .andWhere("supplier.is_active = :is_active", { is_active })
@@ -116,37 +117,37 @@ export class SupplierService {
         .leftJoin("supplier.company", "company")
         .leftJoin("supplier.category", "category")
         .select([
-          "supplier.id",
-          "supplier.supplier_code",
-          "supplier.supplier_name",
-          "supplier.contact_person",
-          "supplier.designation",
-          "supplier.email",
-          "supplier.phone",
-          "supplier.mobile",
-          "supplier.website",
-          "supplier.address_line1",
-          "supplier.address_line2",
-          "supplier.city",
-          "supplier.state",
-          "supplier.country",
-          "supplier.postal_code",
-          "supplier.payment_terms",
-          "supplier.credit_days",
-          "supplier.tax_id",
-          "supplier.gst_no",
-          "supplier.pan_no",
-          "supplier.opening_balance",
-          "supplier.balance_type",
-          "supplier.supplier_status",
-          "supplier.registration_date",
-          "supplier.notes",
-          "supplier.bank_account_no",
-          "supplier.bank_name",
-          "supplier.ifsc_code",
-          "supplier.is_active",
-          "company.company_name",
-          "category.category_name",
+          "supplier.id as id",
+          "supplier.supplier_code as supplier_code",
+          "supplier.supplier_name as supplier_name",
+          "supplier.contact_person as contact_person",
+          "supplier.designation as designation",
+          "supplier.email as email",
+          "supplier.phone as phone",
+          "supplier.mobile as mobile",
+          "supplier.website as website",
+          "supplier.address_line1 as address_line1",
+          "supplier.address_line2 as address_line2",
+          "supplier.city as city",
+          "supplier.state as state",
+          "supplier.country as country",
+          "supplier.postal_code as postal_code",
+          "supplier.payment_terms as payment_terms",
+          "supplier.credit_days as credit_days",
+          "supplier.tax_id as tax_id",
+          "supplier.gst_no as gst_no",
+          "supplier.pan_no as pan_no",
+          "supplier.opening_balance as opening_balance",
+          "supplier.balance_type as balance_type",
+          "supplier.supplier_status as supplier_status",
+          "supplier.registration_date as registration_date",
+          "supplier.notes as notes",
+          "supplier.bank_account_no as bank_account_no",
+          "supplier.bank_name as bank_name",
+          "supplier.ifsc_code as ifsc_code",
+          "supplier.is_active as is_active",
+          "company.company_name as company_name",
+          "category.category_name as category_name",
         ])
         .where("supplier.id = :id", { id })
         .getRawOne();
@@ -182,17 +183,21 @@ export class SupplierService {
     }
   }
 
-  async remove(id: number) {
+  async toggleStatus(id: number) {
     try {
-      const supplier = await this.supplierRepo.findOne({ where: { id, is_active: 1 } });
-      if (!supplier) return { success: false, message: 'Supplier not found or already inactive' };
+      const supplier = await this.supplierRepo.findOneBy({ id });
+      if (!supplier) throw new NotFoundException("Supplier not found");
 
-      supplier.is_active = 2;
+      // Toggle the status
+      supplier.is_active = supplier.is_active === 0 ? 1 : 0;
+
       await this.supplierRepo.save(supplier);
 
-      return { success: true, message: 'Supplier deleted successfully (soft delete)', data: supplier };
-    } catch (error) {
-      return { success: false, message: 'Failed to delete supplier', error };
+      // Use your existing response helper (like in Customer)
+      return toggleStatusResponse("Supplier", supplier.is_active);
+    } catch (err) {
+      return errorResponse("Something went wrong", err.message);
     }
   }
+
 }

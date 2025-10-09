@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository,DataSource } from 'typeorm';
 import { Branch } from '../branch/branch.entity';
 import { CreateBranchDto } from '../branch/dto/create-branch.dto';
 import { UpdateBranchDto } from '../branch/dto/update-branch.dto';
 import { Company } from '../companies/company.entity';
 import { userCompanyMapping } from 'src/entities/user-company-mapping.entity';
+import { generateCode } from 'src/commonHelper/response.util';
 
 @Injectable()
 export class BranchService {
@@ -16,17 +17,19 @@ export class BranchService {
         private companyRepo: Repository<Company>,
         @InjectRepository(userCompanyMapping)
         private ucm: Repository<userCompanyMapping>,
+        private readonly dataSource: DataSource,
 
     ) { }
 
-    async create(dto: CreateBranchDto, userID: number) {
-
+    async create(dto: CreateBranchDto, userID: number, companyID:number) {
         const company = await this.companyRepo.findOneBy({ id: dto.companyId });
         if (!company) return { success: false, message: `Company with ID ${dto.companyId} not found` };
+    const branchCode = await generateCode('branch', 'BRN', this.dataSource);
 
         const branch = this.branchRepo.create({
             ...dto,
             company: { id: dto.companyId } as Company,
+            branch_code:branchCode,
             is_active: 1,
         });
         const savedBranch = await this.branchRepo.save(branch);
@@ -192,18 +195,18 @@ export class BranchService {
     }
 
 
-    async update(id: number, dto: UpdateBranchDto, userID: number) {
+    async update(id: number, dto: UpdateBranchDto, userID: number, compnayId: number) {
         try {
             const branch = await this.branchRepo.findOneBy({ id });
             if (!branch) return { success: false, message: 'Branch not found' };
 
             // If companyId is provided, fetch and assign the relation
-            if (dto.companyId) {
-                const company = await this.companyRepo.findOneBy({ id: dto.companyId });
+            if (compnayId) {
+                const company = await this.companyRepo.findOneBy({ id: compnayId });
                 if (!company) {
                     return { success: false, message: 'Company not found' };
                 }
-                branch.company = { id: dto.companyId } as Company;
+                branch.company = { id: compnayId } as Company;
             }
 
             Object.assign(branch, dto);

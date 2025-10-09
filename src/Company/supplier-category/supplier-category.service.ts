@@ -5,6 +5,7 @@ import { SupplierCategory } from './supplier-category.entity';
 import { CreateSupplierCategoryDto } from './dto/create-supplier-category.dto';
 import { UpdateSupplierCategoryDto } from './dto/update-supplier-category.dto';
 import { Company } from '../companies/company.entity';
+import { errorResponse, toggleStatusResponse } from "src/commonHelper/response.util";
 
 @Injectable()
 export class SupplierCategoryService {
@@ -42,12 +43,12 @@ export class SupplierCategoryService {
         .createQueryBuilder("category")
         .leftJoin("category.company", "company")
         .select([
-          "category.id",
-          "category.category_code",
-          "category.category_name",
-          "category.description",
-          "category.is_active",
-          "company.company_name",
+          "category.id as id",
+          "category.category_code as category_code",
+          "category.category_name as category_name",
+          "category.description as description",
+          "category.is_active as is_active",
+          "company.company_name as company_name",
         ])
         .where("category.company_id = :company_id", { company_id })
         .andWhere("category.is_active = :status", { status })
@@ -67,12 +68,12 @@ export class SupplierCategoryService {
         .createQueryBuilder("category")
         .leftJoin("category.company", "company")
         .select([
-          "category.id",
-          "category.category_code",
-          "category.category_name",
-          "category.description",
-          "category.is_active",
-          "company.company_name",
+          "category.id as id",
+          "category.category_code as category_code",
+          "category.category_name as category_name",
+          "category.description as description",
+          "category.is_active as is_active",
+          "company.company_name as company_name",
         ])
         .where("category.id = :id", { id })
         .getRawOne();
@@ -112,19 +113,21 @@ export class SupplierCategoryService {
     }
   }
 
-  async remove(id: number) {
+  async toggleStatus(id: number) {
     try {
-      const category = await this.supplierCategoryRepo.findOne({
-        where: { id, is_active: 1 },
-      });
-      if (!category) return { success: false, message: 'Supplier category not found or already inactive' };
+      const category = await this.supplierCategoryRepo.findOneBy({ id });
+      if (!category) throw new NotFoundException("Supplier category not found");
 
-      category.is_active = 2;
+      // Toggle is_active between 0 and 1
+      category.is_active = category.is_active === 0 ? 1 : 0;
+
       await this.supplierCategoryRepo.save(category);
 
-      return { success: true, message: 'Supplier category deleted successfully (soft delete)', data: category };
-    } catch (error) {
-      return { success: false, message: 'Failed to delete supplier category', error };
+      // Return a consistent toggle response
+      return toggleStatusResponse("Supplier Category", category.is_active);
+    } catch (err) {
+      return errorResponse("Something went wrong", err.message);
     }
   }
+
 }

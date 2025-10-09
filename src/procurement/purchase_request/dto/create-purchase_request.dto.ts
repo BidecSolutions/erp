@@ -5,9 +5,6 @@ import { CreatePurchaseRequestItemDto } from './create-purchase-request-item.dto
 
 
 export class CreatePurchaseRequestDto {
-    @IsNumber()
-    @IsNotEmpty()
-    user_id: number;
 
     @IsString()
     remarks?: string;
@@ -25,15 +22,9 @@ export class CreatePurchaseRequestDto {
     default: PurchaseRequestStatus.PENDING // default value
     pr_status: PurchaseRequestStatus;
 
-
     @IsNotEmpty()
     @IsNumber()
     branch_id: number
-
-    @IsNotEmpty()
-    @IsNumber()
-    company_id: number
-
 
     @IsOptional()
     @IsArray()

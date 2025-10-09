@@ -19,12 +19,12 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @Controller('suppliers')
 export class SupplierController {
-  constructor(private readonly supplierService: SupplierService) {}
+  constructor(private readonly supplierService: SupplierService) { }
 
   // Create supplier
   @Post('create')
   async create(@Body() dto: CreateSupplierDto, @Req() req: any) {
-    const companyId = req.user.company_id;
+    const companyId = req["user"].company_id;
     const supplier = await this.supplierService.create(dto, companyId);
     return {
       status: true,
@@ -36,7 +36,7 @@ export class SupplierController {
   // Get all suppliers for the company with optional active filter
   @Get('list')
   async findAll(@Req() req: any, @Query('status') status?: string) {
-    const companyId = req.user.company_id;
+    const companyId = req["user"].company_id;
     const filterStatus = status !== undefined ? Number(status) : undefined;
     const suppliers = await this.supplierService.findAll(companyId, filterStatus);
     return {
@@ -64,7 +64,7 @@ export class SupplierController {
     @Body() dto: UpdateSupplierDto,
     @Req() req: any,
   ) {
-    const companyId = req.user.company_id;
+    const companyId = req["user"].company_id;
     const updated = await this.supplierService.update(id, dto, companyId);
     return {
       status: true,
@@ -73,14 +73,9 @@ export class SupplierController {
     };
   }
 
-  // Delete supplier (soft delete)
-  @Delete(':id/delete')
-  async remove(@Param('id', ParseIntPipe) id: number) {
-    const deleted = await this.supplierService.remove(id);
-    return {
-      status: true,
-      message: 'Supplier Deleted Successfully',
-      data: deleted,
-    };
+  @Get('toggleStatus/:id')
+  async toggleStatus(@Param('id', ParseIntPipe) id: number) {
+    return this.supplierService.toggleStatus(id);
   }
+
 }

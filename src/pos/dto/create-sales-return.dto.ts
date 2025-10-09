@@ -1,8 +1,6 @@
 import {
-  IsBoolean,
   IsInt,
   IsNotEmpty,
-  IsOptional,
   IsArray,
   ValidateNested,
   Min,
@@ -24,13 +22,8 @@ export class CreateSalesReturnDto {
   @IsNotEmpty({ message: 'Sales Order ID is required' })
   sales_order_id: number;
 
-  @IsBoolean()
-  @IsOptional()
-  is_full_return?: boolean = false; // default to false
-
-  @IsArray()
+  @IsArray({ message: 'Return items are required' })
   @ValidateNested({ each: true })
   @Type(() => ReturnItemDto)
-  @IsOptional()
-  return_items?: ReturnItemDto[];
+  return_items: ReturnItemDto[];
 }

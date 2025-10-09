@@ -12,14 +12,12 @@ export class Stock {
 
   @Column({ type: 'int' })
   product_id: number;
-
   @ManyToOne(() => Product)
   @JoinColumn({ name: 'product_id' })
   product: Product;
 
   @Column({ type: 'int', nullable: true })
   variant_id?: number | null;
-
   @ManyToOne(() => productVariant, { nullable: true })
   @JoinColumn({ name: 'variant_id' })
   variant?: productVariant | null;

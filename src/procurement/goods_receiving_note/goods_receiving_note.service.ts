@@ -25,8 +25,11 @@ export class GoodsReceivingNoteService {
     private readonly stockRepo: Repository<Stock>,
   ) {}
 
-  async store(dto: CreatePurchaseGrnDto) {
-    const po = await this.poRepo.findOne({ where: { id: dto.po_id } });
+  async store(dto: CreatePurchaseGrnDto ,userId:number ,companyId:number) {
+    const po = await this.poRepo.findOne({ 
+      where: { id: dto.po_id } ,
+      relations: ['items']
+    });
     if (!po) {
       throw new NotFoundException(`Purchase Order with id ${dto.po_id} not found`);
     }
@@ -46,34 +49,40 @@ export class GoodsReceivingNoteService {
       remarks: dto.remarks,
       total_amount: totalAmount,
       warehouse_id:dto.warehouse_id,
-      company_id:dto.company_id,
+      company_id:companyId,
+      user_id:userId,
       branch_id :dto.branch_id
 
     });
-    const savedGrn = await this.grnRepo.save(grn);
-    const grnItems = dto.items.map((item) =>
-      this.grnItemRepo.create({
-        grn_id: savedGrn.id,
-        product_id: item.product_id,
-        variant_id: item.variant_id,
-        received_qty: item.received_qty,
-        unit_price: item.unit_price,
-        total_price: item.received_qty * item.unit_price,
-        remarks: item.remarks,
-        grn_status: item.grn_status,
-        ordered_qty: 101,
-        accepted_qty:item.accepted_qty,
-        rejected_qty:102
+      const savedGrn = await this.grnRepo.save(grn);
 
-      }),
-    );
-    await this.grnItemRepo.save(grnItems);
+      const grnItems = dto.items.map((item) => {
+        const matchingPoItem = po.items.find(
+          (poItem) => poItem.variant_id === item.variant_id
+        );
+
+        return this.grnItemRepo.create({
+          grn_id: savedGrn.id,
+          product_id: item.product_id,
+          variant_id: item.variant_id,
+          unit_price: item.unit_price,
+          total_price: item.received_qty * item.unit_price,
+          remarks: item.remarks,
+          grn_status: item.grn_status,
+          ordered_qty: matchingPoItem ? matchingPoItem.quantity : 0,
+          received_qty: item.received_qty,
+          accepted_qty: item.accepted_qty,
+          rejected_qty: item.received_qty - item.accepted_qty,
+        });
+      });
+      await this.grnItemRepo.save(grnItems);
+
     for (const item of grnItems) {
       let stock = await this.stockRepo.findOne({
         where: {
           variant_id: item.variant_id,
           warehouse_id: dto.warehouse_id,
-          company_id: dto.company_id,
+          company_id: companyId,
           branch_id: dto.branch_id,
         },
       });
@@ -84,10 +93,9 @@ export class GoodsReceivingNoteService {
           product_id: item.product_id,
           variant_id: item.variant_id,
           warehouse_id: dto.warehouse_id,
-          company_id: dto.company_id,
+          company_id: companyId,
           branch_id: dto.branch_id,
           quantity_on_hand: item.received_qty,
-          alert_qty: 0,
         });
       }
       await this.stockRepo.save(stock);

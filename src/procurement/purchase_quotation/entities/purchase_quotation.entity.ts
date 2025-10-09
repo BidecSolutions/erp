@@ -34,7 +34,7 @@ export class PurchaseQuotation {
 
 
 
-    @Column({ name: 'company_id', nullable: false })
+    @Column()
     company_id: number;
     @ManyToOne(() => Company)
     @JoinColumn({ name: 'company_id' })
@@ -62,6 +62,9 @@ export class PurchaseQuotation {
     updated_date?: Date;
 
     @OneToMany(() => QuotationItem, (qi) => qi.purchase_quotation)
-quotation_items: QuotationItem[];
+    quotation_items: QuotationItem[];
+
+    @Column()
+    user_id:number
 
 }

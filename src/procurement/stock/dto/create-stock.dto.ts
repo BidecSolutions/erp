@@ -3,19 +3,14 @@ import {
   IsNotEmpty,
   IsNumber,
   IsOptional,
-  IsUUID,
   Min,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { JoinColumn, ManyToOne } from 'typeorm';
-import { Product } from 'src/procurement/product/entities/product.entity';
 
 
 export class CreateStockDto {
-  @IsNumber()
-  @IsNotEmpty()
-  company_id: number;
+
 
   @IsNumber()
   @IsNotEmpty()

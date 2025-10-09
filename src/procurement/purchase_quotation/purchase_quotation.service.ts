@@ -26,7 +26,7 @@ export class PurchaseQuotationService {
     private readonly prRepo: Repository<PurchaseRequest>,
     private readonly dataSource: DataSource,
   ) { }
-  async store(createDto: CreatePurchaseQuotationDto) {
+  async store(createDto: CreatePurchaseQuotationDto ,userId:number , companyId:number ) {
   try {
     // const pr = await this.prRepo.findOneBy({ id: createDto.purchase_request_id });
     // if (!pr) {
@@ -36,10 +36,10 @@ export class PurchaseQuotationService {
     //   return errorResponse("Can't create purchase quotation, purchase request still pending");
     // }
 
-    return await this.dataSource.transaction(async (manager) => {
+ 
       const savedQuotations: PurchaseQuotation[] = [];
-      const prItems = await manager.getRepository(PurchaseRequestItem).find({
-        where: { pr_id: createDto.purchase_request_id },
+      const prItems = await this.prRepo.find({
+        where: { id: createDto.purchase_request_id },
         order: { id: 'ASC' },
       });
 
@@ -49,7 +49,7 @@ export class PurchaseQuotationService {
         );
       }
       for (const supplierQuotation of createDto.suppliers) {
-        const supplier = await manager.getRepository(Supplier).findOne({
+        const supplier = await this.supplierRepo.findOne({
           where: { id: supplierQuotation.supplier_id },
         });
         if (!supplier) {
@@ -57,15 +57,15 @@ export class PurchaseQuotationService {
             `Supplier ${supplierQuotation.supplier_id} not found`,
           );
         }
-        const quotation = manager.getRepository(PurchaseQuotation).create({
+        const quotation = this.quotationRepo.create({
           purchase_request_id: createDto.purchase_request_id,
           supplier_id: supplier.id, 
-          company_id: createDto.company_id,
+          company_id:companyId,
+          user_id:userId,
           branch_id: createDto.branch_id,
         });
-        const savedQuotation = await manager
-          .getRepository(PurchaseQuotation)
-          .save(quotation);
+        const savedQuotation = await this.quotationRepo.save(quotation);
+
         if (supplierQuotation.items && supplierQuotation.items.length > 0) {
           if (supplierQuotation.items.length !== prItems.length) {
             throw new BadRequestException(
@@ -75,9 +75,9 @@ export class PurchaseQuotationService {
           const quotationItems = supplierQuotation.items.map(
             (item, index) => {
               const prItem = prItems[index];
-              return manager.getRepository(QuotationItem).create({
-                product_id: prItem.product_id,
-                variant_id: prItem.variant_id,
+              return this.quotationItemRepo.create({
+                product_id: item.product_id,
+                variant_id: item.variant_id,
                 quantity: item.quantity,
                 unit_price: item.unit_price,
                 delivery_days: item.delivery_days,
@@ -87,7 +87,7 @@ export class PurchaseQuotationService {
             },
           );
 
-          await manager.getRepository(QuotationItem).save(quotationItems);
+          await this.quotationItemRepo.save(quotationItems);
         }
         savedQuotations.push(savedQuotation);
       }
@@ -95,7 +95,7 @@ export class PurchaseQuotationService {
         'Purchase quotations created successfully!',
         savedQuotations,
       );
-    });
+    
   } catch (error) {
     throw new BadRequestException(error.message || 'Failed to save quotations');
   }

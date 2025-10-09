@@ -26,12 +26,20 @@ export class SupplierInvoiceItem {
   @JoinColumn({ name: 'variant_id' })
   variant: productVariant;
 
-  @Column({ type: 'int' })
-  quantity: number;
 
   @Column({ type: 'decimal', precision: 12, scale: 2 })
   unit_price: number;
 
   @Column({ type: 'decimal', precision: 12, scale: 2 })
   total_price: number;
+
+  @Column()
+  ordered_qty: number;
+  @Column()
+  received_qty: number;
+  @Column()
+  accept_qty: number;
+  @Column()
+  reject_qty: number;
+
 }

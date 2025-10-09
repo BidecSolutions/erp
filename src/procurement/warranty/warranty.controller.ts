@@ -9,58 +9,31 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 export class WarrantyController {
   constructor(private readonly warrantyService: WarrantyService) {}
 
-@Post('store')
-async create(@Body() dto: CreateWarrantyDto, @Req() req: any) {
-  const companyId = req.user.company_id; // assign company ID from JWT
-  const warranty = await this.warrantyService.store(dto, companyId);
-  
-  return {
-    status: true,
-    message: 'Warranty Created Successfully',
-    data: warranty,
-  };
-}
-
+  @Post('store')
+  create(@Body() dto: CreateWarrantyDto , @Req() req: Request) {
+      const companyId = req["user"].company_id;
+    return this.warrantyService.create(dto,companyId);
+  }
 
   @Get('list')
-  async findAll(@Req() req: any, @Query('status') status?: string) {
-    const companyId = req.user.company_id;
-    const filterStatus = status !== undefined ? Number(status) : undefined;
-    const warranty = await this.warrantyService.findAll(companyId, filterStatus);
-    return {
-      status: true,
-      message: 'Get All Warranty',
-      data: warranty,
-    };
+  findAll(@Query('filter') filter?: string) {
+    return this.warrantyService.findAll(
+      filter !== undefined ? Number(filter) : undefined,
+    );
   }
-
 
   @Get(':id')
-  async findOne(  @Param('id') id: string) {
-    const warranty = await this.warrantyService.findOne(+id);
-    return {
-      status: true,
-      message: `Get Warranty with ID ${id}`,
-      data: warranty,
-    };
+  findOne(@Param('id') id: string) {
+    return this.warrantyService.findOne(+id);
   }
 
-  @Put(':id')
-  async update(
-   @Param('id') id: string,
-    @Body() dto: UpdateWarrantyDto,
-    @Req() req: any,
-  ) {
-    const companyId = req.user.company_id;
-    const updated = await this.warrantyService.update(+id, dto, companyId);
-    return {
-      status: true,
-      message: 'Warranty Updated Successfully',
-      data: updated,
-    };
+ @Patch(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateWarrantyDto) {
+    return this.warrantyService.update(+id, dto);
   }
-  @Get('toogleStatus/:id')
+   @Get('toogleStatus/:id')
   statusChange(@Param('id', ParseIntPipe) id: number) {
     return this.warrantyService.statusUpdate(id);
-  }
+  
+}
 }

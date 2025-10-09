@@ -30,7 +30,13 @@ export class productVariant {
 
     @Column({ type: 'int', default: 1 })
     status: number;
- 
+
+    @Column('decimal', { precision: 10, scale: 2, nullable: true })
+    unit_price?: number;
+
+    @Column('decimal', { precision: 10, scale: 2, nullable: true })
+    cost_price?: number;
+
     @Column({ name: 'created_by', type: 'int', nullable: true })
     created_by?: number;
 
@@ -45,7 +51,7 @@ export class productVariant {
 
     @OneToMany(() => SalesOrderDetail, (detail) => detail.productVariant, {
         cascade: true,
-      })
-      salesOrderDetails: SalesOrderDetail[];
+    })
+    salesOrderDetails: SalesOrderDetail[];
 
 }

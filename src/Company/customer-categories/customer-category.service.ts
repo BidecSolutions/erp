@@ -30,7 +30,7 @@ export class CustomerCategoryService {
         description: dto.description,
         discount_percent: dto.discount_percent,
         is_active: 1,
-        company: company,
+        company: companyId,
       });
 
       const savedCategory = await this.categoryRepo.save(category);
@@ -48,15 +48,15 @@ export class CustomerCategoryService {
         .leftJoin("category.company", "company")
         .orderBy('category.id', 'DESC')
         .select([
-          "category.id",
-          "category.category_code",
-          "category.category_name",
-          "category.description",
-          "category.discount_percent",
-          "category.is_active",
-          "company.company_name",
+          "category.id as id",
+          "category.category_code as category_code",
+          "category.category_name as category_name",
+          "category.description as description",
+          "category.discount_percent as discount_percent",
+          "category.is_active as is_active",
+          "company.company_name as company_name",
         ])
-        .where("category.company_id = :company_id", { company_id })
+        .where("category.companyId = :company_id", { company_id })
         .orderBy("category.id", "DESC")
         .getRawMany();
 
@@ -72,15 +72,15 @@ export class CustomerCategoryService {
         .createQueryBuilder("category")
         .leftJoin("category.company", "company")
         .select([
-          "category.id",
-          "category.category_code",
-          "category.category_name",
-          "category.description",
-          "category.discount_percent",
-          "category.is_active",
-          "company.company_name",
+          "category.id as id",
+          "category.category_code as category_code",
+          "category.category_name as category_name",
+          "category.description as description",
+          "category.discount_percent as discount_percent",
+          "category.is_active as is_active",
+          "company.company_name as company_name",
         ])
-        .where("category.id = :id", { id })
+        .where("category.companyId = :id", { id })
         .getRawOne();
 
       if (!category)
@@ -95,8 +95,8 @@ export class CustomerCategoryService {
   async update(id: number, dto: UpdateCustomerCategoryDto, company_id: number) {
     try {
       const category = await this.categoryRepo.findOne({
-        where: { id},
-     
+        where: { id },
+
       });
       if (!category)
         throw new NotFoundException(`Customer Category ID ${id} not found`);
