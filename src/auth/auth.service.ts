@@ -215,6 +215,7 @@ export class AuthService {
 
     const branches = await this.fetchUserBranches(user.id);
 
+
     const userDetails = {
       id: user.id,
       name: user.name,
@@ -248,6 +249,10 @@ export class AuthService {
         });
       }
     } else {
+
+      if (branches.length === 0) {
+        throw new NotFoundException('You Dont Allow to access. First Assign Branch');
+      }
       // 🧠 Normal User — fetch from permission table
       userPerms = await this.permissionRepository.find({
         where: { user_id: user.id },
@@ -346,6 +351,8 @@ export class AuthService {
     // 1. create the menu
     const menu = this.sideMenuRepository.create({
       name: body.sideMenu.name,
+      key_name: body.sideMenu.key_name,
+      periority: body.sideMenu.periority,
     });
     const savedMenu = await this.sideMenuRepository.save(menu);
 
@@ -429,6 +436,40 @@ export class AuthService {
       throw new NotFoundException('Error creating role: ' + error.message);
     }
   }
+
+
+  async updateRoles(body: any) {
+    const role = await this.sideMenuMapppingRepository.find({ where: { role_id: body.role_id } });
+    await this.usersRoles.update({ id: body.role.id }, { role_name: body.role.role_name });
+    if (role.length > 0) {
+      const check = Promise.all(body.permission.map(async (perm: any) => {
+        const exist = await this.sideMenuMapppingRepository.findOneBy({ role_id: body.role_id, side_menu_id: perm.menu_id });
+        if (!exist) {
+          const newRole = this.sideMenuMapppingRepository.create({
+            role_id: body.role_id,
+            side_menu_id: perm.menu_id,
+          });
+          await this.sideMenuMapppingRepository.save(newRole);
+        }
+      }))
+    }
+  }
+  //   if (!body.permission || !Array.isArray(body.permission) || body.permission.length === 0) {
+  //     throw new BadRequestException('Please Assing Side Menu Permissions to the Role');
+  //   }
+  //   const roles = this.usersRoles.create({ role_name: body.role.role_name });
+  //   const savedRole = await this.usersRoles.save(roles);
+
+  //   const roleMapping = body.permission.map((perm: any) => this.sideMenuMapppingRepository.create({
+  //     role_id: savedRole.id,
+  //     side_menu_id: perm.menu_id,
+  //   }));
+  //   await this.sideMenuMapppingRepository.save(roleMapping);
+  //    try {}
+  // catch (error) {
+  //   throw new NotFoundException('Error creating role: ' + error.message);
+  // }
+
   //End Roles and Role Mapping
 
   //Get All Roles # 4

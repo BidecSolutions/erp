@@ -41,7 +41,14 @@ export class DesignationController {
 
   @Get('toogleStatus/:id')
   statusChange(@Req() req: Request, @Param('id', ParseIntPipe) id: number) {
-    const company = req["user"].company_id;
-    return this.designationService.statusUpdate(id, company);
+
+    try {
+      const company = req["user"].company_id;
+      return this.designationService.statusUpdate(id, company);
+    }
+    catch (e) {
+      return { status: false, message: e.message };
+    }
+
   }
 }

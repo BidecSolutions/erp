@@ -55,8 +55,8 @@ export class AppModule implements OnModuleInit {
 
   ) { }
   async onModuleInit() {
-    await this.registration.run()
-    await this.userRole.run()
-    await this.menus.run()
+    // await this.registration.run()
+    // await this.userRole.run()
+    // await this.menus.run()
   }
 }

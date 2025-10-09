@@ -3,19 +3,19 @@ import { IsNotEmpty, IsOptional, IsNumber, IsBoolean } from 'class-validator';
 export class CreateBranchDto {
 
 
-  @IsNotEmpty()
+  @IsNotEmpty({ message: "Branch name is required" })
   branch_name: string;
 
   @IsOptional()
   branch_type?: string;
 
-  @IsOptional()
+  @IsNotEmpty({ message: "Please Enter the one address at least" })
   address_line1: string;
 
   @IsOptional()
   address_line2?: string;
 
-  @IsOptional()
+  @IsNotEmpty({ message: "Please Enter Branch City" })
   city: string;
 
   @IsOptional()
@@ -27,7 +27,7 @@ export class CreateBranchDto {
   @IsOptional()
   postal_code?: string;
 
-  @IsOptional()
+  @IsNotEmpty({ message: "Please Enter Contact No." })
   phone?: string;
 
   @IsOptional()
@@ -36,22 +36,22 @@ export class CreateBranchDto {
   @IsOptional()
   email?: string;
 
-  @IsOptional()
+  @IsNotEmpty({ message: "Please Enter Contact Person Name" })
   manager_name?: string;
 
-  @IsOptional()
+  @IsNotEmpty({ message: "Please Enter Contact Person Email" })
   manager_email?: string;
 
-  @IsOptional()
+  @IsNotEmpty({ message: "Please Enter Contact Person Phone No." })
   manager_phone?: string;
 
-  @IsOptional()
+  @IsNotEmpty({ message: "Opening balance is required" })
   opening_balance?: number;
 
-  @IsOptional()
+  @IsNotEmpty({ message: "Please Enter the Bank Account" })
   bank_account_no?: string;
 
-  @IsOptional()
+  @IsNotEmpty({ message: "Please Enter the Bank Name" })
   bank_name?: string;
 
   @IsOptional()

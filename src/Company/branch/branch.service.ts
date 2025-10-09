@@ -68,6 +68,7 @@ export class BranchService {
         if (!findBranches || !Array.isArray(findBranches.branch_id) || findBranches.branch_id.length === 0) {
             return { status: true, message: "No Branch Found", data: [] }
         }
+
         const branchIDS = findBranches.branch_id;
         const branch = await this.branchRepo
             .createQueryBuilder('branch')
