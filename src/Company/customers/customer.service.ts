@@ -226,7 +226,7 @@ export class CustomerService {
       // Find the customer first to ensure it exists and belongs to the same company
       const customer = await this.customerRepo.findOne({
         where: { id, company: { id: companyId } },
-        relations: ['company'],
+        // relations: ['company'],
       });
 
       if (!customer) {
@@ -237,12 +237,68 @@ export class CustomerService {
       Object.assign(customer, dto);
 
       // Save updated record
-      const updatedCustomer = await this.customerRepo.save(customer);
+      await this.customerRepo.save(customer);
 
-      return updatedCustomer;
+      // Re-fetch with only required company columns
+      const updatedCustomer = await this.customerRepo
+        .createQueryBuilder('customer')
+        .leftJoin('customer.company', 'company')
+        .where('customer.id = :id', { id })
+        .select([
+          // All customer columns
+          'customer.id',
+          'customer.customer_code',
+          'customer.customer_name',
+          'customer.customer_type',
+          'customer.contact_person',
+          'customer.designation',
+          'customer.email',
+          'customer.phone',
+          'customer.mobile',
+          'customer.website',
+          'customer.address_line1',
+          'customer.address_line2',
+          'customer.city',
+          'customer.state',
+          'customer.country',
+          'customer.postal_code',
+          'customer.credit_limit',
+          'customer.credit_days',
+          'customer.payment_terms',
+          'customer.tax_id',
+          'customer.gst_no',
+          'customer.pan_no',
+          'customer.opening_balance',
+          'customer.balance_type',
+          'customer.customer_status',
+          'customer.registration_date',
+          'customer.notes',
+          'customer.assigned_sales_person',
+          'customer.is_active',
+          'customer.created_by',
+          'customer.created_date',
+          'customer.updated_by',
+          'customer.updated_date',
+          'customer.company_id', // safe, because it's from customer table only
+
+          // Only specific company fields
+          'company.id',
+          'company.company_name',
+        ])
+        .getOne();
+
+
+
+      if (!updatedCustomer) {
+        throw new NotFoundException(`Customer with ID ${id} not found after update`);
+      }
+      return {
+        ...updatedCustomer,
+        company_id: updatedCustomer.company?.id,
+      };
     } catch (error) {
-      console.error('Error updating customer:', error.message);
-      throw new Error('Failed to update customer');
+      throw new Error(error.message);
+
     }
   }
 

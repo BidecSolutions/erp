@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository,DataSource } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { Branch } from '../branch/branch.entity';
 import { CreateBranchDto } from '../branch/dto/create-branch.dto';
 import { UpdateBranchDto } from '../branch/dto/update-branch.dto';
@@ -21,43 +21,44 @@ export class BranchService {
 
     ) { }
 
-    async create(dto: CreateBranchDto, userID: number, companyID:number) {
-        const company = await this.companyRepo.findOneBy({ id: dto.companyId });
-        if (!company) return { success: false, message: `Company with ID ${dto.companyId} not found` };
-    const branchCode = await generateCode('branch', 'BRN', this.dataSource);
+    async create(dto: CreateBranchDto, userID: number, companyID: number) {
+        try {
+            const company = await this.companyRepo.findOneBy({ id: dto.companyId });
+            if (!company) return { success: false, message: `Company with ID ${dto.companyId} not found` };
+            const branchCode = await generateCode('branch', 'BRN', this.dataSource);
 
-        const branch = this.branchRepo.create({
-            ...dto,
-            company: { id: dto.companyId } as Company,
-            branch_code:branchCode,
-            is_active: 1,
-        });
-        const savedBranch = await this.branchRepo.save(branch);
+            const branch = this.branchRepo.create({
+                ...dto,
+                company: { id: dto.companyId } as Company,
+                branch_code: branchCode,
+                is_active: 1,
+            });
+            const savedBranch = await this.branchRepo.save(branch);
 
-        const findBranch = await this.ucm.findOne({ where: { user_id: userID } });
+            const findBranch = await this.ucm.findOne({ where: { user_id: userID } });
 
 
 
-        if (!findBranch) {
-            throw new Error('Company mapping not found');
-        }
+            if (!findBranch) {
+                throw new Error('Company mapping not found');
+            }
 
-        // branch_id is already a number[] (auto-parsed by TypeORM JSON column)
-        let updatedBranches: number[] = [...(findBranch.branch_id || [])];
+            // branch_id is already a number[] (auto-parsed by TypeORM JSON column)
+            let updatedBranches: number[] = [...(findBranch.branch_id || [])];
 
-        if (!updatedBranches.includes(savedBranch.id)) {
-            updatedBranches.push(savedBranch.id);
-        }
+            if (!updatedBranches.includes(savedBranch.id)) {
+                updatedBranches.push(savedBranch.id);
+            }
 
-        // Update with array directly (TypeORM handles JSON serialization)
-        await this.ucm.update(
-            { user_id: userID },
-            { branch_id: updatedBranches }
-        );
+            // Update with array directly (TypeORM handles JSON serialization)
+            await this.ucm.update(
+                { user_id: userID },
+                { branch_id: updatedBranches }
+            );
 
-        const branches = await this.findAll(userID);
-        return { success: true, message: 'Branch created successfully', data: branches };
-        try { } catch (error) {
+            const branches = await this.findAll(userID);
+            return { success: true, message: 'Branch created successfully', data: branches };
+        } catch (error) {
             return { success: false, message: 'Failed to create branch' };
         }
     }
@@ -72,7 +73,7 @@ export class BranchService {
         const branch = await this.branchRepo
             .createQueryBuilder('branch')
             .leftJoin('branch.company', 'company')
-            .andWhere('branch.is_active = :isActive', { isActive: 1 })
+            // .andWhere('branch.is_active = :isActive', { isActive: 1 })
             .andWhere('branch.id IN (:...ids)', { ids: branchIDS })
             .select([
                 'branch.id',
@@ -220,18 +221,29 @@ export class BranchService {
         }
     }
 
-    async remove(id: number, updatedBy: number) {
+    async toggleStatus(id: number) {
         try {
             const branch = await this.branchRepo.findOneBy({ id });
-            if (!branch) return { success: false, message: 'Branch not found' };
+            if (!branch) {
+                return { status: false, message: 'Branch not found' };
+            }
 
-            branch.is_active = 2; // soft delete
+            // Toggle is_active: 1 = active, 0 = inactive
+            branch.is_active = branch.is_active === 1 ? 0 : 1;
             branch.updated_date = new Date().toISOString().split('T')[0];
+            // branch.updated_by = updatedBy;
 
             await this.branchRepo.save(branch);
-            return { success: true, message: `Branch with ID ${id} set to inactive`, data: branch };
+
+            const action = branch.is_active === 1 ? 'activated' : 'deactivated';
+            return {
+                status: true,
+                message: `Branch ${action} successfully`,
+                data: branch,
+            };
         } catch (error) {
-            return { success: false, message: 'Failed to remove branch' };
+            return { status: false, message: 'Failed to toggle branch status', error: error.message };
         }
     }
+
 }

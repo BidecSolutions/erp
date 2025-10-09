@@ -34,10 +34,10 @@ export class SalesOrderDetail {
   product: Product;
 
 
-  @Column()
+  @Column({ nullable: true })
   varient_id: number;
   @ManyToOne(() => productVariant, (productVariant) => productVariant.salesOrderDetails, {
-    onDelete: 'CASCADE',
+    onDelete: 'CASCADE', nullable: true,  
   })
   @JoinColumn({ name: 'varient_id' })
   productVariant: productVariant;
