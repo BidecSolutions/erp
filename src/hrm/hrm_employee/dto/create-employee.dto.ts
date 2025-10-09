@@ -71,19 +71,19 @@ export class CreateEmployeeDto {
   @IsNotEmpty({ message: "Date of joining is required" })
   dateOfJoining: string;
 
-   @IsNotEmpty({ message: 'CV is required' })
-  cv: Express.Multer.File;
+  //  @IsNotEmpty({ message: 'CV is required' })
+  // cv: Express.Multer.File;
 
-  @IsNotEmpty({ message: 'Photo is required' })
-  photo: Express.Multer.File;
+  // @IsNotEmpty({ message: 'Photo is required' })
+  // photo: Express.Multer.File;
 
-  @IsArray()
-  @ArrayMinSize(2, { message: 'Identity Card must have exactly 2 files' })
-  @ArrayMaxSize(2, { message: 'Identity Card must have exactly 2 files' })
-  identity_card: Express.Multer.File[];
+  // @IsArray()
+  // @IsArray({ message: 'Identity Card must have exactly 2 files' })
 
-  @IsOptional()
-  academic_transcript?: Express.Multer.File;
+  // identity_card: Express.Multer.File[];
+
+  // @IsOptional()
+  // academic_transcript?: Express.Multer.File;
 
   // // Multiple bank details allowed
   @IsOptional()
