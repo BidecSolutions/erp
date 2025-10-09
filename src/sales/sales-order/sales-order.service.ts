@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, Any } from 'typeorm';
 import { SalesOrder } from './entity/sales-order.entity';
 import { CreateSalesOrderDto, UpdateSalesOrderDto } from './dto/sales-order.dto';
-import { errorResponse, successResponse, toggleStatusResponse } from 'src/commonHelper/response.util';
+import { errorResponse, generateCode, successResponse, toggleStatusResponse } from 'src/commonHelper/response.util';
 import { SalesOrderDetail } from './entity/sales-order-detail.entity';
 import { Company } from 'src/Company/companies/company.entity';
 import { Branch } from 'src/Company/branch/branch.entity';
@@ -16,6 +16,7 @@ import { Product } from 'src/procurement/product/entities/product.entity';
 import { CreateSalesOrderDetailDto } from './dto/sales-order-detail.dto';
 import { productVariant } from 'src/procurement/product/entities/variant.entity';
 import { Stock } from 'src/procurement/stock/entities/stock.entity';
+import { CustomerInvoice } from 'src/Company/customer-invoice/entity/customer-invoice.entity';
 
 @Injectable()
 export class SalesOrderService {
@@ -203,9 +204,9 @@ export class SalesOrderService {
           salesOrderDetails.push(orderDetail);
         }
 
-
+        const orderNumber = await generateCode('sale-order', 'SO', this.dataSource);
         const order = salesOrderRepo.create({
-          order_no: createDto.order_no,
+          order_no: orderNumber,
           order_date: createDto.order_date,
           expected_delivery_date: createDto.expected_delivery_date,
           actual_delivery_date: createDto.actual_delivery_date,
@@ -277,14 +278,17 @@ export class SalesOrderService {
     };
   }
 
+
+
   // async update(id: number, updateDto: CreateSalesOrderDto) {
   //   try {
   //     return await this.dataSource.transaction(async (manager) => {
   //       const salesOrderRepo = manager.getRepository(SalesOrder);
   //       const detailRepo = manager.getRepository(SalesOrderDetail);
   //       const stockRepo = manager.getRepository(Stock);
+  //       const variantRepo = manager.getRepository(productVariant);
 
-  //       // 1️⃣ Check if order exists
+  //       // 1️⃣ Load existing order with details
   //       const existingOrder = await salesOrderRepo.findOne({
   //         where: { id },
   //         relations: ['salesOrderDetails'],
@@ -294,62 +298,119 @@ export class SalesOrderService {
   //         throw new BadRequestException('Sales order not found');
   //       }
 
-  //       // 2️⃣ Restore stock from existing order
-  //       for (const oldDetail of existingOrder.salesOrderDetails ?? []) {
+  //       const existingDetails = existingOrder.salesOrderDetails ?? [];
+
+  //       // 2️⃣ Restore stock from previous details
+  //       for (const oldDetail of existingDetails) {
   //         const stock = await stockRepo.findOne({
   //           where: {
   //             product_id: oldDetail.product_id,
-  //             variant_id: oldDetail.varient_id,
+  //             variant_id: oldDetail.variant_id,
   //           },
   //         });
-
   //         if (stock) {
-  //           stock.quantity_on_hand += oldDetail.quantity; // restore
+  //           stock.quantity_on_hand += oldDetail.quantity;
   //           await stockRepo.save(stock);
   //         }
   //       }
 
-  //       // 3️⃣ Remove existing details
-  //       await detailRepo.delete({ salesOrder: { id } });
-
-  //       // 4️⃣ Process new details
-  //       const salesOrderDetails: SalesOrderDetail[] = [];
+  //       // 3️⃣ Process updated detail list
   //       let subtotal = 0;
+  //       const processedDetails: SalesOrderDetail[] = [];
 
-  //       for (const detailDto of updateDto.salesOrderDetails ?? []) {
-  //         // 🧾 Check stock availability
-  //         const stock = await stockRepo.findOne({
-  //           where: {
-  //             product_id: detailDto.product_id,
-  //             variant_id: detailDto.variant_id,
-  //           },
-  //         });
+  //       for (const detailDtoRaw of updateDto.salesOrderDetails ?? []) {
+  //         const detailDto: any = detailDtoRaw;
+  //         const incomingVariantId = detailDto.variant_id ?? detailDto.variant_id;
+  //         const incomingProductId = detailDto.product_id;
 
-  //         if (!stock || stock.quantity_on_hand < detailDto.quantity) {
-  //           throw new BadRequestException(
-  //             `Insufficient stock for product ID ${detailDto.product_id}, variant ID ${detailDto.variant_id}. Available: ${stock?.quantity_on_hand ?? 0}, Requested: ${detailDto.quantity}`,
+  //         const variant = await variantRepo.findOne({
+  //         where: { id: incomingVariantId },
+  //       });
+
+  //       if (!variant) {
+  //         throw new BadRequestException(
+  //           `Variant with ID ${incomingVariantId} not found`,
+  //         );
+  //       }
+
+  //         // Declare properly typed variable
+  //         let existingDetail: SalesOrderDetail | undefined = undefined;
+
+  //         // Prefer match by ID if provided
+  //         if (detailDto.id) {
+  //           existingDetail = existingDetails.find((d) => d.id === detailDto.id);
+  //         }
+  //         // Otherwise match by product + variant
+  //         if (!existingDetail) {
+  //           existingDetail = existingDetails.find(
+  //             (d) =>
+  //               d.product_id === incomingProductId &&
+  //               d.variant_id === incomingVariantId,
   //           );
   //         }
 
-  //         // Deduct new quantities
-  //         stock.quantity_on_hand -= detailDto.quantity;
-  //         await stockRepo.save(stock);
-
-  //         const line_total = detailDto.quantity * 23;
-  //         subtotal += line_total;
-
-  //         const orderDetail = detailRepo.create({
-  //           product_id: detailDto.product_id,
-  //           varient_id: detailDto.variant_id,
-  //           unit_price: 12,
-  //           quantity: detailDto.quantity,
-  //           salesOrder: existingOrder,
+  //         // 3.a) Check stock
+  //         let stock = await stockRepo.findOne({
+  //           where: {
+  //             product_id: incomingProductId,
+  //             variant_id: incomingVariantId,
+  //           },
   //         });
 
-  //         salesOrderDetails.push(orderDetail);
+  //         if(stock) {
+  //           stock.quantity_on_hand -= detailDto.quantity;
+  //         await stockRepo.save(stock);
+  //         }
+
+  //         // if (!stock || stock.quantity_on_hand < detailDto.quantity) {
+  //         //   throw new BadRequestException(
+  //         //     `Insufficient stock for product ID ${incomingProductId}, variant ID ${incomingVarientId}. Available: ${stock?.quantity_on_hand ?? 0}, Requested: ${detailDto.quantity}`,
+  //         //   );
+  //         // }
+
+  //         // Deduct stock
+
+
+  //         const unitPrice = (detailDto as any).unit_price ?? 0;
+  //         const line_total = detailDto.quantity * unitPrice;
+  //         subtotal += line_total;
+
+  //         if (existingDetail) {
+  //           // ✅ Update existing
+  //           detailRepo.merge(existingDetail, {
+  //             quantity: detailDto.quantity,
+  //             unit_price: unitPrice,
+  //           });
+  //           const saved: SalesOrderDetail = await detailRepo.save(existingDetail);
+  //           processedDetails.push(saved);
+  //         } else {
+  //           // ➕ Add new
+  //           const newDetail = detailRepo.create({
+  //             product_id: incomingProductId,
+  //             variant_id: incomingVariantId,
+  //             unit_price: unitPrice,
+  //             quantity: detailDto.quantity,
+  //             salesOrder: existingOrder,
+  //           });
+  //           const saved: SalesOrderDetail = await detailRepo.save(newDetail);
+  //           processedDetails.push(saved);
+  //         }
   //       }
 
-  //       // 5️⃣ Update main order
+  //       // 4️⃣ Remove deleted rows
+  //       const incomingKeys = (updateDto.salesOrderDetails ?? []).map((d: any) => {
+  //         const v = d.varient_id ?? d.variant_id;
+  //         return `${d.product_id}-${v}`;
+  //       });
+
+  //       for (const oldDetail of existingDetails) {
+  //         const key = `${oldDetail.product_id}-${oldDetail.variant_id}`;
+  //         if (!incomingKeys.includes(key)) {
+  //           await detailRepo.remove(oldDetail);
+  //         }
+  //       }
+
+  //       // 5️⃣ Update main Sales Order
   //       salesOrderRepo.merge(existingOrder, {
   //         order_no: updateDto.order_no,
   //         order_date: updateDto.order_date,
@@ -375,17 +436,16 @@ export class SalesOrderService {
   //       });
 
   //       const savedOrder = await salesOrderRepo.save(existingOrder);
-  //       const savedDetails = await detailRepo.save(salesOrderDetails);
 
   //       return successResponse('Sales order updated successfully!', {
   //         salesOrder: savedOrder,
-  //         salesOrderDetails: savedDetails,
+  //         salesOrderDetails: processedDetails,
   //       });
   //     });
   //   } catch (error) {
   //     throw new BadRequestException(error.message || 'Failed to update sales order');
   //   }
-  // }  
+  // }
 
   async update(id: number, updateDto: CreateSalesOrderDto) {
     try {
@@ -393,8 +453,10 @@ export class SalesOrderService {
         const salesOrderRepo = manager.getRepository(SalesOrder);
         const detailRepo = manager.getRepository(SalesOrderDetail);
         const stockRepo = manager.getRepository(Stock);
+        const variantRepo = manager.getRepository(productVariant);
+        const invoiceRepo = manager.getRepository(CustomerInvoice);
 
-        // 1️⃣ Load existing order with details
+        
         const existingOrder = await salesOrderRepo.findOne({
           where: { id },
           relations: ['salesOrderDetails'],
@@ -402,11 +464,24 @@ export class SalesOrderService {
 
         if (!existingOrder) {
           throw new BadRequestException('Sales order not found');
+
+        }
+
+        // ✅ Check if invoice already exists for this Sales Order
+
+        const existingInvoice = await invoiceRepo.findOne({
+          where: { salesOrder: { id } },
+        });
+
+        if (existingInvoice) {
+          throw new BadRequestException(
+            'This sales order already has an invoice and cannot be updated.',
+          );
         }
 
         const existingDetails = existingOrder.salesOrderDetails ?? [];
 
-        // 2️⃣ Restore stock from previous details
+
         for (const oldDetail of existingDetails) {
           const stock = await stockRepo.findOne({
             where: {
@@ -420,78 +495,82 @@ export class SalesOrderService {
           }
         }
 
-        // 3️⃣ Process updated detail list
+
         let subtotal = 0;
         const processedDetails: SalesOrderDetail[] = [];
 
         for (const detailDtoRaw of updateDto.salesOrderDetails ?? []) {
           const detailDto: any = detailDtoRaw;
-          const incomingVarientId = detailDto.varient_id ?? detailDto.variant_id;
+          const incomingVariantId = detailDto.variant_id ?? detailDto.varient_id;
           const incomingProductId = detailDto.product_id;
 
-          // Declare properly typed variable
-          let existingDetail: SalesOrderDetail | undefined = undefined;
 
-          // Prefer match by ID if provided
+          const variant = await variantRepo.findOne({
+            where: { id: incomingVariantId },
+          });
+
+          if (!variant) {
+            throw new BadRequestException(
+              `Variant with ID ${incomingVariantId} not found`,
+            );
+          }
+
+          const unitPrice = variant.unit_price ?? 0;
+          const line_total = detailDto.quantity * unitPrice;
+          subtotal += line_total;
+
+
+          let stock = await stockRepo.findOne({
+            where: {
+              product_id: incomingProductId,
+              variant_id: incomingVariantId,
+            },
+          });
+          if (stock) {
+            stock.quantity_on_hand -= detailDto.quantity;
+            await stockRepo.save(stock);
+          }
+
+
+          let existingDetail: SalesOrderDetail | undefined;
           if (detailDto.id) {
             existingDetail = existingDetails.find((d) => d.id === detailDto.id);
           }
-          // Otherwise match by product + variant
+
           if (!existingDetail) {
             existingDetail = existingDetails.find(
               (d) =>
                 d.product_id === incomingProductId &&
-                d.variant_id === incomingVarientId,
+                d.variant_id === incomingVariantId,
             );
           }
 
-          // 3.a) Check stock
-          const stock = await stockRepo.findOne({
-            where: {
-              product_id: incomingProductId,
-              variant_id: incomingVarientId,
-            },
-          });
-
-          if (!stock || stock.quantity_on_hand < detailDto.quantity) {
-            throw new BadRequestException(
-              `Insufficient stock for product ID ${incomingProductId}, variant ID ${incomingVarientId}. Available: ${stock?.quantity_on_hand ?? 0}, Requested: ${detailDto.quantity}`,
-            );
-          }
-
-          // Deduct stock
-          stock.quantity_on_hand -= detailDto.quantity;
-          await stockRepo.save(stock);
-
-          const unitPrice = (detailDto as any).unit_price ?? 12;
-          const line_total = detailDto.quantity * unitPrice;
-          subtotal += line_total;
 
           if (existingDetail) {
-            // ✅ Update existing
+
             detailRepo.merge(existingDetail, {
               quantity: detailDto.quantity,
               unit_price: unitPrice,
             });
-            const saved: SalesOrderDetail = await detailRepo.save(existingDetail);
+            const saved = await detailRepo.save(existingDetail);
             processedDetails.push(saved);
           } else {
-            // ➕ Add new
+
             const newDetail = detailRepo.create({
               product_id: incomingProductId,
-              variant_id: incomingVarientId,
+              variant_id: incomingVariantId,
               unit_price: unitPrice,
               quantity: detailDto.quantity,
               salesOrder: existingOrder,
             });
-            const saved: SalesOrderDetail = await detailRepo.save(newDetail);
+            const saved = await detailRepo.save(newDetail);
             processedDetails.push(saved);
           }
         }
 
-        // 4️⃣ Remove deleted rows
+
         const incomingKeys = (updateDto.salesOrderDetails ?? []).map((d: any) => {
-          const v = d.varient_id ?? d.variant_id;
+          const v = d.variant_id ?? d.varient_id;
           return `${d.product_id}-${v}`;
         });
 
@@ -502,9 +581,9 @@ export class SalesOrderService {
           }
         }
 
-        // 5️⃣ Update main Sales Order
+
         salesOrderRepo.merge(existingOrder, {
-          order_no: updateDto.order_no,
+          
           order_date: updateDto.order_date,
           expected_delivery_date: updateDto.expected_delivery_date,
           actual_delivery_date: updateDto.actual_delivery_date,
@@ -538,6 +617,7 @@ export class SalesOrderService {
       throw new BadRequestException(error.message || 'Failed to update sales order');
     }
   }
+
 
 
 
