@@ -133,6 +133,13 @@ export class sideMenuAndRoleSeederService {
                 periority: 3
             },
 
+            {
+                id: 15,
+                name: "Side Menus",
+                key_name: "Setup",
+                periority: 11
+            },
+
         ];
 
         const subSideMenu: Partial<subSideMenus>[] = [
@@ -313,6 +320,15 @@ export class sideMenuAndRoleSeederService {
                 link: "add-roles-permission"
             },
 
+
+            {
+                id: 23,
+                name: "Create Side Menus",
+                menu_id: 15,
+                link: "add-side-menus"
+            },
+
+
         ];
 
         const subMenuPermRepository: Partial<subSideMenuPermission>[] = [
@@ -480,6 +496,25 @@ export class sideMenuAndRoleSeederService {
                 id: 27,
                 name: "Delete",
                 sub_menu_id: 9,
+            },
+
+
+            //Side Menus
+            {
+                id: 28,
+                name: "Create",
+                sub_menu_id: 23,
+            },
+
+            {
+                id: 29,
+                name: "Update",
+                sub_menu_id: 23,
+            },
+            {
+                id: 30,
+                name: "Delete",
+                sub_menu_id: 23,
             },
 
 

@@ -230,20 +230,20 @@ export class AuthService {
 
     let allMenus: any[] = [];
     let userPerms: any[] = [];
-
+    let superAdminMenus = [1, 14, 15]
     // 🚀 Admin & Super Admin
     if (roles?.roll_id == 1 || roles?.roll_id == 2) {
-      // Admin (1) → All Menus
+      // Super Admin (1) → All Menus
       if (roles?.roll_id == 1) {
         allMenus = await this.sideMenuRepository.find({
+          where: { id: In(superAdminMenus) },
           order: { periority: 'ASC' },
         });
       }
-
-      // Super Admin (2) → All Menus except id=1
+      // Admin (2)
       if (roles?.roll_id == 2) {
         allMenus = await this.sideMenuRepository.find({
-          where: { id: Not(1) },
+          where: { id: Not(In(superAdminMenus)) },
           order: { periority: 'ASC' },
         });
       }
