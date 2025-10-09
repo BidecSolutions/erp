@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository,DataSource } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { Branch } from '../branch/branch.entity';
 import { CreateBranchDto } from '../branch/dto/create-branch.dto';
 import { UpdateBranchDto } from '../branch/dto/update-branch.dto';
@@ -21,15 +21,15 @@ export class BranchService {
 
     ) { }
 
-    async create(dto: CreateBranchDto, userID: number, companyID:number) {
-        const company = await this.companyRepo.findOneBy({ id: dto.companyId });
-        if (!company) return { success: false, message: `Company with ID ${dto.companyId} not found` };
-    const branchCode = await generateCode('branch', 'BRN', this.dataSource);
+    async create(dto: CreateBranchDto, userID: number, companyID: number) {
+        const company = await this.companyRepo.findOneBy({ id: companyID });
+        if (!company) return { success: false, message: `Company with ID ${companyID} not found` };
+        const branchCode = await generateCode('branch', 'BRN', this.dataSource);
 
         const branch = this.branchRepo.create({
             ...dto,
-            company: { id: dto.companyId } as Company,
-            branch_code:branchCode,
+            company: { id: companyID } as Company,
+            branch_code: branchCode,
             is_active: 1,
         });
         const savedBranch = await this.branchRepo.save(branch);
@@ -55,14 +55,14 @@ export class BranchService {
             { branch_id: updatedBranches }
         );
 
-        const branches = await this.findAll(userID);
+        const branches = await this.findAll(userID, companyID);
         return { success: true, message: 'Branch created successfully', data: branches };
         try { } catch (error) {
             return { success: false, message: 'Failed to create branch' };
         }
     }
 
-    async findAll(user_id: number) {
+    async findAll(user_id: number, company_id: number) {
         const findBranches = await this.ucm.findOne({ where: { user_id } });
 
         if (!findBranches || !Array.isArray(findBranches.branch_id) || findBranches.branch_id.length === 0) {
@@ -71,8 +71,8 @@ export class BranchService {
         const branchIDS = findBranches.branch_id;
         const branch = await this.branchRepo
             .createQueryBuilder('branch')
-            .leftJoin('branch.company', 'company')
-            .andWhere('branch.is_active = :isActive', { isActive: 1 })
+            .innerJoin('companies', 'c', 'branch.companyId = c.id')
+            .where('branch.company = :company_id', { company_id })
             .andWhere('branch.id IN (:...ids)', { ids: branchIDS })
             .select([
                 'branch.id',
@@ -102,8 +102,8 @@ export class BranchService {
                 'branch.created_date as created_date',
                 'branch.updated_by as updated_by',
                 'branch.updated_date as updated_date',
-                'company.id as companyId',
-                'company.company_name as company_name',
+                'c.id as companyId',
+                'c.company_name as company_name',
             ])
             .getRawMany();
         return { status: true, message: "Get All Branches", data: branch }
@@ -213,7 +213,7 @@ export class BranchService {
             branch.updated_date = new Date().toISOString().split('T')[0];
 
             const updatedBranch = await this.branchRepo.save(branch);
-            const branches = await this.findAll(userID);
+            const branches = await this.findAll(userID, compnayId);
             return { success: true, message: 'Branch updated successfully', data: branches };
         } catch (error) {
             return { success: false, message: 'Failed to update branch' };

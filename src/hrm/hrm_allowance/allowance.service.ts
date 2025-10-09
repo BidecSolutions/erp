@@ -13,7 +13,7 @@ export class AllowanceService {
     @InjectRepository(Allowance)
     private readonly allowanceRepo: Repository<Allowance>,
 
-  ) {}
+  ) { }
 
   //  Create allowance with company
   async create(dto: CreateAllowanceDto, company_id: number) {
@@ -22,7 +22,7 @@ export class AllowanceService {
         title: dto.title,
         type: dto.type,
         amount: dto.amount,
-        company_id, // direct assign id
+        company_id,
       });
 
       await this.allowanceRepo.save(allowance);
@@ -34,8 +34,7 @@ export class AllowanceService {
   }
 
 
-   async findAll(company_id: number, filterStatus?: number) {
-    const status = filterStatus !== undefined ? filterStatus : 1;
+  async findAll(company_id: number) {
     try {
       const allowances = await this.allowanceRepo
         .createQueryBuilder("allowance")
@@ -49,7 +48,6 @@ export class AllowanceService {
           "company.company_name",
         ])
         .where("allowance.company_id = :company_id", { company_id })
-        .andWhere("allowance.status = :status", { status })
         .orderBy("allowance.id", "DESC")
         .getRawMany();
 
@@ -105,17 +103,17 @@ export class AllowanceService {
 
 
 
-       async statusUpdate(id: number) {
-            try {
-              const dep = await this.allowanceRepo.findOneBy({ id });
-              if (!dep) throw new NotFoundException("Allowance not found");
-        
-              dep.status = dep.status === 0 ? 1 : 0;
-              await this.allowanceRepo.save(dep);
-        
-              return toggleStatusResponse("Allowance", dep.status);
-            } catch (err) {
-              return errorResponse("Something went wrong", err.message);
-            }
-          }
+  async statusUpdate(id: number, company_id: number) {
+    try {
+      const dep = await this.allowanceRepo.findOneBy({ id });
+      if (!dep) throw new NotFoundException("Allowance not found");
+
+      dep.status = dep.status === 0 ? 1 : 0;
+      await this.allowanceRepo.save(dep);
+
+      return this.findAll(dep.company_id);
+    } catch (err) {
+      return errorResponse("Something went wrong", err.message);
+    }
+  }
 }

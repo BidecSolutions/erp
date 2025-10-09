@@ -37,8 +37,7 @@ export class SupplierController {
   @Get('list')
   async findAll(@Req() req: any, @Query('status') status?: string) {
     const companyId = req["user"].company_id;
-    const filterStatus = status !== undefined ? Number(status) : undefined;
-    const suppliers = await this.supplierService.findAll(companyId, filterStatus);
+    const suppliers = await this.supplierService.findAll(companyId);
     return {
       status: true,
       message: 'Get All Suppliers',
@@ -74,8 +73,9 @@ export class SupplierController {
   }
 
   @Get('toggleStatus/:id')
-  async toggleStatus(@Param('id', ParseIntPipe) id: number) {
-    return this.supplierService.toggleStatus(id);
+  async toggleStatus(@Req() req: Request, @Param('id', ParseIntPipe) id: number) {
+    const companyId = req["user"].company_id;
+    return this.supplierService.toggleStatus(companyId, id);
   }
 
 }

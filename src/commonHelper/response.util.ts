@@ -2,7 +2,7 @@
 
 import { NotFoundException } from '@nestjs/common';
 import { CodeSequence } from 'src/Company/code_sequences/entities/code_sequence.entity';
-import { Repository, ObjectLiteral ,DataSource } from 'typeorm';
+import { Repository, ObjectLiteral, DataSource } from 'typeorm';
 
 export function successResponse(message: string, data: any = null) {
   return {
@@ -43,7 +43,7 @@ export async function getActiveList<T extends ObjectLiteral>(
   return repo.find({
     where,
     order,
-    select: ['id', orderBy as string], 
+    select: ['id', orderBy as string],
   });
 }
 

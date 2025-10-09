@@ -36,8 +36,7 @@ export class SupplierCategoryService {
   }
 
 
-  async findAll(company_id: number, filterStatus?: number) {
-    const status = filterStatus !== undefined ? filterStatus : 1; // default active=1
+  async findAll(company_id: number) {
     try {
       const categories = await this.supplierCategoryRepo
         .createQueryBuilder("category")
@@ -51,7 +50,6 @@ export class SupplierCategoryService {
           "company.company_name as company_name",
         ])
         .where("category.company_id = :company_id", { company_id })
-        .andWhere("category.is_active = :status", { status })
         .orderBy("category.id", "DESC")
         .getRawMany();
 
@@ -93,16 +91,6 @@ export class SupplierCategoryService {
       });
       if (!category) return { success: false, message: 'Supplier category not found or inactive' };
 
-      // if (dto.company_id) {
-      //   const company = await this.companyRepo.findOne({
-      //     where: { id: dto.company_id, status: 1 },
-      //   });
-      //   if (!company) {
-      //     return { success: false, message: `Company with ID ${dto.company_id} not found or inactive` };
-      //   }
-      //   category.company = { id: dto.company_id } as Company;
-      // }
-
       Object.assign(category, dto);
       await this.supplierCategoryRepo.save(category);
 
@@ -113,7 +101,7 @@ export class SupplierCategoryService {
     }
   }
 
-  async toggleStatus(id: number) {
+  async toggleStatus(id: number, company_id: number) {
     try {
       const category = await this.supplierCategoryRepo.findOneBy({ id });
       if (!category) throw new NotFoundException("Supplier category not found");
@@ -124,7 +112,7 @@ export class SupplierCategoryService {
       await this.supplierCategoryRepo.save(category);
 
       // Return a consistent toggle response
-      return toggleStatusResponse("Supplier Category", category.is_active);
+      return this.findAll(company_id);
     } catch (err) {
       return errorResponse("Something went wrong", err.message);
     }

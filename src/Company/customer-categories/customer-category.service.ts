@@ -96,7 +96,6 @@ export class CustomerCategoryService {
     try {
       const category = await this.categoryRepo.findOne({
         where: { id },
-
       });
       if (!category)
         throw new NotFoundException(`Customer Category ID ${id} not found`);
