@@ -22,10 +22,6 @@ export class CreateSalesOrderDto {
   @IsNotEmpty()
   sales_status: SalesStatus;
 
-  @IsString()
-  @IsNotEmpty()
-  order_no: string;
-
   @IsDateString()
   @IsOptional()
   expected_delivery_date?: Date;
