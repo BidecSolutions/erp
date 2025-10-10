@@ -8,23 +8,23 @@ import { errorResponse, successResponse, toggleStatusResponse } from 'src/common
 
 @Injectable()
 export class WarrantyService {
-constructor(
-      @InjectRepository(Warranty)
-    private readonly repo: Repository<Warranty>) {}
-    
-   async create(dto: CreateWarrantyDto, companyId: number) {
-     try {
-       const warranty = this.repo.create({
-         ...dto,
-         company_id:companyId
-       });
-       await this.repo.save(warranty);
-       return successResponse('warranty created successfully!', warranty);
- 
-     } catch (error) {
-       throw new BadRequestException(error.message || 'Failed to create warranty');
-     }
-   }
+  constructor(
+    @InjectRepository(Warranty)
+    private readonly repo: Repository<Warranty>) { }
+
+  async create(dto: CreateWarrantyDto, companyId: number) {
+    try {
+      const warranty = this.repo.create({
+        ...dto,
+        company_id: companyId
+      });
+      await this.repo.save(warranty);
+      return successResponse('warranty created successfully!', warranty);
+
+    } catch (error) {
+      throw new BadRequestException(error.message || 'Failed to create warranty');
+    }
+  }
   async findAll(filter?: number) {
     try {
       const where: any = {};
@@ -69,16 +69,16 @@ constructor(
     }
   }
   async statusUpdate(id: number) {
-  try {
-    const warranty = await this.repo.findOne({ where: { id } });
-    if (!warranty) throw new NotFoundException('warranty not found');
+    try {
+      const warranty = await this.repo.findOne({ where: { id } });
+      if (!warranty) throw new NotFoundException('warranty not found');
 
-    warranty.status = warranty.status === 0 ? 1 : 0;
-    const saved = await this.repo.save(warranty);
+      warranty.status = warranty.status === 0 ? 1 : 0;
+      const saved = await this.repo.save(warranty);
 
-    return toggleStatusResponse('warranty', saved.status);
-  } catch (err) {
-    return errorResponse('Something went wrong', err.message);
-  }
+      return toggleStatusResponse('warranty', saved.status);
+    } catch (err) {
+      return errorResponse('Something went wrong', err.message);
     }
+  }
 }

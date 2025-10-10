@@ -5,14 +5,16 @@ import { Allowance } from "./allowance.entity";
 import { Company } from "src/Company/companies/company.entity";
 import { CreateAllowanceDto } from "./dto/create-allowance.dto";
 import { Repository } from "typeorm";
-import { errorResponse, toggleStatusResponse } from "src/commonHelper/response.util";
+import {
+  errorResponse,
+  toggleStatusResponse,
+} from "src/commonHelper/response.util";
 
 @Injectable()
 export class AllowanceService {
   constructor(
     @InjectRepository(Allowance)
-    private readonly allowanceRepo: Repository<Allowance>,
-
+    private readonly allowanceRepo: Repository<Allowance>
   ) { }
 
   //  Create allowance with company
@@ -29,7 +31,7 @@ export class AllowanceService {
       const saved = await this.findAll(company_id);
       return saved;
     } catch (e) {
-      return { message: e.message };
+      throw e;
     }
   }
 
@@ -45,7 +47,7 @@ export class AllowanceService {
           "allowance.type",
           "allowance.amount",
           "allowance.status",
-          "company.company_name",
+          "company.company_name as company_name",
         ])
         .where("allowance.company_id = :company_id", { company_id })
         .orderBy("allowance.id", "DESC")
@@ -53,10 +55,9 @@ export class AllowanceService {
 
       return allowances;
     } catch (e) {
-      return { message: e.message };
+      throw e;
     }
   }
-
 
   async findOne(id: number) {
     try {
@@ -69,24 +70,28 @@ export class AllowanceService {
           "allowance.type",
           "allowance.amount",
           "allowance.status",
-          "company.company_name",
+          "company.company_name as company_name",
         ])
         .where("allowance.id = :id", { id })
         .getRawOne();
 
-      if (!allowance) throw new NotFoundException(`Allowance ID ${id} not found`);
+      if (!allowance)
+        throw new NotFoundException(`Allowance ID ${id} not found`);
 
       return allowance;
     } catch (e) {
-      return { message: e.message };
+      throw e;
     }
   }
 
   // Update allowance (only title/type/amount update, NOT company_id)
   async update(id: number, dto: UpdateAllowanceDto, company_id: number) {
     try {
-      const allowance = await this.allowanceRepo.findOne({ where: { id, company_id } });
-      if (!allowance) throw new NotFoundException(`Allowance ID ${id} not found`);
+      const allowance = await this.allowanceRepo.findOne({
+        where: { id, company_id },
+      });
+      if (!allowance)
+        throw new NotFoundException(`Allowance ID ${id} not found`);
 
       if (dto.title) allowance.title = dto.title;
       if (dto.type) allowance.type = dto.type;
@@ -97,7 +102,7 @@ export class AllowanceService {
       const updated = await this.findAll(company_id);
       return updated;
     } catch (e) {
-      return { message: e.message };
+      throw e;
     }
   }
 

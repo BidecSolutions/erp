@@ -18,6 +18,7 @@ import { subSideMenuPermission } from './entities/sub-side-menu-permission.entit
 import { sales } from './sales/sales-module-list.module';
 import { POS } from './pos/POS-module-file.module';
 
+
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -40,6 +41,7 @@ import { POS } from './pos/POS-module-file.module';
     ...HRM,
     ...sales,
     ...POS,
+
 
 
 

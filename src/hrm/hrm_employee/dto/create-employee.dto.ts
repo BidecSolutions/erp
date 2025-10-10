@@ -15,82 +15,75 @@ import {
   IsInt,
   ArrayNotEmpty,
   ArrayMaxSize,
-} from 'class-validator';
-import { Transform, Type } from 'class-transformer';
-import { CreateBankDetailDto } from 'src/hrm/hrm_bank-details/dto/create-bank-details.dto';
-import { EmployeeType } from '../employee.entity';
+  ArrayMinSize,
+} from "class-validator";
+import { Transform, Type } from "class-transformer";
+import { CreateBankDetailDto } from "src/hrm/hrm_bank-details/dto/create-bank-details.dto";
+import { EmployeeType } from "../employee.entity";
 
 export class CreateEmployeeDto {
   @IsString()
-  @IsNotEmpty({ message: 'Name is required' })
+  @IsNotEmpty({ message: "Name is required" })
   @Length(3, 50)
   name: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'Phone is required' })
-  @Matches(/^\d{11}$/, { message: 'Phone must be exactly 11 digits' })
+  @IsNotEmpty({ message: "Phone is required" })
+  @Matches(/^\d{11}$/, { message: "Phone must be exactly 11 digits" })
   phone: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'Gender is required' })
+  @IsNotEmpty({ message: "Gender is required" })
   gender: string;
-
 
   @IsEmail()
   email?: string;
-
 
   @IsString()
   @Length(6, 100)
   password?: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'Address is required' })
+  @IsNotEmpty({ message: "Address is required" })
   address: string;
 
   @IsDateString()
-  @IsNotEmpty({ message: 'Date of birth is required' })
+  @IsNotEmpty({ message: "Date of birth is required" })
   dateOfBirth: string;
 
   @IsOptional()
-  @IsEnum(['residential', 'postal', 'work address'], {
-    message: 'Location type must be one of: residential, postal, work address',
+  @IsEnum(["residential", "postal", "work address"], {
+    message: "Location type must be one of: residential, postal, work address",
   })
-  locationType?: 'residential' | 'postal' | 'work address';
+  locationType?: "residential" | "postal" | "work address";
 
-  @IsNumber({}, { message: 'Department ID must be a number' })
-  @IsNotEmpty({ message: 'Department is required' })
+  @IsNumber({}, { message: "Department ID must be a number" })
+  @IsNotEmpty({ message: "Department is required" })
   @Type(() => Number)
   departmentId: number;
 
-  @IsNumber({}, { message: 'Designation ID must be a number' })
-  @IsNotEmpty({ message: 'Designation is required' })
+  @IsNumber({}, { message: "Designation ID must be a number" })
+  @IsNotEmpty({ message: "Designation is required" })
   @Type(() => Number)
   designationId: number;
 
   @IsDateString()
-  @IsNotEmpty({ message: 'Date of joining is required' })
+  @IsNotEmpty({ message: "Date of joining is required" })
   dateOfJoining: string;
 
+  //  @IsNotEmpty({ message: 'CV is required' })
+  // cv: Express.Multer.File;
 
-  //   @IsString({ message: 'CV must be a valid string (file name)' })
-  //   @IsNotEmpty({ message: 'CV is required' })
-  // cv?: string; // file name after upload
+  // @IsNotEmpty({ message: 'Photo is required' })
+  // photo: Express.Multer.File;
 
+  // @IsArray()
+  // @IsArray({ message: 'Identity Card must have exactly 2 files' })
 
-  // @IsString({ message: 'Photo must be a valid string (file name)' })
-  //     @IsNotEmpty({ message: 'Photo is required' })
-  // photo?: string;
-
-
-  // @IsString({ message: 'Academic Transcript must be a valid string (file name)' })
-  //    @IsNotEmpty({ message: 'Academic Transcript is required' })
-  // academic_transcript?: string;
+  // identity_card: Express.Multer.File[];
 
   // @IsOptional()
-  // @IsArray({ message: 'Identity Card must be an array of file names' })
-  // @ArrayMaxSize(2, { message: 'Identity Card can have maximum 2 files (front and back)' })
-  // identity_card?: string[]
+  // academic_transcript?: Express.Multer.File;
 
   // // Multiple bank details allowed
   @IsOptional()
@@ -124,7 +117,7 @@ export class CreateEmployeeDto {
   @Type(() => Number)
   annualSalary?: number;
 
-  @IsNotEmpty({ message: 'Salary is required' })
+  @IsNotEmpty({ message: "Salary is required" })
   @IsNumber()
   @Type(() => Number)
   fixedSalary: number;
@@ -139,34 +132,36 @@ export class CreateEmployeeDto {
   @Type(() => Number)
   ratePerHour?: number;
 
-  @IsNumber({}, { message: 'Shift ID must be a number' })
-  @IsNotEmpty({ message: 'Shift is required' })
+  @IsNumber({}, { message: "Shift ID must be a number" })
+  @IsNotEmpty({ message: "Shift is required" })
   @Type(() => Number)
   shiftId: number;
-
 
   @IsBoolean()
   @Transform(({ value }) => {
     if (value === undefined || value === null) return false; // default
-    if (value === 'true' || value === true) return true;
-    if (value === 'false' || value === false) return false;
+    if (value === "true" || value === true) return true;
+    if (value === "false" || value === false) return false;
     return false; // fallback
   })
   is_system_user: boolean = false; // default value
 
-  @ValidateIf((o) => o.emp_type === EmployeeType.PERMANENT)
-  @IsOptional({ message: 'annual_leave_id is required for permanent employees' })
-  @IsInt({ message: 'annual_leave_id must be an integer number' })
+  @ValidateIf((o) => o.emp_type === EmployeeType.Permanent)
+  @IsOptional({
+    message: "annual_leave_id is required for permanent employees",
+  })
+  @IsInt({ message: "annual_leave_id must be an integer number" })
   @Type(() => Number)
   annual_leave_id?: number;
 
   //  Probation setting ID -> sirf PROBATION employees ke liye
-  @ValidateIf((o) => o.emp_type === EmployeeType.PROBATION)
-  @IsNotEmpty({ message: 'probation_setting_id is required for probation employees' })
-  @IsInt({ message: 'probation_setting_id must be an integer number' })
+  @ValidateIf((o) => o.emp_type === EmployeeType.Probation)
+  @IsNotEmpty({
+    message: "probation_setting_id is required for probation employees",
+  })
+  @IsInt({ message: "probation_setting_id must be an integer number" })
   @Type(() => Number)
   probation_setting_id?: number;
-
 
   @IsOptional()
   @IsArray()
@@ -179,17 +174,13 @@ export class CreateEmployeeDto {
   @Type(() => Number)
   role_id?: number;
 
-
-
-
-  @IsEnum(EmployeeType, { message: 'emp_type must be PROBATION or PERMANENT' })
-  @IsNotEmpty({ message: 'emp_type is required' })
+  @IsEnum(EmployeeType, { message: "emp_type must be Probation or Permanent" })
+  @IsNotEmpty({ message: "emp_type is required" })
   emp_type: EmployeeType;
-
 
   @IsNotEmpty({ message: "Branch Id is Requeired" })
   @IsArray()
   @Type(() => Number)
   @IsNumber({}, { each: true })
-  branch_id: number[]
+  branch_id: number[];
 }

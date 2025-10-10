@@ -53,7 +53,7 @@ export class CategoriesService {
     try {
       const category = await this.repo.findOneBy({ id });
       if (!category) {
-        return errorResponse(`category #${id} not found`);
+        throw new NotFoundException(`category ID ${id} not found`);
       }
 
       return successResponse('category retrieved successfully!', category);
@@ -63,7 +63,7 @@ export class CategoriesService {
   }
   async update(id: number, updateDto: UpdateCategoryDto) {
     try {
-      const existing = await this.repo.findOne({ where: { id } });
+      const existing = await this.repo.findOne({ where: { id, company_id } });
       if (!existing) {
         return errorResponse(`category #${id} not found`);
       }

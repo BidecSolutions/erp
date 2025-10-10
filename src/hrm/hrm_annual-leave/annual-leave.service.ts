@@ -1,10 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { AnnualLeave } from './annual-leave.entity';
-import { CreateAnnualLeaveDto } from './dto/create-annual-leave.dto';
-import { UpdateAnnualLeaveDto } from './dto/update-annual-leave.dto';
-import { errorResponse, toggleStatusResponse } from 'src/commonHelper/response.util';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { AnnualLeave } from "./annual-leave.entity";
+import { CreateAnnualLeaveDto } from "./dto/create-annual-leave.dto";
+import { UpdateAnnualLeaveDto } from "./dto/update-annual-leave.dto";
+import {
+  errorResponse,
+  toggleStatusResponse,
+} from "src/commonHelper/response.util";
 
 @Injectable()
 export class AnnualLeaveService {
@@ -35,11 +38,11 @@ export class AnnualLeaveService {
         .createQueryBuilder("annual_leave")
         .leftJoin("annual_leave.company", "company")
         .select([
-          "annual_leave.id",
-          "annual_leave.name",
-          "annual_leave.total_leave",
-          "annual_leave.status",
-          "company.company_name",
+          "annual_leave.id as annual_leave",
+          "annual_leave.name as name",
+          "annual_leave.total_leave as total_leave",
+          "annual_leave.status as statu",
+          "company.company_name as company_name", // sirf company name
         ])
         .where("annual_leave.company_id = :company_id", { company_id })
         .orderBy("annual_leave.id", "DESC")
@@ -47,7 +50,7 @@ export class AnnualLeaveService {
 
       return annualLeave;
     } catch (e) {
-      return { message: e.message };
+      throw e;
     }
   }
 
@@ -57,11 +60,11 @@ export class AnnualLeaveService {
         .createQueryBuilder("annual_leave")
         .leftJoin("annual_leave.company", "company")
         .select([
-          "annual_leave.id",
-          "annual_leave.name",
-          "annual_leave.total_leave",
-          "annual_leave.status",
-          "company.company_name", // sirf company name
+          "annual_leave.id as annual_leave",
+          "annual_leave.name as name",
+          "annual_leave.total_leave as total_leave",
+          "annual_leave.status as statu",
+          "company.company_name ascompany_name", // sirf company name
         ])
         .where("annual_leave.id = :id", { id })
         .getRawOne();
@@ -72,10 +75,9 @@ export class AnnualLeaveService {
 
       return annualLeave;
     } catch (e) {
-      return { message: e.message };
+      throw e;
     }
   }
-
 
   async update(id: number, dto: UpdateAnnualLeaveDto, company_id: number) {
     try {
@@ -94,9 +96,10 @@ export class AnnualLeaveService {
       const updated = await this.findAll(company_id);
       return updated;
     } catch (e) {
-      return { message: e.message };
+      throw e;
     }
   }
+
   async statusUpdate(id: number) {
     try {
       const dep = await this.repo.findOneBy({ id });
@@ -105,10 +108,9 @@ export class AnnualLeaveService {
       dep.status = dep.status === 0 ? 1 : 0;
       await this.repo.save(dep);
 
-      return this.findAll(dep.company_id);
+      return toggleStatusResponse("Annual Leave", dep.status);
     } catch (err) {
       return errorResponse("Something went wrong", err.message);
     }
   }
 }
-

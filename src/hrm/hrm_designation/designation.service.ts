@@ -37,7 +37,7 @@ export class DesignationService {
       const savedDesignation = await this.findAll(company);
       return savedDesignation;
     } catch (e) {
-      return { message: e.message };
+      throw e;
     }
   }
 
@@ -57,7 +57,7 @@ export class DesignationService {
         .getRawMany();
       return designations;
     } catch (e) {
-      return { message: e.message };
+      throw e;
     }
   }
 
@@ -81,7 +81,7 @@ export class DesignationService {
 
       return designation;
     } catch (e) {
-      return { message: e.message };
+      throw e;
     }
   }
 
@@ -117,7 +117,7 @@ export class DesignationService {
       const updatedDesignation = await this.findAll(company);
       return updatedDesignation;
     } catch (e) {
-      return { message: e.message };
+      throw e;
     }
   }
 
