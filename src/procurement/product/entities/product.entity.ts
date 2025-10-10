@@ -85,7 +85,8 @@ export class Product {
 
   @Column({ length: 50, nullable: true })
   barcode?: string;
-  @Column({ type: 'json', nullable: true })
+
+  @Column({ type: 'text', nullable: true })
   images: string[];
 
   @Column({ nullable: true })
@@ -106,7 +107,7 @@ export class Product {
   })
   is_instant_product: number;
 
-    @Column({
+  @Column({
     type: 'int',
   })
   has_variant: number;
