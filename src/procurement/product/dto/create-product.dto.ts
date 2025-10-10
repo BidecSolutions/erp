@@ -1,37 +1,51 @@
 import { Transform, Type } from 'class-transformer';
-import { IsNotEmpty, IsOptional, IsNumber, IsString, IsDecimal, ValidateNested, IsArray, IsInt, IsBoolean } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsNumber,
+  IsString,
+  ValidateNested,
+  IsArray,
+  IsInt,
+  IsBoolean,
+  ArrayMinSize,
+} from 'class-validator';
 
 export class CreateProductDto {
-
   @IsNotEmpty()
+  @IsString()
   product_name: string;
 
   @IsOptional()
+  @IsString()
   product_type?: string;
 
   @IsOptional()
+  @IsString()
   description?: string;
 
   @IsOptional()
-  unit_price?: number;
-
-  @IsOptional()
-  cost_price?: number;
-
-  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
   mrp?: number;
 
   @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
   minimum_stock_level?: number;
 
   @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
   maximum_stock_level?: number;
- 
 
   @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
   warranty_type?: number;
 
-  @IsNotEmpty()
+  @IsOptional()
+  @IsString()
   barcode?: string;
 
   @IsOptional()
@@ -40,36 +54,41 @@ export class CreateProductDto {
   images?: string[];
 
   @IsNotEmpty()
-  company_id?: number;
+  @Type(() => Number)
+  @IsInt()
+  branch_id: number;
 
   @IsNotEmpty()
-  branch_id?: number;
+  @Type(() => Number)
+  @IsInt()
+  category_id: number;
 
   @IsNotEmpty()
-  category_id?: number;
+  @Type(() => Number)
+  @IsInt()
+  module_type: number;
 
   @IsNotEmpty()
-  brand_id?: number;
+  @Type(() => Number)
+  @IsInt()
+  brand_id: number;
 
   @IsNotEmpty()
-  uom_id?: number;
+  @Type(() => Number)
+  @IsInt()
+  uom_id: number;
 
-  @IsNotEmpty()
-  has_variant: number
-
-  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(1, { message: 'at least one variant required' })
   @ValidateNested({ each: true })
   @Type(() => CreateProductVariantDto)
-  variants?: CreateProductVariantDto[];
+  variants: CreateProductVariantDto[];
 }
 
 export class CreateProductVariantDto {
-  @IsNotEmpty()
-  @IsInt()
-  product_id?: number;
 
-  @IsString()
   @IsNotEmpty()
+  @IsString()
   variant_name: string;
 
   @IsOptional()
@@ -80,4 +99,15 @@ export class CreateProductVariantDto {
   @IsString()
   attribute_value?: string;
 
+    @IsNotEmpty()
+  @Type(() => Number)
+  @IsNumber()
+  unit_price?: number;
+
+    @IsNotEmpty()
+  @Type(() => Number)
+  @IsNumber()
+  cost_price?: number;;
 }
+
+

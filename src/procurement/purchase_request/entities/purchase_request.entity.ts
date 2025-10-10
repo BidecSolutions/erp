@@ -48,13 +48,13 @@ export class PurchaseRequest {
   @Column({ type: 'int', default: 1 })
   status: number;
 
-  @Column({ name: 'created_by', type: 'int', nullable: true })
+  @Column()
   created_by?: number;
 
   @CreateDateColumn({ name: 'created_date', type: 'timestamp' })
   created_date: Date;
 
-  @Column({ name: 'updated_by', type: 'int', nullable: true })
+  @Column()
   updated_by?: number;
 
   @UpdateDateColumn({ name: 'updated_date', type: 'timestamp', nullable: true })

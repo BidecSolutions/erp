@@ -9,9 +9,11 @@ import { ModuleType } from '../module_type/entities/module_type.entity';
 import { Stock } from '../stock/entities/stock.entity';
 import { StockAdjustment } from '../stock_adjustment/entities/stock_adjustment.entity';
 import { StockMovement } from '../stock_movement/entities/stock_movement.entity';
+import { InternalTransferItem } from './entities/itr.items.entity';
+import { InternalTransferRequest } from './entities/itr.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([PurchaseRequest , PurchaseRequestItem,ModuleType ,Stock ,StockMovement])],
+  imports: [TypeOrmModule.forFeature([PurchaseRequest , PurchaseRequestItem,ModuleType ,Stock ,StockMovement ,InternalTransferItem ,InternalTransferRequest])],
   controllers: [PurchaseRequestController],
   providers: [PurchaseRequestService],
 })

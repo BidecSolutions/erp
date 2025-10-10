@@ -11,18 +11,16 @@ export class CategoriesController {
 
   // Create category
   @Post('store')
-  create(@Body() createCategoryDto: CreateCategoryDto ,@Req() req: Request) {
-      const companyId = req["user"].company_id;
-        console.log("companyId" , companyId);
-    return this.categoriesService.create(createCategoryDto ,companyId);
+  create(@Body() createCategoryDto: CreateCategoryDto, @Req() req: Request) {
+    const companyId = req["user"].company_id;
+    const userId = req["user"].user.id;
+    return this.categoriesService.create(createCategoryDto, companyId, userId);
   }
 
   @Get('list')
-  findAll(@Req() req : Request ,@Query('filter') filter?: string) {
-     const companyId = req["user"].company_id;
-    return this.categoriesService.findAll(
-     companyId, filter !== undefined ? Number(filter) : undefined,
-    );
+  findAll(@Req() req: Request) {
+    const companyId = req["user"].company_id;
+    return this.categoriesService.findAll(companyId);
   }
   @Get(':id')
   findOne(@Param('id') id: string) {
@@ -30,11 +28,14 @@ export class CategoriesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() UpdateCategoryDto: UpdateCategoryDto) {
-    return this.categoriesService.update(+id, UpdateCategoryDto);
-  }
+  update(@Param('id') id: string, @Body() UpdateCategoryDto: UpdateCategoryDto,
+    @Req() req: Request) {
+    const companyId = req["user"].company_id;
+    const userId = req["user"].user.id;
 
-  // Toggle category status
+    return this.categoriesService.update(+id, UpdateCategoryDto,companyId,userId);
+  }
+  
   @Get('toogleStatus/:id')
   async statusChange(@Param('id', ParseIntPipe) id: number) {
     return this.categoriesService.statusUpdate(id);

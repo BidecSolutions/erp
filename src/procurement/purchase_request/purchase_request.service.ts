@@ -4,12 +4,16 @@ import { UpdatePurchaseRequestDto } from './dto/update-purchase_request.dto';
 import { PurchaseRequest } from './entities/purchase_request.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
-import { errorResponse, getActiveList, successResponse, toggleStatusResponse } from 'src/commonHelper/response.util';
+import { errorResponse, generateCode, getActiveList, successResponse, toggleStatusResponse } from 'src/commonHelper/response.util';
 import { PurchaseRequestItem } from './entities/purchase-request-item.entity';
 import { PurchaseRequestStatus } from '../enums/purchase-request.enum';
 import { ModuleType } from '../module_type/entities/module_type.entity';
 import { Warehouse } from '../warehouse/entities/warehouse.entity';
 import { Stock } from '../stock/entities/stock.entity';
+import { StockMovement } from '../stock_movement/entities/stock_movement.entity';
+import { InternalTransferRequest } from './entities/itr.entity';
+import { InternalTransferItem } from './entities/itr.items.entity';
+import { ITRStatus } from '../enums/itr-enum';
 
 @Injectable()
 export class PurchaseRequestService {
@@ -23,6 +27,12 @@ export class PurchaseRequestService {
     private readonly moduleTypeRepo: Repository<ModuleType>,
     @InjectRepository(Stock)
     private readonly stockRepo: Repository<Stock>,
+    @InjectRepository(StockMovement)
+    private readonly stockMovementRepo: Repository<StockMovement>,
+    @InjectRepository(InternalTransferRequest)
+    private readonly itrRepo: Repository<InternalTransferRequest>,
+    @InjectRepository(InternalTransferItem)
+    private readonly itrItemRepo: Repository<InternalTransferItem>,
     private readonly dataSource: DataSource,
   ) { }
   async create() {
@@ -35,12 +45,12 @@ export class PurchaseRequestService {
       return errorResponse('Failed to load masters', error.message);
     }
   }
-  async store(createDto: CreatePurchaseRequestDto, userId:number, companyId:number) {
+  async store(createDto: CreatePurchaseRequestDto, userId: number, companyId: number) {
     try {
       const purchaseRequest = this.prRepo.create({
         ...createDto,
         company_id: companyId,
-        user_id: userId
+        created_by : userId
       });
       const savedPurchaseRequest = await this.prRepo.save(purchaseRequest);
       let savedItems: PurchaseRequestItem[] = [];
@@ -117,6 +127,7 @@ export class PurchaseRequestService {
         const updatedPR = await manager.getRepository(PurchaseRequest).save({
           id,
           ...prData,
+  
         });
 
         // 2️⃣ Handle Items
@@ -165,45 +176,146 @@ export class PurchaseRequestService {
       return errorResponse('Something went wrong', err.message);
     }
   }
-async approvePr(id: number) {
+  async approvePr(id: number, companyId: number, userId: number) {
     const pr = await this.prRepo.findOne({
       where: { id },
       relations: ['items'],
     });
-    if (!pr) {
-      return errorResponse(`Purchase Request #${id} not found`);
-    }
-  await this.prRepo.update(id, { pr_status: PurchaseRequestStatus.APPROVED });
-  
+    if (!pr) return errorResponse(`Purchase Request #${id} not found`);
+
+    const headWarehouseId = 1;
+    const branchWarehouseId = pr.branch_id ?? 2;
+
+    const itrCode = await generateCode('internal_transfer_requests', 'ITR', this.dataSource);
+    const itr = this.itrRepo.create({
+      itr_code: itrCode,
+      from_warehouse_id: headWarehouseId,
+      to_warehouse_id: branchWarehouseId,
+      remarks: "Stock transfer from head office to branch",
+      company_id: companyId,
+      branch_id: pr.branch_id,
+      user_id: userId,
+    });
+    const savedItr = await this.itrRepo.save(itr);
+
     for (const item of pr.items) {
       const stock = await this.stockRepo.findOne({
         where: {
           company_id: pr.company_id,
           variant_id: item.variant_id,
+          warehouse_id: headWarehouseId,
         },
       });
 
       if (stock && stock.quantity_on_hand >= item.qty_requested) {
-              item.pr_item_status = 'fullfilled';
-        await this.pr_itemsRepo.save(item);
-        // const transfer = this.stockTransferRepo.create({
-        //   company_id: companyId,
-        //   branch_id: existing.branch_id,
-        //   variant_id: item.variant_id,
-        //   quantity: item.quantity,
-        //   status: 'pending_dispatch',
-        //   reference_type: 'purchase_request',
-        //   reference_id: existing.id,
-        //   created_by: userId,
-        // });
-        // await this.stockTransferRepo.save(transfer);
+        const itrItem = this.itrItemRepo.create({
+          itr_id: savedItr.id,
+          product_id: item.product_id,
+          variant_id: item.variant_id,
+          requested_qty: item.qty_requested,
+          approved_qty: 0,
+        });
+        await this.itrItemRepo.save(itrItem);
+
+        item.pr_item_status = 'itr_created';
       } else {
         item.pr_item_status = 'require_supplier';
-        await this.pr_itemsRepo.save(item);
       }
+
+      await this.pr_itemsRepo.save(item);
     }
-    return successResponse(
-      `Purchase Request #${id} approved and stock checked successfully!`
-    );
+
+    await this.prRepo.update(id, { pr_status: PurchaseRequestStatus.APPROVED });
+
+    return successResponse(`Purchase Request #${id} approved and stock processed successfully.`);
   }
+  async approveItr(id: number, companyId: number, userId: number, approvedItems: any[]) {
+    const itr = await this.itrRepo.findOne({
+      where: { id },
+      relations: ['items'],
+    });
+
+    if (!itr) {
+      return errorResponse(`ITR #${id} not found`);
+    }
+    await this.itrRepo.update(id, { status: ITRStatus.APPROVED });
+
+    for (const approvedItem of approvedItems) {
+      const existing = await this.itrItemRepo.findOneBy({ id: approvedItem.itr_item_id });
+      console.log('Found item:', existing);
+      await this.itrItemRepo.update(
+        { id: approvedItem.itr_item_id },
+        { approved_qty: approvedItem.approved_qty }
+      );
+    }
+    const updatedItr = await this.itrRepo.findOne({
+      where: { id },
+      relations: ['items'],
+    });
+
+    const headWarehouseId = 1;
+    const branchWarehouseId = updatedItr?.to_warehouse_id
+
+    if (!updatedItr || !updatedItr.items?.length) {
+      return errorResponse(`No items found for ITR #${id}`);
+    }
+    for (const item of updatedItr.items) {
+      if (item.approved_qty <= 0) continue;
+      const qty = item.approved_qty;
+      await this.stockRepo.decrement(
+        {
+          variant_id: item.variant_id,
+          warehouse_id: headWarehouseId,
+          company_id: companyId,
+        },
+        'quantity_on_hand',
+        qty,
+      );
+
+      let branchStock = await this.stockRepo.findOne({
+        where: {
+          variant_id: item.variant_id,
+          warehouse_id: branchWarehouseId,
+          company_id: companyId,
+
+        },
+      });
+
+      if (branchStock) {
+        await this.stockRepo.increment(
+          { id: branchStock.id },
+          'quantity_on_hand',
+          qty,
+        );
+      } else {
+        await this.stockRepo.save(
+          this.stockRepo.create({
+            product_id: item.product_id,
+            variant_id: item.variant_id,
+            warehouse_id: branchWarehouseId,
+            company_id: companyId,
+            quantity_on_hand: qty,
+            branch_id:updatedItr.branch_id
+          }),
+        );
+      }
+      await this.stockMovementRepo.save(
+        this.stockMovementRepo.create({
+          product_id: item.product_id,
+          variant_id: item.variant_id,
+          from_warehouse_id: headWarehouseId,
+          to_warehouse_id: branchWarehouseId,
+          quantity: qty,
+          company_id: companyId,
+          branch_id: updatedItr.branch_id,
+          user_id: userId,
+        }),
+      );
+    }
+    return successResponse(`ITR #${id} approved successfully.`);
+  }
+
+
+
+
 }

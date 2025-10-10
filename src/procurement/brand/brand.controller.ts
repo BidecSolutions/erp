@@ -11,25 +11,33 @@ export class BrandController {
   constructor(private readonly brandService: BrandService) { }
 
   @Post('store')
-  create(@Body() createBrandDto: CreateBrandDto , @Req() req: Request) {
-      const companyId = req["user"].company_id;
-    return this.brandService.create(createBrandDto,companyId);
+  create(@Body() createBrandDto: CreateBrandDto, @Req() req: Request) {
+    const companyId = req["user"].company_id;
+    const userId = req["user"].user.id;
+    return this.brandService.create(createBrandDto, companyId, userId);
   }
 
   @Get('list')
-  findAll(@Query('filter') filter?: string) {
-    return this.brandService.findAll(
-      filter !== undefined ? Number(filter) : undefined,
-    );
+  findAll(@Req() req: Request) {
+    const companyId = req["user"].company_id;
+    return this.brandService.findAll(companyId);
   }
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.brandService.findOne(+id);
+  findOne(@Param('id') id: string,
+    @Req() req: Request) {
+    const companyId = req["user"].company_id;
+    return this.brandService.findOne(+id,companyId);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBrandDto: UpdateBrandDto) {
-    return this.brandService.update(+id, updateBrandDto);
+  update(@Param('id') id: string,
+    @Body() updateBrandDto: UpdateBrandDto,
+
+    @Req() req: Request) {
+    const companyId = req["user"].company_id;
+    const userId = req["user"].user.id;
+
+    return this.brandService.update(+id, updateBrandDto, userId, companyId);
   }
   @Get('toogleStatus/:id')
   statusChange(@Param('id', ParseIntPipe) id: number) {

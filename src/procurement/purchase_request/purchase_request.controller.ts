@@ -18,8 +18,6 @@ export class PurchaseRequestController {
     const userData = req["user"];
     const userId = userData?.user?.id;
     const companyId = userData?.company_id;
-
-
     return this.purchaseRequestService.store(createPurchaseRequestDto, userId, companyId);
   }
 
@@ -49,8 +47,33 @@ export class PurchaseRequestController {
 
   @Post('approve/:id')
   async approvePurchaseReq(
-    @Param('id') id: number) {
-    return this.purchaseRequestService.approvePr(id);
+    @Param('id') id: number,
+    @Req() req: Request) {
+    const userData = req["user"];
+    const userId = userData?.user?.id;
+    const companyId = userData?.company_id;
+
+    return this.purchaseRequestService.approvePr(id, companyId, userId);
 
   }
+
+  @Post('approveitr/:id')
+  async approveItrReq(
+    @Param('id') id: number,
+    @Body() body: { approvedItems: any[] }, // 👈 read entire body
+    @Req() req: Request
+  ) {
+    const userData = req['user'];
+    const userId = userData?.user?.id;
+    const companyId = userData?.company_id;
+
+    return this.purchaseRequestService.approveItr(
+      id,
+      companyId,
+      userId,
+      body.approvedItems // 👈 pass correctly
+    );
+  }
+
+
 }

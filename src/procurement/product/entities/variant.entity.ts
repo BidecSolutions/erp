@@ -37,18 +37,6 @@ export class productVariant {
     @Column('decimal', { precision: 10, scale: 2, nullable: true })
     cost_price?: number;
 
-    @Column({ name: 'created_by', type: 'int', nullable: true })
-    created_by?: number;
-
-    @CreateDateColumn({ name: 'created_date', type: 'timestamp' })
-    created_date: Date;
-
-    @Column({ name: 'updated_by', type: 'int', nullable: true })
-    updated_by?: number;
-
-    @UpdateDateColumn({ name: 'updated_date', type: 'timestamp', nullable: true })
-    updated_date?: Date;
-
     @OneToMany(() => SalesOrderDetail, (detail) => detail.productVariant, {
         cascade: true,
     })
