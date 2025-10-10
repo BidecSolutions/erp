@@ -47,11 +47,11 @@ export class Product {
 
 
 
-  @Column({ length: 255 })
+
   @Column({ length: 50, unique: true })
   product_code: string;
 
-  @Column({ length: 255 })
+  @Column({type:'text' })
   product_name: string;
 
   @Column({ length: 50, nullable: true })
@@ -83,8 +83,9 @@ export class Product {
   @Column({ type: 'int', default: 1 })
   status: number;
 
-  @Column({ length: 50, nullable: true })
+  @Column({ type: 'text' , nullable: true })
   barcode?: string;
+  
   @Column({ type: 'json', nullable: true })
   images: string[];
 

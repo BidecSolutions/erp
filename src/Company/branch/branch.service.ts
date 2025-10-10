@@ -76,7 +76,7 @@ export class BranchService {
             .where('branch.company = :company_id', { company_id })
             .andWhere('branch.id IN (:...ids)', { ids: branchIDS })
             .select([
-                'branch.id',
+                'branch.id as id',
                 'branch.branch_code as branch_code',
                 'branch.branch_name as branch_name',
                 'branch.branch_type as branch_type',
@@ -119,35 +119,35 @@ export class BranchService {
                 .andWhere('branch.is_active = :isActive', { isActive: 1 })
 
                 .select([
-                    'branch.id',
-                    'branch.branch_code',
-                    'branch.branch_name',
-                    'branch.branch_type',
-                    'branch.address_line1',
-                    'branch.address_line2',
-                    'branch.city',
-                    'branch.state',
-                    'branch.country',
-                    'branch.postal_code',
-                    'branch.phone',
-                    'branch.mobile',
-                    'branch.email',
-                    'branch.manager_name',
-                    'branch.manager_email',
-                    'branch.manager_phone',
-                    'branch.opening_balance',
-                    'branch.bank_account_no',
-                    'branch.bank_name',
-                    'branch.ifsc_code',
-                    'branch.is_head_office',
-                    'branch.allow_negative_stock',
-                    'branch.is_active',
-                    'branch.created_by',
-                    'branch.created_date',
-                    'branch.updated_by',
-                    'branch.updated_date',
-                    'company.id',
-                    'company.company_name',
+                    'branch.id as id',
+                    'branch.branch_code as branch_code',
+                    'branch.branch_name as branch_name',
+                    'branch.branch_type as branch_type',
+                    'branch.address_line1 as address_line1',
+                    'branch.address_line2 as address_line2',
+                    'branch.city as city',
+                    'branch.state as state',
+                    'branch.country as country',
+                    'branch.postal_code as postal_code',
+                    'branch.phone as phone',
+                    'branch.mobile as mobile',
+                    'branch.email as email',
+                    'branch.manager_name as manager_name',
+                    'branch.manager_email  as manager_email',
+                    'branch.manager_phone as manager_phone',
+                    'branch.opening_balance as opening_balance',
+                    'branch.bank_account_no as bank_account_no',
+                    'branch.bank_name as bank_name',
+                    'branch.ifsc_code as ifsc_code',
+                    'branch.is_head_office as is_head_office',
+                    'branch.allow_negative_stock as allow_negative_stock',
+                    'branch.is_active as is_active',
+                    'branch.created_by as created_by',
+                    'branch.created_date as created_date',
+                    'branch.updated_by as updated_by',
+                    'branch.updated_date as updated_date',
+                    'c.id as companyId',
+                    'c.company_name as company_name',
                 ])
                 .getRawOne();
 
@@ -221,18 +221,29 @@ export class BranchService {
         }
     }
 
-    async remove(id: number, updatedBy: number) {
+    async toggleStatus(id: number) {
         try {
             const branch = await this.branchRepo.findOneBy({ id });
-            if (!branch) return { success: false, message: 'Branch not found' };
+            if (!branch) {
+                return { status: false, message: 'Branch not found' };
+            }
 
-            branch.is_active = 2; // soft delete
+            // Toggle is_active: 1 = active, 0 = inactive
+            branch.is_active = branch.is_active === 1 ? 0 : 1;
             branch.updated_date = new Date().toISOString().split('T')[0];
+            // branch.updated_by = updatedBy;
 
             await this.branchRepo.save(branch);
-            return { success: true, message: `Branch with ID ${id} set to inactive`, data: branch };
+
+            const action = branch.is_active === 1 ? 'activated' : 'deactivated';
+            return {
+                status: true,
+                message: `Branch ${action} successfully`,
+                data: branch,
+            };
         } catch (error) {
-            return { success: false, message: 'Failed to remove branch' };
+            return { status: false, message: 'Failed to toggle branch status', error: error.message };
         }
     }
+
 }

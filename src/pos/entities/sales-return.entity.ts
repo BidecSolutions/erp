@@ -59,8 +59,8 @@ export class SalesReturn {
     @Column({ type: 'date' })
     return_date: Date;
 
-    // @Column({ nullable: true })
-    // created_by: number;
+    @Column({ nullable: true })
+    created_by: number;
 
     @Column({ type: 'date' })
     created_date: string;
