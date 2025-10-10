@@ -13,9 +13,9 @@ export class UnitOfMeasureService {
         @InjectRepository(UnitOfMeasure)
       private readonly repo: Repository<UnitOfMeasure>) {}
 
-async create(createDto: CreateUnitOfMeasureDto, company_id:number) {
+async create(createDto: CreateUnitOfMeasureDto,userId:number, company_id:number) {
       try {
-        const unit_of_measure = this.repo.create({...createDto, company_id});
+        const unit_of_measure = this.repo.create({...createDto, company_id, created_by: userId});
         await this.repo.save(unit_of_measure);
         const saved = await this.findAll(company_id);
         return saved;
@@ -34,11 +34,12 @@ async findAll(company_id: number, filterStatus?: number) {
       .createQueryBuilder("unit")
       .leftJoin("unit.company", "company")
       .select([
-        "unit.id",
-        "unit.uom_name",
-        "unit.uom_code",
-        "unit.status",
-        "company.company_name",
+        "unit.id as id",
+        "unit.uom_name as uom_name",
+        "unit.uom_code as uom_code",
+        "unit.status as status",
+        "unit.company_id as company_id",
+        "unit.created_by as created_by",
       ])
       .where("unit.company_id = :company_id", { company_id })
       .andWhere("unit.status = :status", { status })
@@ -57,11 +58,12 @@ async findOne(id: number) {
       .createQueryBuilder("unit")
       .leftJoin("unit.company", "company")
       .select([
-        "unit.id",
-        "unit.uom_name",
-        "unit.uom_code",
-        "unit.status",
-        "company.company_name",
+     "unit.id as id",
+        "unit.uom_name as uom_name",
+        "unit.uom_code as uom_code",
+        "unit.status as status",
+        "unit.company_id as company_id",
+        "unit.created_by as created_by",
       ])
       .where("unit.id = :id", { id })
       .getRawOne();

@@ -11,8 +11,10 @@ export class UnitOfMeasureController {
 
   @Post('store')
   async create(@Body() dto: CreateUnitOfMeasureDto, @Req() req: any) {
-    const companyId = req.user.company_id;
-    const unitOfMeasure = await this.unitOfMeasureService.create(dto, companyId);
+       const userData = req["user"];
+      const userId = userData?.user?.id;
+      const companyId = userData?.company_id;
+    const unitOfMeasure = await this.unitOfMeasureService.create(dto,userId, companyId);
     return {
       status: true,
       message: 'Unit Of Measure Created Successfully',

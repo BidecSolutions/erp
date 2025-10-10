@@ -77,7 +77,7 @@ export class ProbationSettingService {
         "probation_setting.probation_period as probation_period",
         "probation_setting.duration_type as duration_type",
         "probation_setting.status as status",
-        "company.company_name as company_name",
+               "probation_setting.company_id as company_id",
       ])
       .where("probation_setting.company_id = :company_id", { company_id });
 
@@ -105,7 +105,7 @@ export class ProbationSettingService {
           "probation_setting.probation_period as probation_period",
           "probation_setting.duration_type as duration_type",
           "probation_setting.status as status",
-          "company.company_name as company_name",
+                 "probation_setting.company_id as company_id",
         ])
         .where("probation_setting.id = :id", { id })
         .getRawOne();

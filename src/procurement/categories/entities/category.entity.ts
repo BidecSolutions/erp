@@ -43,6 +43,9 @@ export class Category {
   @Column({ name: 'created_by', nullable: true })
   created_by: number;
 
+ @Column({ name: 'updated_by', nullable: true })
+  updated_by: number;
+
   @CreateDateColumn({ name: 'created_date', type: 'timestamp' })
   created_date: Date;
 }

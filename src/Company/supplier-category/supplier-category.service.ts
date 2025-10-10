@@ -16,12 +16,13 @@ export class SupplierCategoryService {
     private companyRepo: Repository<Company>,
   ) { }
 
-  async create(dto: CreateSupplierCategoryDto, company_id: number) {
+  async create(dto: CreateSupplierCategoryDto,userId:number, company_id: number) {
     try {
       //  Create supplier category with direct company_id assignments
       const category = this.supplierCategoryRepo.create({
         ...dto,
-        company: { id: company_id } as Company
+        company: { id: company_id } as Company,
+        created_by: userId
       });
 
       await this.supplierCategoryRepo.save(category);
@@ -47,7 +48,8 @@ export class SupplierCategoryService {
           "category.category_name as category_name",
           "category.description as description",
           "category.is_active as is_active",
-          "company.company_name as company_name",
+       "category.company_id as company_id",
+          "category.created_by as  created_by",
         ])
         .where("category.company_id = :company_id", { company_id })
         .orderBy("category.id", "DESC")
@@ -71,7 +73,8 @@ export class SupplierCategoryService {
           "category.category_name as category_name",
           "category.description as description",
           "category.is_active as is_active",
-          "company.company_name as company_name",
+         "category.company_id as company_id",
+                "category.created_by as  created_by",
         ])
         .where("category.id = :id", { id })
         .getRawOne();

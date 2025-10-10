@@ -24,8 +24,10 @@ export class SupplierController {
   // Create supplier
   @Post('create')
   async create(@Body() dto: CreateSupplierDto, @Req() req: any) {
-    const companyId = req["user"].company_id;
-    const supplier = await this.supplierService.create(dto, companyId);
+      const userData = req["user"];
+      const userId = userData?.user?.id;
+      const companyId = userData?.company_id;
+    const supplier = await this.supplierService.create(dto,userId, companyId);
     return {
       status: true,
       message: 'Supplier Created Successfully',
