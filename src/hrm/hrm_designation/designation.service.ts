@@ -48,7 +48,7 @@ export class DesignationService {
     try {
       const designations = await this.designationRepository
         .createQueryBuilder("designation")
-        .leftJoin("designation.department", "department")
+            
         .select([
           "designation.id",
           "designation.name",
