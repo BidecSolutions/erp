@@ -13,9 +13,6 @@ export class CreateCustomerInvoiceDto {
   @IsNotEmpty()
   sales_order_id?: number;  
 
-  @IsNotEmpty()
-  @IsString()
-  invoice_no: string;
 
   @IsNotEmpty()
   @IsString()

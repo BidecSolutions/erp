@@ -22,61 +22,61 @@ export class BranchService {
     ) { }
 
     async create(dto: CreateBranchDto, userID: number, companyID: number) {
-        try {
-            const company = await this.companyRepo.findOneBy({ id: dto.companyId });
-            if (!company) return { success: false, message: `Company with ID ${dto.companyId} not found` };
-            const branchCode = await generateCode('branch', 'BRN', this.dataSource);
+        const company = await this.companyRepo.findOneBy({ id: companyID });
+        if (!company) return { success: false, message: `Company with ID ${companyID} not found` };
+        const branchCode = await generateCode('branch', 'BRN', this.dataSource);
 
-            const branch = this.branchRepo.create({
-                ...dto,
-                company: { id: dto.companyId } as Company,
-                branch_code: branchCode,
-                is_active: 1,
-            });
-            const savedBranch = await this.branchRepo.save(branch);
+        const branch = this.branchRepo.create({
+            ...dto,
+            company: { id: companyID } as Company,
+            branch_code: branchCode,
+            is_active: 1,
+        });
+        const savedBranch = await this.branchRepo.save(branch);
 
-            const findBranch = await this.ucm.findOne({ where: { user_id: userID } });
-
+        const findBranch = await this.ucm.findOne({ where: { user_id: userID } });
 
 
-            if (!findBranch) {
-                throw new Error('Company mapping not found');
-            }
 
-            // branch_id is already a number[] (auto-parsed by TypeORM JSON column)
-            let updatedBranches: number[] = [...(findBranch.branch_id || [])];
+        if (!findBranch) {
+            throw new Error('Company mapping not found');
+        }
 
-            if (!updatedBranches.includes(savedBranch.id)) {
-                updatedBranches.push(savedBranch.id);
-            }
+        // branch_id is already a number[] (auto-parsed by TypeORM JSON column)
+        let updatedBranches: number[] = [...(findBranch.branch_id || [])];
 
-            // Update with array directly (TypeORM handles JSON serialization)
-            await this.ucm.update(
-                { user_id: userID },
-                { branch_id: updatedBranches }
-            );
+        if (!updatedBranches.includes(savedBranch.id)) {
+            updatedBranches.push(savedBranch.id);
+        }
 
-            const branches = await this.findAll(userID);
-            return { success: true, message: 'Branch created successfully', data: branches };
-        } catch (error) {
+        // Update with array directly (TypeORM handles JSON serialization)
+        await this.ucm.update(
+            { user_id: userID },
+            { branch_id: updatedBranches }
+        );
+
+        const branches = await this.findAll(userID, companyID);
+        return { success: true, message: 'Branch created successfully', data: branches };
+        try { } catch (error) {
             return { success: false, message: 'Failed to create branch' };
         }
     }
 
-    async findAll(user_id: number) {
+    async findAll(user_id: number, company_id: number) {
         const findBranches = await this.ucm.findOne({ where: { user_id } });
 
         if (!findBranches || !Array.isArray(findBranches.branch_id) || findBranches.branch_id.length === 0) {
             return { status: true, message: "No Branch Found", data: [] }
         }
+
         const branchIDS = findBranches.branch_id;
         const branch = await this.branchRepo
             .createQueryBuilder('branch')
-            .leftJoin('branch.company', 'company')
-            // .andWhere('branch.is_active = :isActive', { isActive: 1 })
+            .innerJoin('companies', 'c', 'branch.companyId = c.id')
+            .where('branch.company = :company_id', { company_id })
             .andWhere('branch.id IN (:...ids)', { ids: branchIDS })
             .select([
-                'branch.id',
+                'branch.id as id',
                 'branch.branch_code as branch_code',
                 'branch.branch_name as branch_name',
                 'branch.branch_type as branch_type',
@@ -103,8 +103,8 @@ export class BranchService {
                 'branch.created_date as created_date',
                 'branch.updated_by as updated_by',
                 'branch.updated_date as updated_date',
-                'company.id as companyId',
-                'company.company_name as company_name',
+                'c.id as companyId',
+                'c.company_name as company_name',
             ])
             .getRawMany();
         return { status: true, message: "Get All Branches", data: branch }
@@ -119,35 +119,35 @@ export class BranchService {
                 .andWhere('branch.is_active = :isActive', { isActive: 1 })
 
                 .select([
-                    'branch.id',
-                    'branch.branch_code',
-                    'branch.branch_name',
-                    'branch.branch_type',
-                    'branch.address_line1',
-                    'branch.address_line2',
-                    'branch.city',
-                    'branch.state',
-                    'branch.country',
-                    'branch.postal_code',
-                    'branch.phone',
-                    'branch.mobile',
-                    'branch.email',
-                    'branch.manager_name',
-                    'branch.manager_email',
-                    'branch.manager_phone',
-                    'branch.opening_balance',
-                    'branch.bank_account_no',
-                    'branch.bank_name',
-                    'branch.ifsc_code',
-                    'branch.is_head_office',
-                    'branch.allow_negative_stock',
-                    'branch.is_active',
-                    'branch.created_by',
-                    'branch.created_date',
-                    'branch.updated_by',
-                    'branch.updated_date',
-                    'company.id',
-                    'company.company_name',
+                    'branch.id as id',
+                    'branch.branch_code as branch_code',
+                    'branch.branch_name as branch_name',
+                    'branch.branch_type as branch_type',
+                    'branch.address_line1 as address_line1',
+                    'branch.address_line2 as address_line2',
+                    'branch.city as city',
+                    'branch.state as state',
+                    'branch.country as country',
+                    'branch.postal_code as postal_code',
+                    'branch.phone as phone',
+                    'branch.mobile as mobile',
+                    'branch.email as email',
+                    'branch.manager_name as manager_name',
+                    'branch.manager_email  as manager_email',
+                    'branch.manager_phone as manager_phone',
+                    'branch.opening_balance as opening_balance',
+                    'branch.bank_account_no as bank_account_no',
+                    'branch.bank_name as bank_name',
+                    'branch.ifsc_code as ifsc_code',
+                    'branch.is_head_office as is_head_office',
+                    'branch.allow_negative_stock as allow_negative_stock',
+                    'branch.is_active as is_active',
+                    'branch.created_by as created_by',
+                    'branch.created_date as created_date',
+                    'branch.updated_by as updated_by',
+                    'branch.updated_date as updated_date',
+                    'c.id as companyId',
+                    'c.company_name as company_name',
                 ])
                 .getRawOne();
 
@@ -214,7 +214,7 @@ export class BranchService {
             branch.updated_date = new Date().toISOString().split('T')[0];
 
             const updatedBranch = await this.branchRepo.save(branch);
-            const branches = await this.findAll(userID);
+            const branches = await this.findAll(userID, compnayId);
             return { success: true, message: 'Branch updated successfully', data: branches };
         } catch (error) {
             return { success: false, message: 'Failed to update branch' };

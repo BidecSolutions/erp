@@ -19,12 +19,12 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @Controller('allowance')
 export class AllowanceController {
-  constructor(private readonly allowanceService: AllowanceService) {}
+  constructor(private readonly allowanceService: AllowanceService) { }
 
   // Create allowance
   @Post('create')
   async create(@Body() dto: CreateAllowanceDto, @Req() req: any) {
-    const companyId = req.user.company_id;
+    const companyId = req["user"].company_id;
     const allowances = await this.allowanceService.create(dto, companyId);
     return {
       status: true,
@@ -36,9 +36,8 @@ export class AllowanceController {
   // Get all allowances for company with optional status filter
   @Get('list')
   async findAll(@Req() req: any, @Query('status') status?: string) {
-    const companyId = req.user.company_id;
-    const filterStatus = status !== undefined ? Number(status) : undefined;
-    const allowances = await this.allowanceService.findAll(companyId, filterStatus);
+    const companyId = req["user"].company_id;
+    const allowances = await this.allowanceService.findAll(companyId);
     return {
       status: true,
       message: 'Get All Allowances',
@@ -75,8 +74,9 @@ export class AllowanceController {
 
   // Toggle allowance status
   @Get('toogleStatus/:id')
-  async statusChange(@Param('id', ParseIntPipe) id: number) {
-    return this.allowanceService.statusUpdate(id);
+  async statusChange(@Req() req: any, @Param('id', ParseIntPipe) id: number) {
+    const companyId = req["user"].company_id;
+    return this.allowanceService.statusUpdate(id, companyId);
   }
 
 }

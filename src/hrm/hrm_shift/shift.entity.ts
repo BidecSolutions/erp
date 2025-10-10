@@ -10,6 +10,12 @@ export class Shift {
   @Column()
   name: string;
 
+   @Column({ type: 'time', nullable: false })
+  start_time: string; // e.g. "09:00:00"
+
+  @Column({ type: 'time', nullable: false })
+  end_time: string; // e.g. "18:00:00"
+
    @OneToMany(() => Employee, (emp) => emp.shift)
   employees: Employee[];
 

@@ -8,23 +8,23 @@ import { errorResponse, successResponse, toggleStatusResponse } from 'src/common
 
 @Injectable()
 export class WarrantyService {
-constructor(
-      @InjectRepository(Warranty)
-    private readonly repo: Repository<Warranty>) {}
-    
-   async create(dto: CreateWarrantyDto, companyId: number) {
-     try {
-       const warranty = this.repo.create({
-         ...dto,
-         company_id:companyId
-       });
-       await this.repo.save(warranty);
-       return successResponse('warranty created successfully!', warranty);
- 
-     } catch (error) {
-       throw new BadRequestException(error.message || 'Failed to create warranty');
-     }
-   }
+  constructor(
+    @InjectRepository(Warranty)
+    private readonly repo: Repository<Warranty>) { }
+
+  async create(dto: CreateWarrantyDto, companyId: number) {
+    try {
+      const warranty = this.repo.create({
+        ...dto,
+        company_id: companyId
+      });
+      await this.repo.save(warranty);
+      return successResponse('warranty created successfully!', warranty);
+
+    } catch (error) {
+      throw new BadRequestException(error.message || 'Failed to create warranty');
+    }
+  }
   async findAll(filter?: number) {
     try {
       const where: any = {};
@@ -55,30 +55,36 @@ constructor(
       return errorResponse('Failed to retrieve warranty', error.message);
     }
   }
-  async update(id: number, updateDto: UpdateWarrantyDto) {
+
+
+
+
+  async update(id: number, updateDto: UpdateWarrantyDto, company_id: number) {
     try {
-      const existing = await this.repo.findOne({ where: { id } });
+      const existing = await this.repo.findOne({ where: { id, company_id } });
       if (!existing) {
         return errorResponse(`warranty #${id} not found`);
       }
 
-      const warranty = await this.repo.save({ id, ...updateDto });
-      return successResponse('warranty updated successfully!', warranty);
-    } catch (error) {
-      return errorResponse('Failed to update warranty', error.message);
+      await this.repo.save({ id, ...updateDto });
+      const updated = await this.findAll(company_id);
+      return updated;
+    } catch (e) {
+      return { message: e.message };
     }
   }
+
   async statusUpdate(id: number) {
-  try {
-    const warranty = await this.repo.findOne({ where: { id } });
-    if (!warranty) throw new NotFoundException('warranty not found');
+    try {
+      const warranty = await this.repo.findOne({ where: { id } });
+      if (!warranty) throw new NotFoundException('warranty not found');
 
-    warranty.status = warranty.status === 0 ? 1 : 0;
-    const saved = await this.repo.save(warranty);
+      warranty.status = warranty.status === 0 ? 1 : 0;
+      const saved = await this.repo.save(warranty);
 
-    return toggleStatusResponse('warranty', saved.status);
-  } catch (err) {
-    return errorResponse('Something went wrong', err.message);
-  }
+      return toggleStatusResponse('warranty', saved.status);
+    } catch (err) {
+      return errorResponse('Something went wrong', err.message);
     }
+  }
 }

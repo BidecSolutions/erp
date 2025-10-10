@@ -10,45 +10,48 @@ import {
   Query,
   Req,
   UseGuards,
-} from '@nestjs/common';
-import { ProbationSettingService } from './probation-setting.service';
-import { CreateProbationSettingDto } from './dto/create-probation-setting.dto';
-import { UpdateProbationSettingDto } from './dto/update-probation-setting.dto';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+} from "@nestjs/common";
+import { ProbationSettingService } from "./probation-setting.service";
+import { CreateProbationSettingDto } from "./dto/create-probation-setting.dto";
+import { UpdateProbationSettingDto } from "./dto/update-probation-setting.dto";
+import { JwtAuthGuard } from "src/auth/jwt-auth.guard";
 
 @UseGuards(JwtAuthGuard)
-@Controller('probation-setting')
+@Controller("probation-setting")
 export class ProbationSettingController {
   constructor(private readonly probationService: ProbationSettingService) {}
 
   // // Create probation setting
-  @Post('create')
+  @Post("create")
   async create(@Body() dto: CreateProbationSettingDto, @Req() req: any) {
     const companyId = req.user.company_id;
     const created = await this.probationService.create(dto, companyId);
     return {
       status: true,
-      message: 'Probation Setting Created Successfully',
+      message: "Probation Setting Created Successfully",
       data: created,
     };
   }
 
   // // Get all settings for company (with optional status filter)
-  @Get('list')
-  async findAll(@Req() req: any, @Query('status') status?: string) {
+  @Get("list")
+  async findAll(@Req() req: any, @Query("status") status?: string) {
     const companyId = req.user.company_id;
     const filterStatus = status !== undefined ? Number(status) : undefined;
-    const settings = await this.probationService.findAll(companyId, filterStatus);
+    const settings = await this.probationService.findAll(
+      companyId,
+      filterStatus
+    );
     return {
       status: true,
-      message: 'Get All Probation Settings',
+      message: "Get All Probation Settings",
       data: settings,
     };
   }
 
   // // Get single probation setting
-  @Get(':id/get')
-  async findOne(@Param('id', ParseIntPipe) id: number) {
+  @Get(":id/get")
+  async findOne(@Param("id", ParseIntPipe) id: number) {
     const setting = await this.probationService.findOne(id);
     return {
       status: true,
@@ -58,25 +61,24 @@ export class ProbationSettingController {
   }
 
   // // Update probation setting
-  @Put(':id/update')
+  @Put(":id/update")
   async update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param("id", ParseIntPipe) id: number,
     @Body() dto: UpdateProbationSettingDto,
-    @Req() req: any,
+    @Req() req: any
   ) {
     const companyId = req.user.company_id;
     const updated = await this.probationService.update(id, dto, companyId);
     return {
       status: true,
-      message: 'Probation Setting Updated Successfully',
+      message: "Probation Setting Updated Successfully",
       data: updated,
     };
   }
 
   // // Toggle probation setting status
-  @Get('toogleStatus/:id')
-  async statusChange(@Param('id', ParseIntPipe) id: number) {
+  @Get("toogleStatus/:id")
+  async statusChange(@Param("id", ParseIntPipe) id: number) {
     return this.probationService.statusUpdate(id);
   }
-
 }

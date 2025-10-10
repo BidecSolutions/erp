@@ -31,7 +31,7 @@ export class CustomerService {
       });
       if (!company)
         throw new NotFoundException(
-          `Company ID ${company_id} not found or inactive`
+          `Company ID ${company_id} not found`
         );
 
       // ✅ Check category existence

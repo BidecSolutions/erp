@@ -20,7 +20,8 @@ export class BranchController {
     @Get('list')
     findAll(@Req() req: Request) {
         const userId = req['user'].user.id;
-        return this.branchService.findAll(userId);
+        const compnayId = req['user'].company_id;
+        return this.branchService.findAll(userId, compnayId);
     }
 
     @Get('findby/:id')
