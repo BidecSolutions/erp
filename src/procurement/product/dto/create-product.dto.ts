@@ -1,10 +1,7 @@
-import { Type } from 'class-transformer';
-import { IsNotEmpty, IsOptional, IsNumber, IsString, IsDecimal, ValidateNested, IsArray } from 'class-validator';
-import { CreateProductVariantDto } from './create-variant.dto';
+import { Transform, Type } from 'class-transformer';
+import { IsNotEmpty, IsOptional, IsNumber, IsString, IsDecimal, ValidateNested, IsArray, IsInt, IsBoolean } from 'class-validator';
 
 export class CreateProductDto {
-  @IsNotEmpty()
-  sku: string;
 
   @IsNotEmpty()
   product_name: string;
@@ -15,10 +12,10 @@ export class CreateProductDto {
   @IsOptional()
   description?: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   unit_price?: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   cost_price?: number;
 
   @IsOptional()
@@ -29,18 +26,10 @@ export class CreateProductDto {
 
   @IsOptional()
   maximum_stock_level?: number;
-
-  @IsOptional()
-  reorder_level?: number;
-
-  @IsOptional()
-  reorder_quantity?: number;
+ 
 
   @IsOptional()
   warranty_type?: number;
-
-  @IsOptional()
-  product_status?: string;
 
   @IsNotEmpty()
   barcode?: string;
@@ -50,6 +39,8 @@ export class CreateProductDto {
   @IsString({ each: true })
   images?: string[];
 
+  @IsNotEmpty()
+  company_id?: number;
 
   @IsNotEmpty()
   branch_id?: number;
@@ -63,10 +54,30 @@ export class CreateProductDto {
   @IsNotEmpty()
   uom_id?: number;
 
+  @IsNotEmpty()
+  has_variant: number
+
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => CreateProductVariantDto)
   variants?: CreateProductVariantDto[];
+}
 
+export class CreateProductVariantDto {
+  @IsNotEmpty()
+  @IsInt()
+  product_id?: number;
+
+  @IsString()
+  @IsNotEmpty()
+  variant_name: string;
+
+  @IsOptional()
+  @IsString()
+  attribute_name?: string;
+
+  @IsOptional()
+  @IsString()
+  attribute_value?: string;
 
 }

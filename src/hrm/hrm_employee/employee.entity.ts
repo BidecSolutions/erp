@@ -62,7 +62,7 @@ export class Employee {
   })
   locationType?: "residential" | "postal" | "work address";
 
-  @Column({ type: "json" })
+  @Column({ type: 'json' })
   branch_id: number[];
 
   @ManyToOne(() => Department, { nullable: false })
@@ -89,8 +89,6 @@ export class Employee {
   @Column({ nullable: false })
   fixedSalary: number;
 
-  // @Column({ type: 'simple-json', nullable: true })
-  // branch_id: number[];
 
   @ManyToOne(() => Shift, (shift) => shift.employees)
   @JoinColumn({ name: "shiftId" })

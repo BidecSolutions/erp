@@ -11,8 +11,6 @@ export class SupplierCategory {
   @JoinColumn({ name: 'company_id' })
   company: Company;
 
-  @Column()
-  company_id: number;
 
   @OneToMany(() => Supplier, (supplier) => supplier.category)
   suppliers: Supplier[];

@@ -19,12 +19,12 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @Controller('supplier-categories')
 export class SupplierCategoryController {
-  constructor(private readonly supplierCategoryService: SupplierCategoryService) {}
+  constructor(private readonly supplierCategoryService: SupplierCategoryService) { }
 
   // Create supplier category
   @Post('create')
   async create(@Body() dto: CreateSupplierCategoryDto, @Req() req: any) {
-    const companyId = req.user.company_id;
+    const companyId = req["user"].company_id;
     const categories = await this.supplierCategoryService.create(dto, companyId);
     return {
       status: true,
@@ -36,9 +36,9 @@ export class SupplierCategoryController {
   // Get all supplier categories for company
   @Get('list')
   async findAll(@Req() req: any, @Query('status') status?: string) {
-    const companyId = req.user.company_id;
+    const companyId = req["user"].company_id;
     const filterStatus = status !== undefined ? Number(status) : undefined;
-    const categories = await this.supplierCategoryService.findAll(companyId, filterStatus);
+    const categories = await this.supplierCategoryService.findAll(companyId);
     return {
       status: true,
       message: 'Get All Supplier Categories',
@@ -64,7 +64,7 @@ export class SupplierCategoryController {
     @Body() dto: UpdateSupplierCategoryDto,
     @Req() req: any,
   ) {
-    const companyId = req.user.company_id;
+    const companyId = req["user"].company_id;
     const updated = await this.supplierCategoryService.update(id, dto, companyId);
     return {
       status: true,
@@ -73,14 +73,10 @@ export class SupplierCategoryController {
     };
   }
 
-  // Soft delete supplier category
-  @Delete(':id/delete')
-  async remove(@Param('id', ParseIntPipe) id: number) {
-    const deleted = await this.supplierCategoryService.remove(id);
-    return {
-      status: true,
-      message: 'Supplier Category Deleted Successfully',
-      data: deleted,
-    };
+  @Get('toggleStatus/:id')
+  async toggleStatus(@Req() req: Request, @Param('id', ParseIntPipe) id: number) {
+    const companyId = req["user"].company_id;
+    return this.supplierCategoryService.toggleStatus(id, companyId);
   }
+
 }

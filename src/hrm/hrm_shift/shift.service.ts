@@ -13,8 +13,9 @@ import {
 export class ShiftService {
   constructor(
     @InjectRepository(Shift)
-    private readonly shiftRepo: Repository<Shift>
-  ) {}
+    private readonly shiftRepo: Repository<Shift>,
+  ) { }
+
 
   async create(dto: CreateShiftDto, company_id: number) {
     try {
@@ -27,12 +28,12 @@ export class ShiftService {
       const saved = await this.findAll(company_id);
       return saved;
     } catch (e) {
-      throw e;
+      return { message: e.message };
     }
   }
 
+
   async findAll(company_id: number, filterStatus?: number) {
-    const status = filterStatus !== undefined ? filterStatus : 1;
     try {
       const shifts = await this.shiftRepo
         .createQueryBuilder("shift")
@@ -40,19 +41,16 @@ export class ShiftService {
         .select([
           "shift.id",
           "shift.name",
-          "shift.start_time",
-          "shift.end_time",
           "shift.status",
-          "company.company_name as company_name",
+          "company.company_name",
         ])
         .where("shift.company_id = :company_id", { company_id })
-        .andWhere("shift.status = :status", { status })
         .orderBy("shift.id", "DESC")
         .getRawMany();
 
       return shifts;
     } catch (e) {
-      throw e;
+      return { message: e.message };
     }
   }
 
@@ -62,11 +60,11 @@ export class ShiftService {
         .createQueryBuilder("shift")
         .leftJoin("shift.company", "company")
         .select([
-          "shift.id",
-          "shift.name",
-          "shift.start_time",
-          "shift.end_time",
-          "shift.status",
+          "shift.id as id",
+          "shift.name as name",
+          "shift.start_time as start_time",
+          "shift.end_time as end_time",
+          "shift.status as status",
           "company.company_name as company_name",
         ])
         .where("shift.id = :id", { id })
@@ -80,6 +78,8 @@ export class ShiftService {
     }
   }
 
+
+
   async update(id: number, dto: UpdateShiftDto, company_id: number) {
     try {
       const shift = await this.shiftRepo.findOne({ where: { id, company_id } });
@@ -92,15 +92,9 @@ export class ShiftService {
       const updated = await this.findAll(company_id);
       return updated;
     } catch (e) {
-      throw e;
+      return { message: e.message };
     }
   }
-
-  // async remove(id: number) {
-  //   const shift = await this.findOne(id);
-  //   await this.shiftRepo.remove(shift);
-  //   return { message: `Shift ID ${id} deleted successfully` };
-  // }
 
   async statusUpdate(id: number) {
     try {
@@ -110,7 +104,7 @@ export class ShiftService {
       dep.status = dep.status === 0 ? 1 : 0;
       await this.shiftRepo.save(dep);
 
-      return toggleStatusResponse("Shift", dep.status);
+      return this.findAll(dep.company_id);
     } catch (err) {
       return errorResponse("Something went wrong", err.message);
     }

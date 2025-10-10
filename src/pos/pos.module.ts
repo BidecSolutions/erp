@@ -14,6 +14,7 @@ import { Product } from 'src/procurement/product/entities/product.entity';
 import { CustomerAccount } from 'src/Company/customers/customer.customer_account.entity';
 import { Stock } from 'src/procurement/stock/entities/stock.entity';
 import { Branch } from 'src/Company/branch/branch.entity';
+import { productVariant } from 'src/procurement/product/entities/variant.entity';
 
 @Module({
   imports: [ProductModule,
@@ -24,7 +25,7 @@ import { Branch } from 'src/Company/branch/branch.entity';
       SalesOrderDetail,
       Company,
       Customer,
-      Product,CustomerAccount,Stock,Branch
+      Product,CustomerAccount,Stock,Branch,productVariant,
     ]),
   ],
   providers: [PosService],

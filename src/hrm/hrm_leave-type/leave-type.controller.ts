@@ -19,12 +19,12 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @Controller('leave-type')
 export class LeaveTypeController {
-  constructor(private readonly leaveTypeService: LeaveTypeService) {}
+  constructor(private readonly leaveTypeService: LeaveTypeService) { }
 
   // Create LeaveType
   @Post('create')
   async create(@Body() dto: CreateLeaveTypeDto, @Req() req: any) {
-    const companyId = req.user.company_id;
+    const companyId = req["user"].company_id;
     const leaveTypes = await this.leaveTypeService.create(dto, companyId);
     return {
       status: true,
@@ -35,10 +35,9 @@ export class LeaveTypeController {
 
   // Get all LeaveTypes for a company with optional status filter
   @Get('list')
-  async findAll(@Req() req: any, @Query('status') status?: string) {
-    const companyId = req.user.company_id;
-    const filterStatus = status !== undefined ? Number(status) : undefined;
-    const leaveTypes = await this.leaveTypeService.findAll(companyId, filterStatus);
+  async findAll(@Req() req: any) {
+    const companyId = req["user"].company_id;
+    const leaveTypes = await this.leaveTypeService.findAll(companyId);
     return {
       status: true,
       message: 'Get All Leave Types',
@@ -64,7 +63,7 @@ export class LeaveTypeController {
     @Body() dto: UpdateLeaveTypeDto,
     @Req() req: any,
   ) {
-    const companyId = req.user.company_id;
+    const companyId = req["user"].company_id;
     const updated = await this.leaveTypeService.update(id, dto, companyId);
     return {
       status: true,

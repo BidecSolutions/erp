@@ -14,6 +14,7 @@ import { SupplierInvoiceModule } from "./supplier-invoice/supplier-invoice.modul
 import { BankModule } from "./banks/bank.module";
 import { ChartOfAccountsModule } from "./chart-of-accounts/chart-of-accounts.module";
 import { SystemConfigurationsModule } from "./system_configuration/system-configurations.module";
+import { CodeSequencesModule } from './code_sequences/code_sequences.module';
 
 export const companySetting = [
     CompaniesModule,
@@ -33,5 +34,6 @@ export const companySetting = [
     ChartOfAccountsModule,
     SupplierInvoiceModule,
     SystemConfigurationsModule,
+    CodeSequencesModule
 
 ];

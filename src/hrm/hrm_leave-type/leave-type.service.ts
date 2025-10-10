@@ -17,8 +17,8 @@ export class LeaveTypeService {
     private leaveTypeRepo: Repository<LeaveType>,
 
     @InjectRepository(Company)
-    private readonly companyRepo: Repository<Company>
-  ) {}
+    private readonly companyRepo: Repository<Company>,
+  ) { }
 
   // Create LeaveType with company
   async create(dto: CreateLeaveTypeDto, company_id: number) {
@@ -37,8 +37,7 @@ export class LeaveTypeService {
   }
 
   // Get all LeaveTypes for a company
-  async findAll(company_id: number, filterStatus?: number) {
-    const status = filterStatus !== undefined ? filterStatus : 1;
+  async findAll(company_id: number) {
     try {
       const leaveTypes = await this.leaveTypeRepo
         .createQueryBuilder("leave_type")
@@ -50,7 +49,6 @@ export class LeaveTypeService {
           "company.company_name as company_name",
         ])
         .where("leave_type.company_id = :company_id", { company_id })
-        .andWhere("leave_type.status = :status", { status })
         .orderBy("leave_type.id", "DESC")
         .getRawMany();
 
@@ -112,7 +110,7 @@ export class LeaveTypeService {
       dep.status = dep.status === 0 ? 1 : 0;
       await this.leaveTypeRepo.save(dep);
 
-      return toggleStatusResponse("Leave Type", dep.status);
+      return this.findAll(dep.company_id);
     } catch (err) {
       return errorResponse("Something went wrong", err.message);
     }

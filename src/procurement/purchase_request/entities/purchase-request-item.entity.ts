@@ -10,8 +10,6 @@ export class PurchaseRequestItem {
     @PrimaryGeneratedColumn()
     id: number;
 
-
-
     @Column()
     pr_id: number
     @ManyToOne(() => PurchaseRequest)
@@ -35,17 +33,8 @@ export class PurchaseRequestItem {
     @Column('int')
     qty_requested: number;
 
-    @Column()
-    company_id: number;
-    @ManyToOne(() => Company)
-    @JoinColumn({ name: 'company_id' })
-    comapany: Company
-
-    @Column()
-    branch_id: number;
-    @ManyToOne(() => Branch)
-    @JoinColumn({ name: 'branch_id' })
-    branch: Branch
+    @Column({nullable :true})
+    pr_item_status :string
 
 
     @Column({ type: 'int', default: 1 })

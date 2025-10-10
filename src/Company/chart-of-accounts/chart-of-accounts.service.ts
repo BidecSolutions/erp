@@ -39,7 +39,6 @@ export class ChartOfAccountsService {
         try {
             const data = await this.chartRepo.find({
                 relations: ['company'],
-                where: { status: 1 },
                 select: {
                     id: true,
                     name: true,
@@ -104,19 +103,32 @@ export class ChartOfAccountsService {
         }
     }
 
-    async delete(id: number) {
+    async toggleStatus(id: number) {
         try {
-            const chart = await this.chartRepo.findOne({ where: { id, status: 1 } });
-            if (!chart) return { success: false, message: `Chart of Account with ID ${id} not found or already inactive` };
+            const chart = await this.chartRepo.findOneBy({ id });
+            if (!chart) {
+                return { status: false, message: `Chart of Account with ID ${id} not found` };
+            }
 
-            chart.status = 0; // soft delete
+            // Toggle status: 1 = active, 0 = inactive
+            chart.status = chart.status === 1 ? 0 : 1;
+
+            // Update date (keeping your logic)
             chart.updated_date = new Date().toISOString().split('T')[0];
+
             await this.chartRepo.save(chart);
 
-            return { success: true, message: 'Chart of Account deleted (status set to inactive)', data: chart };
+            const action = chart.status === 1 ? 'activated' : 'deactivated';
+
+            return {
+                status: true,
+                message: `Chart of Account ${action} successfully`,
+                data: chart,
+            };
         } catch (error) {
             console.error(error);
-            return { success: false, message: 'Failed to delete Chart of Account' };
+            return { status: false, message: 'Failed to toggle Chart of Account status', error: error.message };
         }
     }
+
 }

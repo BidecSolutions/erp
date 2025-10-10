@@ -9,13 +9,13 @@ export class customer_invoice_items {
     id: number;
 
     @Column()
-    customer_invoice_id: number; // FK
+    customer_invoice_id: number; 
 
     @Column()
     product_id: number;
 
-    // @Column()
-    // variant_id: number;
+    @Column()
+    variant_id: number;
 
     @Column()
     quantity: number;

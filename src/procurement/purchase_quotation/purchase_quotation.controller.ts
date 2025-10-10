@@ -1,15 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, Req, UseGuards } from '@nestjs/common';
 import { CreatePurchaseQuotationDto } from './dto/create-purchase_quotation.dto';
 import { UpdatePurchaseQuatiationDto } from './dto/update-purchase_quotation.dto';
 import { PurchaseQuotationService } from './purchase_quotation.service';
-
+import { JwtEmployeeAuth } from 'src/auth/jwt-employee.guard';
+@UseGuards(JwtEmployeeAuth)
 @Controller('purchase-quotation')
 export class PurchaseQuatiationController {
   constructor(private readonly PurchaseQuotationService: PurchaseQuotationService) { }
 
   @Post('store')
-  store(@Body() createdto: CreatePurchaseQuotationDto) {
-    return this.PurchaseQuotationService.store(createdto);
+  store(@Body() createdto: CreatePurchaseQuotationDto,
+  @Req() req: Request) {
+      const userData = req["user"];
+      const userId = userData?.user?.id;
+      const companyId = userData?.company_id;
+      console.log("data" ,userId ,companyId)
+    return this.PurchaseQuotationService.store(createdto ,userId ,companyId);
   }
   @Get('list')
   findAll(@Query('filter') filter?: string) {

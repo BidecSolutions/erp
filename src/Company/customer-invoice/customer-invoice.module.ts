@@ -7,10 +7,11 @@ import { Company } from '../companies/company.entity';
 import { Customer } from '../customers/customer.entity';
 import { SalesOrder } from 'src/sales/sales-order/entity/sales-order.entity';
 import { customer_invoice_items } from './entity/customer-invoice-items.entity';
+import { productVariant } from 'src/procurement/product/entities/variant.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([CustomerInvoice, Company, Customer, SalesOrder,customer_invoice_items]),
+    TypeOrmModule.forFeature([CustomerInvoice, Company, Customer, SalesOrder,customer_invoice_items,productVariant]),
   ],
   controllers: [CustomerInvoiceController],
   providers: [CustomerInvoiceService],
