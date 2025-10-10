@@ -21,7 +21,7 @@ export class CustomerCategoryService {
 
   async create(dto: CreateCustomerCategoryDto, company_id: number) {
     try {
-      const company = await this.companyRepo.findOne({ where: { id: companyId } });
+      const company = await this.companyRepo.findOne({ where: { id: company_id } });
       if (!company) return { success: false, message: 'Company not found' };
 
       const category = this.categoryRepo.create({
@@ -31,7 +31,6 @@ export class CustomerCategoryService {
         discount_percent: dto.discount_percent,
         is_active: 1,
         company_id,
-        company: companyId,
       });
 
       const savedCategory = await this.categoryRepo.save(category);

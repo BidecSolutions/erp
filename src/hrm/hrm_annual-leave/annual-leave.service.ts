@@ -13,7 +13,7 @@ import {
 export class AnnualLeaveService {
   constructor(
     @InjectRepository(AnnualLeave)
-    private repo: Repository<AnnualLeave>,
+    private repo: Repository<AnnualLeave>
   ) { }
 
   async create(dto: CreateAnnualLeaveDto, company_id: number) {
@@ -75,9 +75,10 @@ export class AnnualLeaveService {
 
       return annualLeave;
     } catch (e) {
-      throw e;
+      return { message: e.message };
     }
   }
+
 
   async update(id: number, dto: UpdateAnnualLeaveDto, company_id: number) {
     try {
@@ -96,10 +97,9 @@ export class AnnualLeaveService {
       const updated = await this.findAll(company_id);
       return updated;
     } catch (e) {
-      throw e;
+      return { message: e.message };
     }
   }
-
   async statusUpdate(id: number) {
     try {
       const dep = await this.repo.findOneBy({ id });
@@ -108,7 +108,7 @@ export class AnnualLeaveService {
       dep.status = dep.status === 0 ? 1 : 0;
       await this.repo.save(dep);
 
-      return toggleStatusResponse("Annual Leave", dep.status);
+      return this.findAll(dep.company_id);
     } catch (err) {
       return errorResponse("Something went wrong", err.message);
     }
