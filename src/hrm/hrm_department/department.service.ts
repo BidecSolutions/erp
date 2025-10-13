@@ -32,7 +32,7 @@ export class DepartmentService {
 
       return savedDept;
     } catch (e) {
-      return { message: e.message };
+      throw e;
     }
   }
 
@@ -44,7 +44,7 @@ export class DepartmentService {
         .select([
           "department.id",
           "department.name",
-          "company.company_name", // sirf company name select
+          "company.company_name AS company_name", // sirf company name select
           "department.status",
         ])
         .where("department.company_id = :company_id", { company_id })
@@ -52,7 +52,7 @@ export class DepartmentService {
         .getRawMany();
       return departments;
     } catch (e) {
-      return { message: e.message };
+      throw e;
     }
   }
 
@@ -98,7 +98,7 @@ export class DepartmentService {
       const updatedDept = await this.findAll(company_id);
       return updatedDept;
     } catch (e) {
-      return { message: e.message };
+      throw e;
     }
   }
 

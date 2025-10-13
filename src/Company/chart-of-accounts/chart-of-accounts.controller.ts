@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, ParseIntPipe } from '@nestjs/common';
 import { ChartOfAccountsService } from './chart-of-accounts.service';
 import { CreateChartOfAccountDto } from './dto/create-chart-of-account.dto';
 import { UpdateChartOfAccountDto } from './dto/update-chart-of-account.dto';
@@ -27,8 +27,9 @@ export class ChartOfAccountsController {
         return this.service.update(+id, dto);
     }
 
-    @Delete('deleteBy/:id')
-    delete(@Param('id') id: number) {
-        return this.service.delete(+id);
+    @Get('toggleStatus/:id')
+    toggleStatus(@Param('id', ParseIntPipe) id: number) {
+        return this.service.toggleStatus(id);
     }
+
 }

@@ -29,7 +29,7 @@ export class BankService {
 
     async findAll() {
         try {
-            const banks = await this.bankRepo.find({ where: { status: 1 }, order: { id: 'DESC' } });
+            const banks = await this.bankRepo.find({ order: { id: 'DESC' } });
             return { success: true, data: banks };
         } catch (error) {
             return { success: false, message: 'Error fetching banks', error };
@@ -64,19 +64,22 @@ export class BankService {
         }
     }
 
-    async remove(id: number) {
+    async toggleStatus(id: number) {
         try {
-            const bank = await this.bankRepo.findOne({ where: { id, status: 1 } });
+            const bank = await this.bankRepo.findOneBy({ id });
             if (!bank) {
-                return { success: false, message: `Bank with ID ${id} not found` };
+                return { status: false, message: `Bank with ID ${id} not found` };
             }
 
-            bank.status = 0; // Soft delete
+            // Toggle status (1 = active, 0 = inactive)
+            bank.status = bank.status === 1 ? 0 : 1;
             await this.bankRepo.save(bank);
 
-            return { success: true, message: 'Bank deleted (inactivated) successfully' };
+            const action = bank.status === 1 ? 'activated' : 'deactivated';
+            return { status: true, message: `Bank ${action} successfully`, data: bank };
         } catch (error) {
-            return { success: false, message: 'Error deleting bank', error };
+            return { status: false, message: 'Error toggling bank status', error: error.message };
         }
     }
+
 }

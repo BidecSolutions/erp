@@ -454,23 +454,6 @@ export class AuthService {
       }))
     }
   }
-  //   if (!body.permission || !Array.isArray(body.permission) || body.permission.length === 0) {
-  //     throw new BadRequestException('Please Assing Side Menu Permissions to the Role');
-  //   }
-  //   const roles = this.usersRoles.create({ role_name: body.role.role_name });
-  //   const savedRole = await this.usersRoles.save(roles);
-
-  //   const roleMapping = body.permission.map((perm: any) => this.sideMenuMapppingRepository.create({
-  //     role_id: savedRole.id,
-  //     side_menu_id: perm.menu_id,
-  //   }));
-  //   await this.sideMenuMapppingRepository.save(roleMapping);
-  //    try {}
-  // catch (error) {
-  //   throw new NotFoundException('Error creating role: ' + error.message);
-  // }
-
-  //End Roles and Role Mapping
 
   //Get All Roles # 4
   async getAllRoles(body: any) {

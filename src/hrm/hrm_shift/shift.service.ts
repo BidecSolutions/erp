@@ -1,10 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { CreateShiftDto } from './dto/create-shift.dto';
-import { UpdateShiftDto } from './dto/update-shift.dto';
-import { Shift } from './shift.entity';
-import { errorResponse, toggleStatusResponse } from 'src/commonHelper/response.util';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { CreateShiftDto } from "./dto/create-shift.dto";
+import { UpdateShiftDto } from "./dto/update-shift.dto";
+import { Shift } from "./shift.entity";
+import {
+  errorResponse,
+  toggleStatusResponse,
+} from "src/commonHelper/response.util";
 
 @Injectable()
 export class ShiftService {
@@ -12,6 +15,7 @@ export class ShiftService {
     @InjectRepository(Shift)
     private readonly shiftRepo: Repository<Shift>,
   ) { }
+
 
   async create(dto: CreateShiftDto, company_id: number) {
     try {
@@ -50,17 +54,18 @@ export class ShiftService {
     }
   }
 
-
   async findOne(id: number) {
     try {
       const shift = await this.shiftRepo
         .createQueryBuilder("shift")
         .leftJoin("shift.company", "company")
         .select([
-          "shift.id",
-          "shift.name",
-          "shift.status",
-          "company.company_name",
+          "shift.id as id",
+          "shift.name as name",
+          "shift.start_time as start_time",
+          "shift.end_time as end_time",
+          "shift.status as status",
+          "company.company_name as company_name",
         ])
         .where("shift.id = :id", { id })
         .getRawOne();
@@ -69,9 +74,10 @@ export class ShiftService {
 
       return shift;
     } catch (e) {
-      return { message: e.message };
+      throw e;
     }
   }
+
 
 
   async update(id: number, dto: UpdateShiftDto, company_id: number) {
@@ -90,13 +96,6 @@ export class ShiftService {
     }
   }
 
-
-  // async remove(id: number) {
-  //   const shift = await this.findOne(id);
-  //   await this.shiftRepo.remove(shift);
-  //   return { message: `Shift ID ${id} deleted successfully` };
-  // }
-
   async statusUpdate(id: number) {
     try {
       const dep = await this.shiftRepo.findOneBy({ id });
@@ -110,6 +109,4 @@ export class ShiftService {
       return errorResponse("Something went wrong", err.message);
     }
   }
-
-
 }

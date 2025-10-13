@@ -60,8 +60,9 @@ export class LeaveRequestService {
 
   // Create
   async create(dto: CreateLeaveRequestDto) {
-    const employee = await this.employeeRepository.findOneBy({
-      id: dto.emp_id,
+    const employee = await this.employeeRepository.findOne({
+      where: { id: dto.emp_id },
+      relations: ["annualLeave"],
     });
     if (!employee) throw new NotFoundException("Employee not found");
 
@@ -69,6 +70,20 @@ export class LeaveRequestService {
       id: dto.leave_type_id,
     });
     if (!leaveType) throw new NotFoundException("Leave type not found");
+
+    if (employee.emp_type === "Permanent") {
+      if (!employee.annualLeave) {
+        throw new BadRequestException(
+          "Annual leave not assigned to this employee"
+        );
+      }
+    } else if (employee.emp_type === "Probation") {
+      if (!employee.probation_setting_id) {
+        throw new BadRequestException(
+          "Probation setting not assigned to this employee"
+        );
+      }
+    }
 
     const leaveRequest = this.leaveRequestRepository.create({
       employee: { id: dto.emp_id },
@@ -91,14 +106,15 @@ export class LeaveRequestService {
       throw new NotFoundException("Leave request not found after save");
     }
 
-return {
-  success: true,
-  message: 'Loan Request created successfully',
-  data: this.formatResponse(savedWithRelations),
-};  }
+    return {
+      success: true,
+      message: "Loan Request created successfully",
+      data: this.formatResponse(savedWithRelations),
+    };
+  }
 
   // Find All
-async findAll(filterStatus?: number) {
+  async findAll(filterStatus?: number) {
     const status = filterStatus !== undefined ? filterStatus : 1;
     const leaveRequests = await this.leaveRequestRepository.find({
       where: { status },
@@ -143,11 +159,11 @@ async findAll(filterStatus?: number) {
 
     Object.assign(lr, dto);
     const updated = await this.leaveRequestRepository.save(lr);
-   return {
-  success: true,
-  message: 'Loan Request updated successfully',
-  data: this.formatResponse(updated),
-};
+    return {
+      success: true,
+      message: "Loan Request updated successfully",
+      data: this.formatResponse(updated),
+    };
   }
 
   async statusUpdate(id: number) {
@@ -278,7 +294,7 @@ async findAll(filterStatus?: number) {
     let availableLeaves = 0;
 
     // // Case 1: Permanent Employee
-    if (employee.emp_type === EmployeeType.PERMANENT) {
+    if (employee.emp_type === EmployeeType.Permanent) {
       if (!employee.annualLeave) {
         throw new BadRequestException(
           "Annual leave not assigned to this employee"
@@ -298,7 +314,7 @@ async findAll(filterStatus?: number) {
     }
 
     // // Case 2: Probation Employee
-    else if (employee.emp_type === EmployeeType.PROBATION) {
+    else if (employee.emp_type === EmployeeType.Probation) {
       const probationSetting = await this.probationSettingRepo.findOneBy({
         id: employee.probation_setting_id,
       });

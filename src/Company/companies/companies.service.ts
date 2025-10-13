@@ -70,6 +70,7 @@ export class CompaniesService {
         category_code: '000',
         category_name: 'Walking-Customer',
         description: 'Default Customer Category',
+        company: savedCompany,
       })
       const savedCustomerCategory = await this.customerCategory.save(customerCat);
 
@@ -78,7 +79,7 @@ export class CompaniesService {
         customer_name: 'Walking Customer',
         customer_type: '-',
         category_customer: savedCustomerCategory,
-        company: savedCompany
+        company: savedCompany,
       });
 
       await this.customers.save(companyCustomer);

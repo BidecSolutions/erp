@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, ParseIntPipe } from '@nestjs/common';
 import { BankService } from './bank.service';
 import { CreateBankDto } from './dto/create-bank.dto';
 import { UpdateBankDto } from './dto/update-bank.dto';
@@ -27,8 +27,9 @@ export class BankController {
         return this.bankService.update(+id, dto);
     }
 
-    @Delete('deleteby/:id')
-    remove(@Param('id') id: number) {
-        return this.bankService.remove(+id);
+    @Get('toggleStatus/:id')
+    toggleStatus(@Param('id', ParseIntPipe) id: number) {
+        return this.bankService.toggleStatus(id);
     }
+
 }

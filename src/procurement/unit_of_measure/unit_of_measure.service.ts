@@ -46,6 +46,9 @@ export class UnitOfMeasureService {
         .orderBy("unit.id", "DESC")
         .getRawMany();
 
+
+      console.log("units", units[0]);
+
       return { total_record: units.length, unit_of_measure: units, }
     } catch (error) {
       return errorResponse(error.message);
@@ -58,12 +61,12 @@ export class UnitOfMeasureService {
         .createQueryBuilder("unit")
         .leftJoin("unit.company", "company")
         .select([
-          "unit.id as id",
-          "unit.uom_name as uom_name",
-          "unit.uom_code as uom_code",
-          "unit.description as description",
-          "unit.status as status",
-          "company.company_name as company_name",
+          "unit.id",
+          "unit.uom_name",
+          "unit.uom_code",
+          "unit.status",
+          "unit.description",
+          "company.company_name",
         ])
         .where("unit.id = :id", { id })
         .getRawOne();
