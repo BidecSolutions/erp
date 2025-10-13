@@ -13,3 +13,7 @@ export class CreateCategoryDto {
   branch_id: number;
 
 }
+
+import { PartialType } from '@nestjs/mapped-types';
+export class UpdateCategoryDto extends PartialType(CreateCategoryDto) {}
+

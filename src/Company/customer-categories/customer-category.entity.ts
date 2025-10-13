@@ -15,12 +15,9 @@ export class CustomerCategory {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Company, { eager: true })
-  @JoinColumn({ name: 'company_id' })
-  company: Company;
 
   @Column()
-  company_id: number;
+  companyId: number;
 
   @OneToMany(() => Customer, (customer) => customer.category_customer)
   customers: Customer[];

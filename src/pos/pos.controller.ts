@@ -11,8 +11,9 @@ export class PosController {
 
 
     @Get('products')
-    async getAllProducts() {
-        return this.posService.getAllProducts();
+    async getAllProducts(@Req() req) {
+        const companyId = req.user.company_id; 
+        return this.posService.getAllProducts(companyId);
     }
 
 

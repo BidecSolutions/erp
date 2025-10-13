@@ -3,9 +3,9 @@ import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
 import { errorResponse, generateCode, successResponse, toggleStatusResponse } from 'src/commonHelper/response.util';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository ,DataSource } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { Brand } from './entities/brand.entity';
-import {  } from 'typeorm/browser';
+import { } from 'typeorm/browser';
 
 @Injectable()
 export class BrandService {
@@ -16,15 +16,14 @@ export class BrandService {
 
   ) { }
 
-  async create(dto: CreateBrandDto, companyId: number) {
-
-const brandCode = await generateCode('brand', 'BRA', this.dataSource);
+  async create(dto: CreateBrandDto, companyId: number, userId: number) {
+    const brandCode = await generateCode('brand', 'BRA', this.dataSource);
     try {
       const brand = this.repo.create({
         ...dto,
         company_id: companyId,
-        brand_code: brandCode
-
+        brand_code: brandCode,
+        created_by: userId
       });
       await this.repo.save(brand);
       return successResponse('brand created successfully!', brand);
@@ -36,15 +35,13 @@ const brandCode = await generateCode('brand', 'BRA', this.dataSource);
       throw new BadRequestException(error.message || 'Failed to create brand');
     }
   }
-  async findAll(filter?: number) {
+  async findAll(companyId: number) {
     try {
-      const where: any = {};
-      if (filter !== undefined) {
-        where.status = filter; // filter apply
-      }
       const [brand, total] = await this.repo.findAndCount({
-        where,
+        where: { company_id: companyId },
+        order: { id: 'DESC' },
       });
+
       return successResponse('brand retrieved successfully!', {
         total_record: total,
         brand,
@@ -53,9 +50,12 @@ const brandCode = await generateCode('brand', 'BRA', this.dataSource);
       return errorResponse('Failed to retrieve brand', error.message);
     }
   }
-  async findOne(id: number) {
+  async findOne(id: number, companyId: number) {
     try {
-      const brand = await this.repo.findOneBy({ id });
+      const brand = await this.repo.findOne({
+        where: { id, company_id: companyId }
+      }
+      );
       if (!brand) {
         return errorResponse(`brand #${id} not found`);
       }
@@ -65,14 +65,21 @@ const brandCode = await generateCode('brand', 'BRA', this.dataSource);
       return errorResponse('Failed to retrieve brand', error.message);
     }
   }
-  async update(id: number, updateDto: UpdateBrandDto) {
+  async update(id: number, updateDto: UpdateBrandDto, company_id: number, userId: number) {
     try {
-      const existing = await this.repo.findOne({ where: { id } });
+      const existing = await this.repo.findOne({
+        where: { id, company_id },
+      });
       if (!existing) {
         return errorResponse(`brand #${id} not found`);
       }
 
-      const brand = await this.repo.save({ id, ...updateDto });
+      const brand = await this.repo.save({
+        id,
+        ...updateDto,
+        company_id: company_id,
+        updated_by: userId
+      });
       return successResponse('brand updated successfully!', brand);
     } catch (error) {
       return errorResponse('Failed to update brand', error.message);
