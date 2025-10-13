@@ -69,7 +69,7 @@ export class DesignationService {
         .select([
           "designation.id as id",
           "designation.name as name",
-          "designation.status as status",
+          "designation.designation_status as status",
           "department.name as department_name",
         ])
         .where("designation.id = :id", { id })
