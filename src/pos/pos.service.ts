@@ -371,6 +371,7 @@ export class PosService {
                 // if (uniqueIds.size !== productIds.length) {
                 //     throw new Error('Duplicate product IDs are not allowed in return items');
                 // }
+                // END DUPLICATE CHECK condition mujtaba here
 
 
                 let totalReturnAmount = 0;
