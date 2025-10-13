@@ -45,7 +45,7 @@ export class DesignationService {
     try {
       const designations = await this.designationRepository
         .createQueryBuilder("designation")
-            
+
         .select([
           "designation.id as id",
           "designation.name as name",
@@ -60,7 +60,7 @@ export class DesignationService {
       throw e;
     }
   }
-
+  //changes 
   async findOne(id: number) {
     try {
       const designation = await this.designationRepository
