@@ -12,9 +12,10 @@ export class CategoriesController {
   // Create category
   @Post('store')
   create(@Body() createCategoryDto: CreateCategoryDto ,@Req() req: Request) {
-      const companyId = req["user"].company_id;
-        console.log("companyId" , companyId);
-    return this.categoriesService.create(createCategoryDto ,companyId);
+      const userData = req["user"];
+      const userId = userData?.user?.id;
+      const companyId = userData?.company_id;
+    return this.categoriesService.create(createCategoryDto, userId, companyId);
   }
 
   @Get('list')

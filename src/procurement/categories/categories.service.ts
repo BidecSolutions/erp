@@ -12,11 +12,12 @@ export class CategoriesService {
     @InjectRepository(Category)
     private readonly repo: Repository<Category>,
   ) { }
-  async create(createDto: CreateCategoryDto, companyId: number) {
+  async create(createDto: CreateCategoryDto,userId: number, companyId: number) {
     try {
       const category = this.repo.create({
         ...createDto,
         company: { id: companyId },
+        created_by: userId
       });
 
       await this.repo.save(category);

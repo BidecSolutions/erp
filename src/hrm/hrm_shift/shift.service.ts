@@ -39,10 +39,12 @@ export class ShiftService {
         .createQueryBuilder("shift")
         .leftJoin("shift.company", "company")
         .select([
-          "shift.id",
-          "shift.name",
-          "shift.status",
-          "company.company_name",
+         "shift.id as id",
+          "shift.name as name",
+          "shift.start_time as start_time",
+          "shift.end_time as end_time",
+          "shift.status as status",
+             "shift.company_id as company_id",
         ])
         .where("shift.company_id = :company_id", { company_id })
         .orderBy("shift.id", "DESC")
@@ -65,7 +67,7 @@ export class ShiftService {
           "shift.start_time as start_time",
           "shift.end_time as end_time",
           "shift.status as status",
-          "company.company_name as company_name",
+             "shift.company_id as company_id",
         ])
         .where("shift.id = :id", { id })
         .getRawOne();

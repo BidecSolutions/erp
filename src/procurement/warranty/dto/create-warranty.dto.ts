@@ -10,9 +10,7 @@ export class CreateWarrantyDto {
   @IsNotEmpty()
   duration: string;
 
-  @IsNumber()
-  @IsNotEmpty()
-  branch_id:number;
+
 
 
 }

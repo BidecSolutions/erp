@@ -29,9 +29,10 @@ export class Warranty {
     @UpdateDateColumn()
     updated_at: Date;
 
-    @Column({ type: 'varchar', length: 50, nullable: true })
-    created_by: string;
+  @Column({ name: 'created_by', nullable: true })
+  created_by: number;
 
-    @Column({ type: 'varchar', length: 50, nullable: true })
-    updated_by: string;
+      @Column({ name: 'updated_by', nullable: true })
+  updated_by: number;
+
 }

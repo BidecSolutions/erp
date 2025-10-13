@@ -47,7 +47,7 @@ export class NotificationTypeService {
           "notification_type.id as id",
           "notification_type.type as type",
           "notification_type.status as status",
-          "company.company_name as company_name",
+                       "notification_type.company_id as company_id", 
         ])
         .where("notification_type.company_id = :company_id", { company_id })
         .andWhere("notification_type.status = :status", { status })
@@ -70,7 +70,7 @@ export class NotificationTypeService {
           "notification_type.id as id",
           "notification_type.type as type",
           "notification_type.status as status",
-          "company.company_name as company_name",
+                       "notification_type.company_id as company_id", 
         ])
         .where("notification_type.id = :id", { id })
         .getRawOne();

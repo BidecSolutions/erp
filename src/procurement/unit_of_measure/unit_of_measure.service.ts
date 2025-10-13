@@ -13,9 +13,9 @@ export class UnitOfMeasureService {
     @InjectRepository(UnitOfMeasure)
     private readonly repo: Repository<UnitOfMeasure>) { }
 
-  async create(createDto: CreateUnitOfMeasureDto, company_id: number) {
+  async create(createDto: CreateUnitOfMeasureDto, userId: number, company_id: number) {
     try {
-      const unit_of_measure = this.repo.create({ ...createDto, company_id });
+      const unit_of_measure = this.repo.create({ ...createDto, company_id, created_by: userId });
       await this.repo.save(unit_of_measure);
       const saved = await this.findAll(company_id);
       return saved;
@@ -27,6 +27,7 @@ export class UnitOfMeasureService {
       throw new BadRequestException(error.message || 'Failed to create unit_of_measure');
     }
   }
+
   async findAll(company_id: number, filterStatus?: number) {
     const status = filterStatus !== undefined ? filterStatus : 1; // default active
     try {
@@ -37,23 +38,21 @@ export class UnitOfMeasureService {
           "unit.id as id",
           "unit.uom_name as uom_name",
           "unit.uom_code as uom_code",
-          "unit.description as description",
           "unit.status as status",
-          "company.company_name as company_name",
+          "unit.company_id as company_id",
+          "unit.created_by as created_by",
         ])
         .where("unit.company_id = :company_id", { company_id })
         .andWhere("unit.status = :status", { status })
         .orderBy("unit.id", "DESC")
         .getRawMany();
 
-
-      console.log("units", units[0]);
-
       return { total_record: units.length, unit_of_measure: units, }
     } catch (error) {
       return errorResponse(error.message);
     }
   }
+
 
   async findOne(id: number) {
     try {

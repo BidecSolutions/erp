@@ -45,7 +45,7 @@ export class DesignationService {
     try {
       const designations = await this.designationRepository
         .createQueryBuilder("designation")
-        .innerJoin("hrm_departments", "department", "designation.department_id  = department.id")
+            
         .select([
           "designation.id as id",
           "designation.name as name",
