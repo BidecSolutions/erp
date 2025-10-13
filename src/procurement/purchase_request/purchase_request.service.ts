@@ -17,7 +17,6 @@ import { ITRStatus } from '../enums/itr-enum';
 
 @Injectable()
 export class PurchaseRequestService {
-
   constructor(
     @InjectRepository(PurchaseRequest)
     private readonly prRepo: Repository<PurchaseRequest>,
@@ -45,12 +44,13 @@ export class PurchaseRequestService {
       return errorResponse('Failed to load masters', error.message);
     }
   }
+
   async store(createDto: CreatePurchaseRequestDto, userId: number, companyId: number) {
     try {
       const purchaseRequest = this.prRepo.create({
         ...createDto,
         company_id: companyId,
-        created_by : userId
+        created_by: userId
       });
       const savedPurchaseRequest = await this.prRepo.save(purchaseRequest);
       let savedItems: PurchaseRequestItem[] = [];
@@ -76,14 +76,11 @@ export class PurchaseRequestService {
       throw new BadRequestException(error.message || 'Failed to create purchase request');
     }
   }
-  async findAll(filter?: number) {
+  async findAll(companyId: number) {
     try {
-      const where: any = {};
-      if (filter !== undefined) {
-        where.status = filter; // filter apply
-      }
       const [purchase_request, total] = await this.prRepo.findAndCount({
-        where,
+        where: { company_id: companyId },
+        order: { id: 'DESC' },
       });
       return successResponse('purchase_request retrieved successfully!', {
         total_record: total,
@@ -93,7 +90,7 @@ export class PurchaseRequestService {
       return errorResponse('Failed to retrieve purchase_request', error.message);
     }
   }
-  async findOne(id: number) {
+  async findOne(id: number ,companyId: number) {
     try {
       const purchase_request = await this.prRepo.findOneBy({ id });
       if (!purchase_request) {
@@ -105,7 +102,7 @@ export class PurchaseRequestService {
       return errorResponse('Failed to retrieve purchase_request', error.message);
     }
   }
-  async update(id: number, updateDto: UpdatePurchaseRequestDto) {
+  async update(id: number, updateDto: UpdatePurchaseRequestDto , userId: number, companyId: number) {
     try {
       const existing = await this.prRepo.findOne({
         where: { id },
@@ -127,7 +124,7 @@ export class PurchaseRequestService {
         const updatedPR = await manager.getRepository(PurchaseRequest).save({
           id,
           ...prData,
-  
+
         });
 
         // 2️⃣ Handle Items
@@ -194,7 +191,7 @@ export class PurchaseRequestService {
       remarks: "Stock transfer from head office to branch",
       company_id: companyId,
       branch_id: pr.branch_id,
-      user_id: userId,
+      // created_at: userId,
     });
     const savedItr = await this.itrRepo.save(itr);
 
@@ -238,7 +235,7 @@ export class PurchaseRequestService {
     if (!itr) {
       return errorResponse(`ITR #${id} not found`);
     }
-    await this.itrRepo.update(id, { status: ITRStatus.APPROVED });
+    await this.itrRepo.update(id, { itr_status: ITRStatus.APPROVED });
 
     for (const approvedItem of approvedItems) {
       const existing = await this.itrItemRepo.findOneBy({ id: approvedItem.itr_item_id });
@@ -295,7 +292,7 @@ export class PurchaseRequestService {
             warehouse_id: branchWarehouseId,
             company_id: companyId,
             quantity_on_hand: qty,
-            branch_id:updatedItr.branch_id
+            branch_id: updatedItr.branch_id
           }),
         );
       }
