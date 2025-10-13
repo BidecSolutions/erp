@@ -8,8 +8,8 @@ export class ModuleTypeController {
   constructor(private readonly moduleTypeService: ModuleTypeService) {}
 
     @Post('store')
-    create(@Body() createBrandDto: CreateModuleTypeDto) {
-      return this.moduleTypeService.create(createBrandDto);
+    create(@Body() dto: CreateModuleTypeDto) {
+      return this.moduleTypeService.create(dto);
     }
   
      @Get('list')
