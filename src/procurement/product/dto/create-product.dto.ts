@@ -99,12 +99,12 @@ export class CreateProductVariantDto {
   @IsString()
   attribute_value?: string;
 
-    @IsNotEmpty()
+  @IsNotEmpty()
   @Type(() => Number)
   @IsNumber()
   unit_price?: number;
 
-    @IsNotEmpty()
+  @IsNotEmpty()
   @Type(() => Number)
   @IsNumber()
   cost_price?: number;;

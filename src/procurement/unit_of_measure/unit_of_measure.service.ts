@@ -3,7 +3,7 @@ import { CreateUnitOfMeasureDto } from './dto/create-unit_of_measure.dto';
 import { UpdateUnitOfMeasureDto } from './dto/update-unit_of_measure.dto';
 import { errorResponse, generateCode, successResponse, toggleStatusResponse } from 'src/commonHelper/response.util';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource} from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { UnitOfMeasure } from './entities/unit_of_measure.entity';
 
 @Injectable()
@@ -12,17 +12,16 @@ export class UnitOfMeasureService {
   constructor(
     @InjectRepository(UnitOfMeasure)
     private readonly repo: Repository<UnitOfMeasure>,
-        private readonly dataSource: DataSource,
-  ) { }
+    private readonly dataSource: DataSource,) { }
 
-  async create(createDto: CreateUnitOfMeasureDto, company_id: number) {
+  async create(createDto: CreateUnitOfMeasureDto, userid: number, company_id: number) {
     try {
       const uomCode = await generateCode('unit_of_measeure', 'UOM', this.dataSource);
-      const unit_of_measure = this.repo.create({ 
+      const unit_of_measure = this.repo.create({
         ...createDto,
-         company_id,
-         uom_code:uomCode
-       });
+        company_id,
+        uom_code: uomCode
+      });
       await this.repo.save(unit_of_measure);
       const saved = await this.findAll(company_id);
       return saved;
@@ -58,7 +57,6 @@ export class UnitOfMeasureService {
       return errorResponse(error.message);
     }
   }
-
   async findOne(id: number) {
     try {
       const unit_of_measure = await this.repo
@@ -82,8 +80,6 @@ export class UnitOfMeasureService {
       return { message: e.message };
     }
   }
-
-
   async update(id: number, updateDto: UpdateUnitOfMeasureDto, company_id: number) {
     try {
       const existing = await this.repo.findOne({ where: { id, company_id } });

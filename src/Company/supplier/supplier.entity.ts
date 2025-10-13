@@ -124,8 +124,8 @@ export class Supplier {
   @Column({ type: 'smallint', default: 1, comment: '1=active, 2=inactive' })
   is_active: number;
 
-  @Column({ nullable: true })
-  created_by: string;
+  @Column({ name: 'created_by', nullable: true })
+  created_by: number;
 
   @Column({ type: 'date', nullable: true })
   created_date: string;

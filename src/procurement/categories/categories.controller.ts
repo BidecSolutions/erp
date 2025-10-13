@@ -33,9 +33,9 @@ export class CategoriesController {
     const companyId = req["user"].company_id;
     const userId = req["user"].user.id;
 
-    return this.categoriesService.update(+id, UpdateCategoryDto,companyId,userId);
+    return this.categoriesService.update(+id, UpdateCategoryDto, companyId, userId);
   }
-  
+
   @Get('toogleStatus/:id')
   async statusChange(@Param('id', ParseIntPipe) id: number) {
     return this.categoriesService.statusUpdate(id);

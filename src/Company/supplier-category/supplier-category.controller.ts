@@ -24,8 +24,10 @@ export class SupplierCategoryController {
   // Create supplier category
   @Post('create')
   async create(@Body() dto: CreateSupplierCategoryDto, @Req() req: any) {
-    const companyId = req["user"].company_id;
-    const categories = await this.supplierCategoryService.create(dto, companyId);
+        const userData = req["user"];
+      const userId = userData?.user?.id;
+      const companyId = userData?.company_id;
+    const categories = await this.supplierCategoryService.create(dto,userId, companyId);
     return {
       status: true,
       message: 'Supplier Category Created Successfully',

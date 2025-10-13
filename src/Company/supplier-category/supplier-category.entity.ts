@@ -27,6 +27,9 @@ export class SupplierCategory {
   @Column({ type: 'smallint', default: 1, comment: '1 = active, 2 = inactive' })
   is_active: number;
 
+    @Column({ name: 'created_by', nullable: true })
+  created_by: number;
+  
   @Column({ type: 'date', nullable: true })
   created_at: string;
 

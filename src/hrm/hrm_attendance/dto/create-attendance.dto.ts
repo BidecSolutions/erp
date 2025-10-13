@@ -8,8 +8,8 @@ export class CreateAttendanceDto {
 employeeId: number;
 
 
-@IsDateString()
-date: string; // 'YYYY-MM-DD'
+// @IsDateString()
+// date: string; // 'YYYY-MM-DD'
 
 
 @IsOptional()

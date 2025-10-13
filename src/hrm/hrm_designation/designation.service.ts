@@ -45,7 +45,7 @@ export class DesignationService {
     try {
       const designations = await this.designationRepository
         .createQueryBuilder("designation")
-        .innerJoin("hrm_departments", "department", "designation.department_id  = department.id")
+
         .select([
           "designation.id as id",
           "designation.name as name",
@@ -60,7 +60,7 @@ export class DesignationService {
       throw e;
     }
   }
-
+  //changes 
   async findOne(id: number) {
     try {
       const designation = await this.designationRepository
@@ -69,7 +69,7 @@ export class DesignationService {
         .select([
           "designation.id as id",
           "designation.name as name",
-          "designation.status as status",
+          "designation.designation_status as status",
           "department.name as department_name",
         ])
         .where("designation.id = :id", { id })

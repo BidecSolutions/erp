@@ -109,9 +109,9 @@ export class Company {
   @OneToMany(() => Branch, (branch) => branch.company)
   branches: Branch[];
 
-  // 👇 This is the missing property
-  @OneToMany(() => CustomerCategory, (customerCategory) => customerCategory.company)
-  customerCategories: CustomerCategory[];
+  // // 👇 This is the missing property
+  // @OneToMany(() => CustomerCategory, (customerCategory) => customerCategory.company)
+  // customerCategories: CustomerCategory[];
 
   // Reverse relation for customers
   @OneToMany(() => Customer, (customer) => customer.company)

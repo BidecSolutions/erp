@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Put, Delete, Param, Body } from '@nestjs/common';
+import { Controller, Post, Get, Put, Delete, Param, Body, ParseIntPipe } from '@nestjs/common';
 import { SystemConfigurationsService } from './system-configurations.service';
 import { CreateSystemConfigurationDto } from './dto/create-system-configuration.dto';
 import { UpdateSystemConfigurationDto } from './dto/update-system-configuration.dto';
@@ -27,8 +27,9 @@ export class SystemConfigurationsController {
         return this.configService.update(id, dto);
     }
 
-    @Delete('deleteBy/:id')
-    delete(@Param('id') id: number) {
-        return this.configService.delete(id);
+    @Get('toggleStatus/:id')
+    toggleStatus(@Param('id', ParseIntPipe) id: number) {
+        return this.configService.toggleStatus(id);
     }
+
 }

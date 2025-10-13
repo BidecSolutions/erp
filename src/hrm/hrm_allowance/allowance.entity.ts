@@ -36,6 +36,12 @@ export class Allowance {
       })
       status: number;
   
+        @Column({ name: 'created_by', nullable: true })
+  created_by: number;
+
+      @Column({ name: 'updated_by', nullable: true })
+  updated_by: number;
+
       @Column({ type: 'date' })
       created_at: string;
   

@@ -353,7 +353,7 @@ export class PosService {
 
                 const orderDetails = await manager.find(SalesOrderDetail, {
                     where: { salesOrder: { id: dto.sales_order_id } },
-                    relations: ['product'],
+                    relations: ['product', 'productVariant'],
                 });
 
                 if (!orderDetails.length) {
@@ -366,11 +366,12 @@ export class PosService {
                 }
 
                 // DUPLICATE CHECK HERE
-                const productIds = dto.return_items.map((i) => i.product_id);
-                const uniqueIds = new Set(productIds);
-                if (uniqueIds.size !== productIds.length) {
-                    throw new Error('Duplicate product IDs are not allowed in return items');
-                }
+                // const productIds = dto.return_items.map((i) => i.product_id);
+                // const uniqueIds = new Set(productIds);
+                // if (uniqueIds.size !== productIds.length) {
+                //     throw new Error('Duplicate product IDs are not allowed in return items');
+                // }
+                // END DUPLICATE CHECK condition mujtaba here
 
 
                 let totalReturnAmount = 0;
@@ -378,7 +379,12 @@ export class PosService {
 
                 // Validate & process return items
                 for (const item of dto.return_items) {
-                    const orderItem = orderDetails.find((od) => od.product.id === item.product_id);
+                    if (!item.variant_id) {
+                        throw new Error(`Variant ID is required for product ${item.product_id}`);
+                    }
+                    const orderItem = orderDetails.find((od) => od.product.id === item.product_id
+                        &&
+                        od.productVariant?.id === item.variant_id)!;
                     if (!orderItem) throw new Error(`Product ID ${item.product_id} not found in order`);
 
 
@@ -403,16 +409,19 @@ export class PosService {
 
                     // NEW VALIDATION — prevent return if quantity would become 0 or below
                     const remainingQty = orderItem.quantity - item.quantity;
-                    if (remainingQty <= 0) {
+                    if (remainingQty < 0) {
                         throw new Error(
-                            `Invalid return: product ID ${item.product_id} remaining quantity would become 0 or negative`
+                            `Invalid return: product ID ${item.product_id} remaining quantity exceeds the remaining quantity`
                         );
                     }
 
 
                     // Update stock (increase)
                     const stock = await manager.findOne(Stock, {
-                        where: { product: { id: item.product_id } },
+                        where: {
+                            product: { id: item.product_id },
+                            variant: { id: item.variant_id },
+                        },
                     });
                     if (!stock) throw new Error(`Stock not found for product ${item.product_id}`);
 
@@ -443,6 +452,7 @@ export class PosService {
                     const returnDetail = manager.create(SalesReturnDetail, {
                         salesReturn: { id: savedReturn.id },
                         product: { id: item.product_id },
+                        productVariant: { id: item.variant_id },
                         quantity: item.quantity,
                         unit_price: orderItem.unit_price,
                         total: orderItem.unit_price * item.quantity,
@@ -479,7 +489,7 @@ export class PosService {
                     message: 'Sale return processed successfully',
                     return_id: savedReturn.id,
                     sales_order_id: salesOrder.id,
-                    sale_order_no: salesOrder.order_no, 
+                    sale_order_no: salesOrder.order_no,
                     total_return_amount: totalReturnAmount,
                 };
             });

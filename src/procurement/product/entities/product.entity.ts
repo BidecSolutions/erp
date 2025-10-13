@@ -51,7 +51,7 @@ export class Product {
   @Column({ length: 50, unique: true })
   product_code: string;
 
-  @Column({type:'text' })
+  @Column({ type: 'text' })
   product_name: string;
 
   @Column({ length: 50, nullable: true })
@@ -80,14 +80,13 @@ export class Product {
 
 
 
-  @Column({ length: 50, nullable: true })
+  @Column({ type: 'text', nullable: true })
   barcode?: string;
-  
+
   @Column({ type: 'json', nullable: true })
   images: string[];
 
-  @Column({ name: 'status', type: 'tinyint', default: 1 })
-  status: number;
+
 
   @Column({ nullable: true })
   created_by: number;
@@ -114,7 +113,9 @@ export class Product {
   })
   is_instant_product: number;
 
-  @Column({ name: 'has_variant', type: 'tinyint', default: 1 })
+  @Column({
+    type: 'int',
+  })
   has_variant: number;
 
   @OneToMany(() => productVariant, (variant) => variant.product)
