@@ -4,7 +4,7 @@ import { Brand } from 'src/procurement/brand/entities/brand.entity';
 import { Category } from 'src/procurement/categories/entities/category.entity';
 import { UnitOfMeasure } from 'src/procurement/unit_of_measure/entities/unit_of_measure.entity';
 import { SalesOrderDetail } from 'src/sales/sales-order/entity/sales-order-detail.entity';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany, BeforeInsert } from 'typeorm';
 import { InstantProductStatus } from '../enum';
 import { SalesReturnDetail } from 'src/pos/entities/sales-return-detail.entity';
 import { productVariant } from './variant.entity';
@@ -75,7 +75,6 @@ export class Product {
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
   maximum_stock_level?: number;
 
-
   @Column({ nullable: true })
   warranty_type?: number;
 
@@ -89,17 +88,27 @@ export class Product {
   @Column({ type: 'json', nullable: true })
   images: string[];
 
-  @Column({ nullable: true })
-  created_by?: number;
-
-  @Column({ type: 'datetime', nullable: true })
-  created_date?: Date;
+  @Column({ name: 'status', type: 'tinyint', default: 1 })
+  status: number;
 
   @Column({ nullable: true })
-  updated_by?: number;
+  created_by: number;
 
-  @Column({ type: 'datetime', nullable: true })
-  updated_date?: Date;
+  @Column({ nullable: true })
+  updated_by: number;
+
+  @Column({ type: 'date', nullable: true })
+  created_at: string;
+
+  @Column({ type: 'date', nullable: true })
+  updated_at: string;
+
+  @BeforeInsert()
+  setDefaults() {
+    const now = new Date();
+    this.created_at = now.toISOString().split('T')[0];
+    this.updated_at = now.toISOString().split('T')[0];
+  }
 
   @Column({
     type: 'int',

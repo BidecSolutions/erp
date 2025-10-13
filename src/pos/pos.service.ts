@@ -47,9 +47,9 @@ export class PosService {
 
     ) { }
 
-    async getAllProducts() {
+    async getAllProducts(companyId:number) {
         try {
-            const result = await this.productService.findAll();
+            const result = await this.productService.findAll(companyId);
 
             if (!result.success || !('data' in result)) {
                 return { success: false, message: 'No products found' };

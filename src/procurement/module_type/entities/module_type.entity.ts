@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { BeforeInsert, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity('module_types')
 export class ModuleType {
@@ -15,20 +15,27 @@ export class ModuleType {
     @Column({ name: 'description', type: 'text', nullable: true })
     description: string;
 
-    @Column({ type: 'int', default: 1 })
+    @Column({ name: 'status', type: 'tinyint', default: 1 })
     status: number;
 
-    @Column({ name: 'created_by', type: 'int', nullable: true })
-    created_by?: number;
 
-    @CreateDateColumn({ name: 'created_date', type: Date })
-    created_date: string;
+    @Column({ nullable: true })
+    created_by: number;
 
-    @Column({ name: 'updated_by', type: 'int', nullable: true })
-    updated_by?: number;
+    @Column({ nullable: true })
+    updated_by: number;
+    
+    @Column({ type: 'date', nullable: true })
+    created_at: string;
 
-    @UpdateDateColumn({ name: 'updated_date', type: Date })
-    updated_date?: string;
+    @Column({ type: 'date', nullable: true })
+    updated_at: string;
 
+    @BeforeInsert()
+    setDefaults() {
+        const now = new Date();
+        this.created_at = now.toISOString().split('T')[0];
+        this.updated_at = now.toISOString().split('T')[0];
+    }
 
 }

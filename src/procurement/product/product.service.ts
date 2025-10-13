@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Product } from './entities/product.entity';
@@ -9,11 +8,8 @@ import { Category } from '../categories/entities/category.entity';
 import { Brand } from '../brand/entities/brand.entity';
 import { UnitOfMeasure } from '../unit_of_measure/entities/unit_of_measure.entity';
 import { productVariant } from './entities/variant.entity';
-import { InstantProductStatus } from './enum';
-import { INSPECT_MAX_BYTES } from 'node:buffer';
 import { Warranty } from '../warranty/entities/warranty.entity';
 import { ModuleType } from '../module_type/entities/module_type.entity';
-import { Stock } from '../stock/entities/stock.entity';
 
 @Injectable()
 export class ProductService {
@@ -51,75 +47,68 @@ export class ProductService {
       return errorResponse('Failed to load masters', error.message);
     }
   }
-  async store(createDto: CreateProductDto, imagePath: string[], companyId: number) {
+  async store(
+    createDto: CreateProductDto,
+    imagePath: string[],
+    companyId: number,
+    userId: number,
+  ) {
     try {
       return await this.dataSource.transaction(async (manager) => {
-          if (createDto.has_variant == 1) {
-            // product has variants → ignore unit/cost price
-            createDto.unit_price = 0;
-            createDto.cost_price = 0;
-          } else {
-            // product has no variants → require them
-            if (!createDto.unit_price || !createDto.cost_price) {
-              throw new BadRequestException(
-                'unit_price and cost_price are required when product has no variants',
-              );
-            }
-          }
-
         const productRepo = manager.getRepository(Product);
+        const variantRepo = manager.getRepository(productVariant);
         const productCode = await generateCode('product', 'PRO', this.dataSource);
+
         const product = productRepo.create({
           ...createDto,
           images: imagePath,
           company_id: companyId,
-          product_code: productCode
+          product_code: productCode,
+          created_by: userId,
         });
+
         const savedProduct = await productRepo.save(product);
+        let savedVariants: productVariant[] = [];
 
-        let savedVariant: productVariant[] = [];
         if (createDto.variants && createDto.variants.length > 0) {
-          const variantRepo = manager.getRepository(productVariant);
-          const variantCode = await generateCode('variant', 'VAR', this.dataSource);
-          const variantsData = createDto.variants.map((variant) =>
-            variantRepo.create({
-              ...variant,
-              product: savedProduct,
-              variant_code: variantCode
-            }),
-          );
+          const variantsToSave: productVariant[] = [];
 
-          await variantRepo.save(variantsData);
+          for (const variant of createDto.variants) {
+            const variantCode = await generateCode('variant', 'VAR', this.dataSource);
+            variantsToSave.push(
+              variantRepo.create({
+                ...variant,
+                product: savedProduct,
+                variant_code: variantCode,
+              }),
+            );
+          }
 
-          savedVariant = await variantRepo.find({
+          await variantRepo.save(variantsToSave);
+          savedVariants = await variantRepo.find({
             where: { product: { id: savedProduct.id } },
           });
         }
-
-        return successResponse('product created successfully!', {
-          savedProduct,
+        return successResponse('Product created successfully!', {
+          product: savedProduct,
+          variants: savedVariants,
         });
       });
     } catch (error) {
       if (error.code === 'ER_DUP_ENTRY') {
-        throw new BadRequestException('product already exists');
+        throw new BadRequestException('Product already exists');
       }
       throw new BadRequestException(error.message || 'Failed to create product');
     }
   }
-  async findAll(filter?: number) {
+
+  async findAll(companyId:number) {
     try {
-      const where: any = {};
-      if (filter !== undefined) {
-        where.status = filter; // filter apply
-      }
       const [product, total] = await this.productRepo.findAndCount({
-        where,
-        relations: ['variants'],
+        where: { company_id: companyId },
+        order: { id: 'DESC' },
       });
-      if (total == 0) {
-        return successResponse('No record found!')
-      }
+
       return successResponse('product retrieved successfully!', {
         total_record: total,
         product,
@@ -128,11 +117,10 @@ export class ProductService {
       return errorResponse('Failed to retrieve product', error.message);
     }
   }
-
-  async findOne(id: number) {
+  async findOne(id: number  ,companyId:number) {
     try {
       const product = await this.productRepo.findOne({
-        where: { id },
+        where: { id, company_id: companyId },
         relations: ['variants'],
       });
       if (!product) {
@@ -143,122 +131,76 @@ export class ProductService {
       return errorResponse('Failed to retrieve product', error.message);
     }
   }
-  // async update(id: number, updateDto: CreateProductDto, imagePath: string[]) {
-  //   try {
-  //     return await this.dataSource.transaction(async (manager) => {
-  //       const productRepo = manager.getRepository(Product);
-  //       const variantRepo = manager.getRepository(productVariant);
+  async update(
+    id: number,
+    updateDto: CreateProductDto,
+    imagePath: string[],
+    companyId: number,
+    userId: number,
+  ) {
+    try {
+      return await this.dataSource.transaction(async (manager) => {
+        const productRepo = manager.getRepository(Product);
+        const variantRepo = manager.getRepository(productVariant);
+        const existingProduct = await productRepo.findOne({
+          where: { id, company_id: companyId },
+          relations: ['variants'],
+        });
 
-  //       const existingProduct = await productRepo.findOne({
-  //         where: { id },
-  //         relations: ['variants'],
-  //       });
-  //       if (!existingProduct) {
-  //         throw new NotFoundException(`Product #${id} not found`);
-  //       }
-  //       productRepo.merge(existingProduct, {
-  //         ...updateDto,
-  //         images: imagePath?.length ? imagePath : existingProduct.images,
-  //       });
-  //       const updatedProduct = await productRepo.save(existingProduct);
+        if (!existingProduct) {
+          throw new NotFoundException(`Product #${id} not found`);
+        }
+        productRepo.merge(existingProduct, {
+          ...updateDto,
+          images: imagePath?.length ? imagePath : existingProduct.images,
+          company_id: companyId,
+          updated_by: userId,
+        });
+        const updatedProduct = await productRepo.save(existingProduct);
+        const existingVariants = await variantRepo.find({
+          where: { product_id: id },
+        });
+        const updatedVariants: productVariant[] = [];
 
-  //       let updatedVariants: productVariant[] = [];
-  //       if (updateDto.variants && updateDto.variants.length > 0) {
-  //         const incomingCodes = updateDto.variants.map((v) => v.variant_code);
-  //         // update existing OR insert new
-  //         for (const variant of updateDto.variants) {
-  //           const existingVariant = await variantRepo.findOne({
-  //             where: { variant_code: variant.variant_code, product: { id: updatedProduct.id } },
-  //           });
-  //           if (existingVariant) {
-  //             variantRepo.merge(existingVariant, variant);
-  //             updatedVariants.push(await variantRepo.save(existingVariant));
-  //           } else {
-  //             const newVariant = variantRepo.create({
-  //               ...variant,
-  //               product: updatedProduct,
-  //             });
-  //             updatedVariants.push(await variantRepo.save(newVariant));
-  //           }
-  //         }
-  //       }
-  //       return successResponse('Product updated successfully!', {
-  //         updatedProduct,
-  //       });
-  //     });
-  //   } catch (error) {
-  //     throw new BadRequestException(error.message || 'Failed to update product');
-  //   }
-  // }
-  // async update(id: number, updateDto: CreateProductDto, imagePath: string[]) {
-  //   try {
-  //     return await this.dataSource.transaction(async (manager) => {
-  //       const productRepo = manager.getRepository(Product);
-  //       const variantRepo = manager.getRepository(productVariant);
-
-  //       const existingProduct = await productRepo.findOne({
-  //         where: { id },
-  //         relations: ['variants'],
-  //       });
-
-  //       if (!existingProduct) {
-  //         throw new NotFoundException(`Product #${id} not found`);
-  //       }
-
-  //       // 🟢 Update product data
-  //       productRepo.merge(existingProduct, {
-  //         ...updateDto,
-  //         images: imagePath?.length ? imagePath : existingProduct.images,
-  //       });
-
-  //       const updatedProduct = await productRepo.save(existingProduct);
-
-  //       // 🟢 Update or insert variants
-  //       let updatedVariants: productVariant[] = [];
-
-  //       if (updateDto.variants && updateDto.variants.length > 0) {
-  //         for (const variant of updateDto.variants) {
-  //           let existingVariant = null;
-
-  //           // match by variant_code (auto-generated at creation)
-  //           if (variant.) {
-  //             existingVariant = await variantRepo.findOne({
-  //               where: { variant_code: variant.variant_code, product: { id: updatedProduct.id } },
-  //             });
-  //           }
-
-  //           if (existingVariant) {
-  //             // 🟢 Update existing variant
-  //             variantRepo.merge(existingVariant, {
-  //               ...variant,
-  //               variant_code: existingVariant.variant_code, // keep old code
-  //               product: updatedProduct,
-  //             });
-  //             updatedVariants.push(await variantRepo.save(existingVariant));
-  //           } else {
-  //             // 🟢 Create new variant with generated code
-  //             const variantCode = await generateCode('variant', this.dataSource);
-  //             const newVariant = variantRepo.create({
-  //               ...variant,
-  //               product: updatedProduct,
-  //               variant_code: variantCode,
-  //             });
-  //             updatedVariants.push(await variantRepo.save(newVariant));
-  //           }
-  //         }
-  //       }
-
-  //       return successResponse('Product updated successfully!', {
-  //         updatedProduct,
-  //         updatedVariants,
-  //       });
-  //     });
-  //   } catch (error) {
-  //     throw new BadRequestException(error.message || 'Failed to update product');
-  //   }
-  // }
-
-
+        if (updateDto.variants && updateDto.variants.length > 0) {
+          const incomingKeys = updateDto.variants.map(
+            (v) =>
+              `${v.variant_name}-${v.attribute_name || ''}-${v.attribute_value || ''}`,
+          );
+          for (const variant of updateDto.variants) {
+            const key = `${variant.variant_name}-${variant.attribute_name || ''}-${variant.attribute_value || ''}`;
+            const existingVariant = existingVariants.find(
+              (v) =>
+                `${v.variant_name}-${v.attribute_name || ''}-${v.attribute_value || ''}` === key,
+            );
+            if (existingVariant) {
+              variantRepo.merge(existingVariant, {
+                ...variant,
+              });
+              updatedVariants.push(await variantRepo.save(existingVariant));
+            } else {
+              // Create new variant
+              const variantCode = await generateCode('variant', 'VAR', this.dataSource);
+              const newVariant = variantRepo.create({
+                ...variant,
+                variant_code: variantCode,
+                product: updatedProduct,
+              });
+              updatedVariants.push(await variantRepo.save(newVariant));
+            }
+          }
+        } else {
+          throw new BadRequestException('At least one variant is required');
+        }
+        return successResponse('Product updated successfully!', {
+          product: updatedProduct,
+          variants: updatedVariants,
+        });
+      });
+    } catch (error) {
+      throw new BadRequestException(error.message || 'Failed to update product');
+    }
+  }
   async statusUpdate(id: number) {
     try {
       const product = await this.productRepo.findOne({ where: { id } });
