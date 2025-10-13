@@ -5,17 +5,17 @@ import { UpdateNotificationDto } from './dto/update-notification.dto';
 
 @Controller('notification')
 export class NotificationController {
-  // constructor(private readonly service: NotificationService) {}
+  constructor(private readonly service: NotificationService) {}
 
   // @Post('create')
   // create(@Body() dto: CreateNotificationDto) {
   //   return this.service.create(dto);
   // }
 
-  // @Get('list')
-  // findAll() {
-  //   return this.service.findAll();
-  // }
+  @Get('list')
+  findAll() {
+    return this.service.findAll();
+  }
 
   // @Get(':id/get')
   // findOne(@Param('id') id: number) {

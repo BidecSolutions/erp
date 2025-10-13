@@ -7,12 +7,12 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @Controller('warranty')
 export class WarrantyController {
-  constructor(private readonly warrantyService: WarrantyService) {}
+  constructor(private readonly warrantyService: WarrantyService) { }
 
   @Post('store')
-  create(@Body() dto: CreateWarrantyDto , @Req() req: Request) {
-      const companyId = req["user"].company_id;
-    return this.warrantyService.create(dto,companyId);
+  create(@Body() dto: CreateWarrantyDto, @Req() req: Request) {
+    const companyId = req["user"].company_id;
+    return this.warrantyService.create(dto, companyId);
   }
 
   @Get('list')
@@ -27,13 +27,15 @@ export class WarrantyController {
     return this.warrantyService.findOne(+id);
   }
 
- @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateWarrantyDto) {
-    return this.warrantyService.update(+id, dto);
+  @Patch(':id')
+  update(@Req() req: Request, @Param('id') id: string, @Body() dto: UpdateWarrantyDto) {
+
+    const companyId = req["user"].company_id;
+    return this.warrantyService.update(+id, dto, companyId);
   }
-   @Get('toogleStatus/:id')
+  @Get('toogleStatus/:id')
   statusChange(@Param('id', ParseIntPipe) id: number) {
     return this.warrantyService.statusUpdate(id);
-  
-}
+
+  }
 }

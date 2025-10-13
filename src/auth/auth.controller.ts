@@ -296,6 +296,22 @@ export class AuthController {
   }
 
 
+  @Post('update-by-role-get-menus')
+  async updatedRoles(@Body() body: any) {
+    if (!body.role_id) {
+      throw new BadRequestException('role ID is required');
+    }
+
+    const menuTree = await this.authService.updateRoles(body);
+
+    return {
+      status: true,
+      message: 'Menus fetched successfully',
+      data: menuTree,
+    };
+  }
+
+
 
   @Post('create-roles')
   async createRolesAndMapping(@Body() body: any,) {

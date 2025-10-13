@@ -48,21 +48,8 @@ export class userRoles {
                 role_name: 'Admin ',
                 created_date: formattedDate,
                 created_time: now.toTimeString().split(' ')[0],
-            },
-            //HR Manager
-            {
-                id: 3,
-                role_name: 'HR Manager',
-                created_date: formattedDate,
-                created_time: now.toTimeString().split(' ')[0],
                 menuRoles: [
-                    { role_id: 3, side_menu_id: 3 },
-                    { role_id: 3, side_menu_id: 4 },
-                    { role_id: 3, side_menu_id: 5 },
-                    { role_id: 3, side_menu_id: 6 },
-                    { role_id: 3, side_menu_id: 7 },
-                    { role_id: 3, side_menu_id: 8 },
-                    { role_id: 3, side_menu_id: 9 },
+
                 ],
             },
         ];

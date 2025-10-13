@@ -38,7 +38,7 @@ export class SupplierCategoryController {
   async findAll(@Req() req: any, @Query('status') status?: string) {
     const companyId = req["user"].company_id;
     const filterStatus = status !== undefined ? Number(status) : undefined;
-    const categories = await this.supplierCategoryService.findAll(companyId, filterStatus);
+    const categories = await this.supplierCategoryService.findAll(companyId);
     return {
       status: true,
       message: 'Get All Supplier Categories',
@@ -74,8 +74,9 @@ export class SupplierCategoryController {
   }
 
   @Get('toggleStatus/:id')
-  async toggleStatus(@Param('id', ParseIntPipe) id: number) {
-    return this.supplierCategoryService.toggleStatus(id);
+  async toggleStatus(@Req() req: Request, @Param('id', ParseIntPipe) id: number) {
+    const companyId = req["user"].company_id;
+    return this.supplierCategoryService.toggleStatus(id, companyId);
   }
 
 }

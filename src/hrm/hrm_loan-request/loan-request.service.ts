@@ -32,7 +32,7 @@ export class LoanRequestService {
   formatResponse(loan: LoanRequest) {
     return {
       id: loan.id,
-      employeeName: loan.employee?.name || null,
+      // employeeName: loan.employee?.name || null,
       emp_id: loan.emp_id,
       amount: loan.amount,
       description: loan.description,

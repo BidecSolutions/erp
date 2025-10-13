@@ -19,20 +19,19 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @Controller('annual-leave')
 export class AnnualLeaveController {
-  constructor(private readonly annualLeaveService: AnnualLeaveService) {}
+  constructor(private readonly annualLeaveService: AnnualLeaveService) { }
 
   @Post('create')
   async create(@Body() dto: CreateAnnualLeaveDto, @Req() req: any) {
-    const company_id = req.user.company_id;
+    const company_id = req["user"].company_id;
     const leaves = await this.annualLeaveService.create(dto, company_id);
     return { status: true, message: 'Annual Leave Created Successfully', data: leaves };
   }
 
   @Get('list')
   async findAll(@Req() req: any, @Query('status') status?: string) {
-    const company_id = req.user.company_id;
-    const filterStatus = status !== undefined ? Number(status) : undefined;
-    const leaves = await this.annualLeaveService.findAll(company_id, filterStatus);
+    const company_id = req["user"].company_id;
+    const leaves = await this.annualLeaveService.findAll(company_id);
     return { status: true, message: 'Get All Annual Leaves', data: leaves };
   }
 
@@ -44,7 +43,7 @@ export class AnnualLeaveController {
 
   @Put(':id/update')
   async update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateAnnualLeaveDto, @Req() req: any) {
-    const company_id = req.user.company_id;
+    const company_id = req["user"].company_id;
     const updated = await this.annualLeaveService.update(id, dto, company_id);
     return { status: true, message: 'Annual Leave Updated Successfully', data: updated };
   }
