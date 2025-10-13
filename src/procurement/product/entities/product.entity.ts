@@ -88,8 +88,7 @@ export class Product {
   @Column({ type: 'json', nullable: true })
   images: string[];
 
-  @Column({ name: 'status', type: 'tinyint', default: 1 })
-  status: number;
+
 
   @Column({ nullable: true })
   created_by: number;

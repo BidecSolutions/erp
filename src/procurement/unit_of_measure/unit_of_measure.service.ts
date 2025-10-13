@@ -11,12 +11,8 @@ export class UnitOfMeasureService {
 
   constructor(
     @InjectRepository(UnitOfMeasure)
-    private readonly repo: Repository<UnitOfMeasure>) { }
-  constructor(
-    @InjectRepository(UnitOfMeasure)
     private readonly repo: Repository<UnitOfMeasure>,
-    private readonly dataSource: DataSource,
-  ) { }
+    private readonly dataSource: DataSource,) { }
 
   async create(createDto: CreateUnitOfMeasureDto, company_id: number) {
     try {
@@ -61,7 +57,6 @@ export class UnitOfMeasureService {
       return errorResponse(error.message);
     }
   }
-
   async findOne(id: number) {
     try {
       const unit_of_measure = await this.repo
@@ -72,61 +67,44 @@ export class UnitOfMeasureService {
           "unit.uom_name",
           "unit.uom_code",
           "unit.status",
-          "unit.description",
           "company.company_name",
         ])
         .where("unit.id = :id", { id })
         .getRawOne();
-  async findOne(id: number) {
-        try {
-          const unit_of_measure = await this.repo
-            .createQueryBuilder("unit")
-            .leftJoin("unit.company", "company")
-            .select([
-              "unit.id",
-              "unit.uom_name",
-              "unit.uom_code",
-              "unit.status",
-              "company.company_name",
-            ])
-            .where("unit.id = :id", { id })
-            .getRawOne();
 
-          if (!unit_of_measure) throw new NotFoundException(`Unit of Measure ID ${id} not found`);
+      if (!unit_of_measure) throw new NotFoundException(`Unit of Measure ID ${id} not found`);
 
 
-          return unit_of_measure;
-        } catch (e) {
-          return { message: e.message };
-        }
-      }
-
-
-  async update(id: number, updateDto: UpdateUnitOfMeasureDto, company_id: number) {
-        try {
-          const existing = await this.repo.findOne({ where: { id, company_id } });
-          if (!existing) {
-            return errorResponse(`unit of measure #${id} not found`);
-          }
-
-          await this.repo.save({ id, ...updateDto });
-          const updated = await this.findAll(company_id);
-          return updated;
-        } catch (e) {
-          return { message: e.message };
-        }
-      }
-  async statusUpdate(id: number) {
-        try {
-          const unit_of_measure = await this.repo.findOne({ where: { id } });
-          if (!unit_of_measure) throw new NotFoundException('brand not found');
-
-          unit_of_measure.status = unit_of_measure.status === 0 ? 1 : 0;
-          const saved = await this.repo.save(unit_of_measure);
-
-          return toggleStatusResponse('unit of measure', saved.status);
-        } catch (err) {
-          return errorResponse('Something went wrong', err.message);
-        }
-      }
+      return unit_of_measure;
+    } catch (e) {
+      return { message: e.message };
     }
+  }
+  async update(id: number, updateDto: UpdateUnitOfMeasureDto, company_id: number) {
+    try {
+      const existing = await this.repo.findOne({ where: { id, company_id } });
+      if (!existing) {
+        return errorResponse(`unit of measure #${id} not found`);
+      }
+
+      await this.repo.save({ id, ...updateDto });
+      const updated = await this.findAll(company_id);
+      return updated;
+    } catch (e) {
+      return { message: e.message };
+    }
+  }
+  async statusUpdate(id: number) {
+    try {
+      const unit_of_measure = await this.repo.findOne({ where: { id } });
+      if (!unit_of_measure) throw new NotFoundException('brand not found');
+
+      unit_of_measure.status = unit_of_measure.status === 0 ? 1 : 0;
+      const saved = await this.repo.save(unit_of_measure);
+
+      return toggleStatusResponse('unit of measure', saved.status);
+    } catch (err) {
+      return errorResponse('Something went wrong', err.message);
+    }
+  }
+}
