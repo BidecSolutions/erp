@@ -30,7 +30,7 @@ export class CustomerCategoryService {
         description: dto.description,
         discount_percent: dto.discount_percent,
         is_active: 1,
-        company: company,
+        companyId: company_id,
       });
 
       const savedCategory = await this.categoryRepo.save(category);
