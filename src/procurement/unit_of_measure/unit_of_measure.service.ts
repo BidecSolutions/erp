@@ -14,7 +14,7 @@ export class UnitOfMeasureService {
     private readonly repo: Repository<UnitOfMeasure>,
     private readonly dataSource: DataSource,) { }
 
-  async create(createDto: CreateUnitOfMeasureDto, company_id: number) {
+  async create(createDto: CreateUnitOfMeasureDto, userid: number, company_id: number) {
     try {
       const uomCode = await generateCode('unit_of_measeure', 'UOM', this.dataSource);
       const unit_of_measure = this.repo.create({
