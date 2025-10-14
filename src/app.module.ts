@@ -17,8 +17,6 @@ import { sideMenuAndRoleSeederService } from './seeder/side-menu-and-role-seeder
 import { subSideMenuPermission } from './entities/sub-side-menu-permission.entity';
 import { sales } from './sales/sales-module-list.module';
 import { POS } from './pos/POS-module-file.module';
-import { AccountModule } from './account/account.module';
-import { accounts } from './account/accounts-module-list.entity';
 
 
 @Module({
@@ -43,7 +41,10 @@ import { accounts } from './account/accounts-module-list.entity';
     ...HRM,
     ...sales,
     ...POS,
-    ...accounts
+
+
+
+
   ],
   controllers: [AppController],
   providers: [AppService, registerUser, userRoles, sideMenuAndRoleSeederService,],
