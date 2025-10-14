@@ -79,8 +79,6 @@ export class Product {
   warranty_type?: number;
 
 
-  @Column({ type: 'int', default: 1 })
-  status: number;
 
   @Column({ type: 'text', nullable: true })
   barcode?: string;

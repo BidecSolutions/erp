@@ -7,6 +7,7 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  BeforeInsert,
 } from 'typeorm';
 import { Company } from 'src/Company/companies/company.entity';
 import { Branch } from 'src/Company/branch/branch.entity';
@@ -41,7 +42,7 @@ export class InternalTransferRequest {
     enum: ITRStatus,
     default: ITRStatus.PENDING,
   })
-  status: ITRStatus;
+  itr_status: ITRStatus;
 
   @Column({ type: 'text', nullable: true })
   remarks?: string;
@@ -58,23 +59,35 @@ export class InternalTransferRequest {
   @JoinColumn({ name: 'branch_id' })
   branch: Branch;
 
-  @Column({ nullable: true })
-  created_by?: number;
 
   @Column({ nullable: true })
   approved_by?: number;
 
-  @Column({ type: 'timestamp', nullable: true })
-  approved_date?: Date;
+  @Column({ type: 'date', nullable: true })
+  approved_date?: string;
 
-  @CreateDateColumn()
-  created_at: Date;
+  @Column({ nullable: true })
+  created_by: number;
 
-  @UpdateDateColumn()
-  updated_at: Date;
+  @Column({ nullable: true })
+  updated_by: number;
+
+  @Column({ type: 'date', nullable: true })
+  created_at: string;
 
   @Column()
-  user_id:number;
+  updated_at: string;
+
+  @BeforeInsert()
+  setDefaults() {
+    const now = new Date();
+    this.created_at = now.toISOString().split('T')[0];
+    this.updated_at = now.toISOString().split('T')[0];
+    this.approved_date = now.toISOString().split('T')[0];
+  }
+  
+  @Column({ name: 'status', type: 'tinyint', default: 1 })
+  status: number;
 
   // Relations
   @OneToMany(() => InternalTransferItem, (item) => item.itr, { cascade: true })
