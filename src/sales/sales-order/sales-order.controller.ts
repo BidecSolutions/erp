@@ -9,10 +9,12 @@ import {
   ParseIntPipe,
   Delete,
   BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
 import { SalesOrderService } from './sales-order.service';
 import { CreateSalesOrderDto, UpdateSalesOrderDto } from './dto/sales-order.dto';
-
+import { JwtEmployeeAuth } from 'src/auth/jwt-employee.guard';
+// @UseGuards(JwtEmployeeAuth)
 @Controller('sales-order')
 export class SalesOrderController {
   constructor(private readonly salesOrderService: SalesOrderService) { }
