@@ -543,14 +543,6 @@ export class EmployeeService {
               end_time: r.end_time,
             })) || [],
 
-          // annualLeave: saved.annualLeave
-          //   ? {
-          //       id: saved.annualLeave.id,
-          //       name: saved.annualLeave.name,
-          //       total_leave: saved.annualLeave.total_leave,
-          //       status: saved.annualLeave.status,
-          //     }
-          //   : null,
           ...(saved.emp_type === "Probation"
             ? {
               probationSetting: saved.probationSetting
@@ -596,179 +588,6 @@ export class EmployeeService {
       throw new BadRequestException(e.message || "Something went wrong");
     }
   }
-
-
-  // async create(
-  //   dto: CreateEmployeeDto,
-  //   @UploadedFiles()
-  //   files: {
-  //     cv?: Express.Multer.File[];
-  //     photo?: Express.Multer.File[];
-  //     academic_transcript?: Express.Multer.File[];
-  //     identity_card?: Express.Multer.File[];
-  //   },
-  //   login_company_id: number
-  // ) {
-  //   try {
-  //     // --- Department & Designation ---
-  //     const department = await this.departmentRepository.findOneBy({ id: dto.departmentId });
-  //     const designation = await this.designationRepository.findOneBy({ id: dto.designationId });
-  //     if (!department) throw new NotFoundException("Department not found");
-  //     if (!designation) throw new NotFoundException("Designation not found");
-
-  //     // --- Annual Leave & Probation ---
-  //     let annualLeave: AnnualLeave | null = null;
-  //     if (dto.annual_leave_id) {
-  //       annualLeave = await this.annualLeaveRepo.findOneBy({ id: dto.annual_leave_id });
-  //       if (!annualLeave) throw new NotFoundException("Annual Leave not found");
-  //     }
-  //     let probationSetting: ProbationSetting | null = null;
-  //     if (dto.probation_setting_id) {
-  //       probationSetting = await this.probationSettingRepo.findOneBy({ id: dto.probation_setting_id });
-  //       if (!probationSetting) throw new NotFoundException("Probation Setting not found");
-  //     }
-
-  //     // --- Mandatory files check ---
-  //     if (!files?.cv) throw new BadRequestException("CV is required");
-  //     if (!files?.photo) throw new BadRequestException("Photo is required");
-  //     if (!files?.identity_card || files.identity_card.length < 2)
-  //       throw new BadRequestException("Identity Card front and back are required");
-
-  //     // --- Employee Type Validation ---
-  //     if (dto.emp_type === "Probation") {
-  //       if (dto.annual_leave_id)
-  //         throw new BadRequestException("Probation employees cannot have Annual Leave");
-  //       if (!dto.probation_setting_id)
-  //         throw new BadRequestException("Probation employees must have a probation_setting_id");
-  //     } else {
-  //       if (dto.probation_setting_id)
-  //         throw new BadRequestException("Only probation employees can have probation_setting_id");
-  //     }
-
-  //     // --- Create Employee ---
-  //     const emp = this.employeeRepository.create({
-  //       ...dto,
-  //       branch_id: Array.isArray(dto.branch_id) ? dto.branch_id.map((b) => Number(b)) : [Number(dto.branch_id)],
-  //       department,
-  //       designation,
-  //       ...(annualLeave ? { annualLeave } : {}),
-  //       ...(probationSetting ? { probationSetting } : {}),
-  //     });
-
-  //     emp.is_system_user = dto.is_system_user ?? false;
-  //     emp.employeeCode = await this.generateEmployeeCode();
-
-  //     // --- Save Employee ---
-  //     const saved = await this.employeeRepository.save(emp);
-
-  //     // --- Handle Roasters (Duplicate Safe) ---
-  //    // EmpRoaster save/update
-  // if (dto.roasters?.length) {
-  //   for (const r of dto.roasters) {
-  //     const shift = await this.shiftRepository.findOneBy({ id: r.shift_id });
-  //     if (!shift) throw new NotFoundException(`Shift not found: ${r.shift_id}`);
-
-  //     // convert days array to comma-separated string
-  //     const daysString = r.days.join(',');
-
-  //     const existingRoaster = await this.empRoasterRepo.findOne({
-  //       where: {
-  //         employee: { id: saved.id },
-  //         shift: { id: r.shift_id },
-  //         days: daysString,
-  //       },
-  //     });
-
-  //     if (existingRoaster) {
-  //       // Update existing
-  //       existingRoaster.start_time = r.start_time;
-  //       existingRoaster.end_time = r.end_time;
-  //       existingRoaster.status = 1;
-  //       await this.empRoasterRepo.save(existingRoaster);
-  //     } else {
-  //       // Create new
-  //       const newRoaster = this.empRoasterRepo.create({
-  //         employee: { id: saved.id },
-  //         shift: { id: shift.id },
-  //         days: r.days,
-  //         start_time: r.start_time,
-  //         end_time: r.end_time,
-  //         status: 1,
-  //       });
-  //       await this.empRoasterRepo.save(newRoaster);
-  //     }
-  //   }
-  // }
-
-
-  //     // --- System User Creation ---
-  //     if (saved.is_system_user) {
-  //       if (!dto.email || !dto.password) throw new BadRequestException("Email and password are required");
-  //       if (!dto.role_id) throw new BadRequestException("Please select a user role in the system");
-
-  //       const findEmail = await this.userRepository.findOne({ where: { email: dto.email } });
-  //       if (findEmail) throw new BadRequestException("Email already exists, please enter a unique one");
-
-  //       const hashedPassword = await bcrypt.hash(dto.password ?? "123456789", 10);
-  //       const user = this.userRepository.create({
-  //         name: saved.name,
-  //         email: dto.email,
-  //         password: hashedPassword,
-  //         employee: saved,
-  //       });
-  //       const userid = await this.userRepository.save(user);
-
-  //       // User Role
-  //       const userRole = this.usersRoleRepository.create({ user_id: userid.id, roll_id: dto.role_id });
-  //       await this.usersRoleRepository.save(userRole);
-
-  //       // User Company & Branch Mapping
-  //       const companyMapping = this.companyMaping.create({
-  //         user_id: userid.id,
-  //         branch_id: Array.isArray(dto.branch_id) ? dto.branch_id.map((b) => Number(b)) : [Number(dto.branch_id)],
-  //         company_id: login_company_id,
-  //       });
-  //       await this.companyMaping.save(companyMapping);
-  //     }
-
-  //     // --- Save Allowances ---
-  //     if (dto.allowance_ids?.length) {
-  //       const allowances = await this.allowanceRepo.find({ where: { id: In(dto.allowance_ids) } });
-  //       if (allowances.length !== dto.allowance_ids.length) throw new NotFoundException("Some allowances not found");
-  //       saved.allowances = allowances;
-  //       await this.employeeRepository.save(saved);
-  //     }
-
-  //     // --- Save Branches ---
-  //     if (dto.branch_id?.length) {
-  //       const branches = await this.branchRepo.find({ where: { id: In(dto.branch_id) } });
-  //       if (branches.length !== dto.branch_id.length) throw new NotFoundException("Some branches not found");
-  //       saved.branches = branches;
-  //       await this.employeeRepository.save(saved);
-  //     }
-
-  //     // --- Save Documents ---
-  //     if (files && Object.keys(files).length > 0) {
-  //       await this.documentService.createOrUpdateMany(saved.id, files);
-  //     }
-
-  //     // --- Save Bank Details ---
-  //     if (dto.bankDetails?.length) {
-  //       await this.bankDetailService.createMany(saved.id, dto.bankDetails);
-  //     }
-
-  //     return {
-  //       success: true,
-  //       message: "Employee created successfully",
-  //       data: saved,
-  //     };
-  //   } catch (e) {
-  //     console.error(e);
-  //     throw new BadRequestException(e.message || "Something went wrong");
-  //   }
-  // }
-
-
   async update(
     id: number,
     dto: UpdateEmployeeDto,
@@ -811,47 +630,6 @@ export class EmployeeService {
       emp.designation = designation;
     }
 
-    // let annualLeave: AnnualLeave | null = null;
-    // if (dto.annual_leave_id) {
-    //   annualLeave = await this.annualLeaveRepo.findOneBy({
-    //     id: dto.annual_leave_id,
-    //   });
-    //   if (!annualLeave) throw new NotFoundException("Annual Leave not found");
-    // }
-
-    // let probationSetting: ProbationSetting | null = null;
-    // if (dto.probation_setting_id) {
-    //   probationSetting = await this.probationSettingRepo.findOneBy({
-    //     id: dto.probation_setting_id,
-    //   });
-    //   if (!probationSetting) {
-    //     throw new NotFoundException("Probation Setting not found");
-    //   }
-    // }
-
-    // // Employee type logic
-    // if (dto.emp_type === "Probation") {
-    //   if (dto.annual_leave_id) {
-    //     throw new BadRequestException(
-    //       "Probation employees cannot have Annual Leave"
-    //     );
-    //   }
-    //   if (!dto.probation_setting_id && !emp.probationSetting) {
-    //     throw new BadRequestException(
-    //       "Probation employees must have a probation_setting_id"
-    //     );
-    //   }
-    //   // Remove annual leave if exists
-    //   emp.annualLeave = null;
-    // } else {
-    //   // Permanent employee
-    //   if (dto.probation_setting_id) {
-    //     throw new BadRequestException(
-    //       "Only probation employees can have probation_setting_id"
-    //     );
-    //   }
-    //   emp.probationSetting = null;
-    // }
     let annualLeave: AnnualLeave | null = null;
     let probationSetting: ProbationSetting | null = null;
 
@@ -1109,13 +887,6 @@ export class EmployeeService {
         .set({ status: emp.status })
         .where("employeeId = :id", { id: emp.id })
         .execute();
-
-      //  cascade to user
-      // if (emp.user) {
-      //   emp.user.status = emp.status;
-      //   await this.userRepository.save(emp.user);
-      // }
-
       return toggleStatusResponse("employee", emp.status);
     } catch (err) {
       return errorResponse("Something went wrong", err.message);
