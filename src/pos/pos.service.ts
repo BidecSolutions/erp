@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { ProductService } from 'src/procurement/product/product.service';
@@ -18,6 +18,7 @@ import { SalesReturn } from './entities/sales-return.entity';
 import { SalesReturnDetail } from './entities/sales-return-detail.entity';
 import { productVariant } from 'src/procurement/product/entities/variant.entity';
 import { generateCode } from 'src/commonHelper/response.util';
+import { Category } from 'src/procurement/categories/entities/category.entity';
 
 @Injectable()
 export class PosService {
@@ -36,6 +37,9 @@ export class PosService {
         @InjectRepository(Customer)
         private readonly customerRepo: Repository<Customer>,
 
+        @InjectRepository(Category)
+        private readonly productCategory: Repository<Category>,
+
         @InjectRepository(CustomerAccount)
         private readonly customerAccountRepo: Repository<CustomerAccount>,
         @InjectRepository(Product)
@@ -43,7 +47,11 @@ export class PosService {
         @InjectRepository(Branch)
         private readonly branchRepo: Repository<Branch>,
         @InjectRepository(productVariant)
-        private readonly productVariantRepo: Repository<productVariant>
+        private readonly productVariantRepo: Repository<productVariant>,
+        @InjectRepository(SalesReturn)
+        private readonly salesReturnRepo: Repository<SalesReturn>,
+        @InjectRepository(SalesReturnDetail)
+        private readonly salesReturnDetailRepo: Repository<SalesReturnDetail>,
 
     ) { }
 
@@ -501,6 +509,363 @@ export class PosService {
         }
     }
 
+
+    async getProductsSummaryByOrderNo(order_no: string) {
+        // 1) find the order
+        const order = await this.salesOrderRepo.findOne({ where: { order_no } });
+        if (!order) {
+            throw new NotFoundException(`Sales order with order_no ${order_no} not found`);
+        }
+
+        const orderId = (order as any).id;
+
+        // 2) aggregated purchased quantities per product
+        const purchasedRows: Array<{
+            product_id: number;
+            product_name: string | null;
+            purchased_qty: string;
+        }> = await this.salesOrderDetailRepo
+            .createQueryBuilder('sod')
+            .select('sod.product_id', 'product_id')
+            .addSelect('p.product_name', 'product_name')
+            .addSelect('sod.quantity', 'purchased_qty')
+            .leftJoin('sod.product', 'p')
+            .where('sod.order_id = :orderId', { orderId })
+            .groupBy('sod.product_id')
+            .addGroupBy('p.product_name')
+            .getRawMany();
+
+        // 3) aggregated return quantities per product
+        const returnRows: Array<{
+            product_id: number;
+            return_qty: string;
+        }> = await this.salesReturnDetailRepo
+            .createQueryBuilder('srd')
+            .select('srd.product_id', 'product_id')
+            .addSelect('srd.quantity', 'return_qty')
+            .innerJoin('srd.salesReturn', 'r')
+            .where('r.sales_order_id = :orderId', { orderId })
+            .groupBy('srd.product_id')
+            .getRawMany();
+
+        // 4) map returnRows
+        const returnMap = new Map<number, number>();
+        for (const r of returnRows) {
+            const pid = Number(r.product_id);
+            const qty = Number(r.return_qty ?? 0);
+            returnMap.set(pid, qty);
+        }
+
+        // 5) build result from purchasedRows
+        const results: Array<{
+            product_id: number;
+            product_name: string | null;
+            purchased_qty: number;
+            return_qty: number;
+            current_qty: number;
+        }> = [];
+
+        const seenProductIds = new Set<number>();
+
+        for (const p of purchasedRows) {
+            const pid = Number(p.product_id);
+            const purchasedQty = Number(p.purchased_qty ?? 0);
+            const returnQty = returnMap.get(pid) ?? 0;
+            const currentQty = returnQty === 0 ? 0 : purchasedQty - returnQty;
+
+            results.push({
+                product_id: pid,
+                product_name: p.product_name ?? null,
+                purchased_qty: purchasedQty,
+                return_qty: returnQty,
+                current_qty: currentQty,
+            });
+
+            seenProductIds.add(pid);
+        }
+
+        // 6) include products only in returns. It is exceptional case if database is consistent
+        // for (const [pid, returnQty] of returnMap.entries()) {
+        //     if (seenProductIds.has(pid)) continue;
+
+        //     const product = await this.productRepo.findOne({ where: { id: pid } });
+        //     const productName = product ? (product as any).product_name : null; 
+
+        //     results.push({
+        //         product_id: pid,
+        //         product_name: productName,
+        //         purchased_qty: 0,
+        //         return_qty: returnQty,
+        //         current_qty: 0 - returnQty,
+        //     });
+        // }
+
+        return results;
+    }
+
+
+    // async getCategoriesWithProductsForPOS(companyId: number) {
+    //     try {
+    //         // Raw query builder: fetch everything in one shot
+    //         const qb = this.dataSource
+    //             .createQueryBuilder()
+    //             .select([
+    //                 'c.category_id AS category_id',
+    //                 'c.category_name AS category_name',
+
+    //                 // product columns (nullable if category has no product)
+    //                 'p.id AS product_id',
+    //                 'p.product_name AS product_name',
+    //                 'p.images AS product_images',
+
+    //                 // variant columns (nullable if product has no variant)
+    //                 'v.id AS variant_id',
+    //                 'v.variant_name AS variant_name',
+    //                 // placeholder for variant image - if you add it later as v.image it will be returned
+    //                 //'v.image AS variant_image',
+
+    //                 // aggregated stock
+    //                 'COALESCE(SUM(s.quantity_on_hand), 0) AS total_stock'
+    //             ])
+    //             .from(Category, 'c')
+    //             // left join product (only include products for the given company)
+    //             .leftJoin(Product, 'p', 'p.category_id = c.category_id AND p.company_id = :companyId', { companyId })
+    //             // left join variants
+    //             .leftJoin(productVariant, 'v', 'v.product_id = p.id')
+    //             // left join stock: include stock rows for variant OR (when variant is null) product-level stock (variant_id IS NULL)
+    //             .leftJoin(
+    //                 Stock,
+    //                 's',
+    //                 `( (s.variant_id IS NOT NULL AND s.variant_id = v.id) OR (v.id IS NULL AND s.product_id = p.id) )
+    //        AND s.company_id = :companyId`,
+    //                 { companyId },
+    //             )
+    //             // group by category, product, variant so SUM works per variant (or per product when variant is null)
+    //             .groupBy('c.category_id')
+    //             .addGroupBy('c.category_name')
+    //             .addGroupBy('p.id')
+    //             .addGroupBy('p.product_name')
+    //             .addGroupBy('p.images')
+    //             .addGroupBy('v.id')
+    //             .addGroupBy('v.variant_name')
+    //             //.addGroupBy('v.image') // will be NULL until added; safe to group by
+    //             .orderBy('c.category_name', 'ASC')
+    //             .addOrderBy('p.product_name', 'ASC')
+    //             .addOrderBy('v.variant_name', 'ASC');
+
+    //         const raw = await qb.getRawMany();
+
+    //         // Map raw rows -> nested structure
+    //         const categoriesMap = new Map<number, any>();
+
+    //         for (const row of raw) {
+    //             const categoryId = row.category_id;
+    //             const categoryName = row.category_name;
+
+    //             if (!categoriesMap.has(categoryId)) {
+    //                 categoriesMap.set(categoryId, {
+    //                     category_id: categoryId,
+    //                     category_name: categoryName,
+    //                     products: [],
+    //                 });
+    //             }
+
+    //             // If product is null (no product for this category/company) we'll skip adding product
+    //             const productId = row.product_id;
+    //             if (!productId) {
+    //                 // continue to next row (category without products)
+    //                 continue;
+    //             }
+
+    //             const categoryObj = categoriesMap.get(categoryId);
+
+    //             // find product in categoryObj.products or create it
+    //             let productObj = categoryObj.products.find((p) => p.product_id === productId);
+    //             if (!productObj) {
+    //                 // parse images JSON safely
+    //                 let productImages: string[] | null = null;
+    //                 if (row.product_images) {
+    //                     try {
+    //                         // row.product_images may be returned as a JSON string or already parsed depending on driver
+    //                         productImages = typeof row.product_images === 'string' ? JSON.parse(row.product_images) : row.product_images;
+    //                     } catch (err) {
+    //                         productImages = null;
+    //                     }
+    //                 }
+
+    //                 productObj = {
+    //                     product_id: productId,
+    //                     product_name: row.product_name || null,
+    //                     product_image: Array.isArray(productImages) && productImages.length > 0 ? productImages[0] : null,
+    //                     variants: [],
+    //                 };
+
+    //                 categoryObj.products.push(productObj);
+    //             }
+
+    //             // Now handle variant (could be null if product has no variants)
+    //             const variantId = row.variant_id;
+    //             const variantName = row.variant_name ?? null;
+    //             const variantImage = row.variant_image ?? null; // future-ready
+
+    //             // total_stock comes as string (from DB) — convert to number
+    //             let stockValue = 0;
+    //             if (row.total_stock !== undefined && row.total_stock !== null) {
+    //                 stockValue = typeof row.total_stock === 'string' ? parseInt(row.total_stock, 10) || 0 : Number(row.total_stock || 0);
+    //             }
+
+    //             if (variantId) {
+    //                 // add variant entry
+    //                 productObj.variants.push({
+    //                     variant_id: variantId,
+    //                     variant_name: variantName,
+    //                     variant_image: variantImage,
+    //                     stock: stockValue,
+    //                 });
+    //             } else {
+    //                 // No variants: we still want to show product-level stock (sum where variant_id IS NULL)
+    //                 // We'll push a single "null-variant" placeholder so UI can read stock
+    //                 // If you prefer product-level stock as product.stock instead of a variant entry, you can change this.
+    //                 productObj.variants.push({
+    //                     variant_id: null,
+    //                     variant_name: null,
+    //                     variant_image: null,
+    //                     stock: stockValue,
+    //                 });
+    //             }
+    //         }
+
+    //         // Convert map to array
+    //         const categories = Array.from(categoriesMap.values());
+
+    //         // total_records equals number of categories returned
+    //         return {
+    //             success: true,
+    //             message: 'Categories retrieved successfully',
+    //             data: {
+    //                 total_records: categories.length,
+    //                 categories,
+    //             },
+    //         };
+    //     } catch (error) {
+    //         return {
+    //             success: false,
+    //             message: 'Failed to retrieve categories for POS',
+    //             error: error.message || error,
+    //         };
+    //     }
+    // }
+
+
+    async getCategoriesWithProductsForPOS(companyId: number) {
+        // 1) Get categories
+        const categories = await this.productCategory
+            .createQueryBuilder('category')
+            .select(['category.id as id', 'category.category_name as category_name'])
+            .where('category.company_id = :companyId', { companyId })
+            .getRawMany();
+
+        // 2) For each category, fetch products
+        const categoriesWithProducts = await Promise.all(
+            categories.map(async (category) => {
+                const products = await this.productRepo.find({
+                    where: { category_id: category.id },
+                    select: ['id', 'product_name', 'images'],
+                });
+
+                // 3) For each product, fetch variants
+                const productsWithVariants = await Promise.all(
+                    products.map(async (product) => {
+                        //   const variants = await this.productVariantRepo.find({
+                        //     where: { product: { id: product.id } },
+                        //     select: ['id', 'variant_name'],
+                        //   });
+
+                        const variants = await this.productVariantRepo
+                            .createQueryBuilder('variant')
+                            .innerJoin('inventory_stock', 'stock', 'stock.variant_id = variant.id')
+                            .select(['variant.id as id', 'variant.variant_name as variant_name', 'SUM(stock.quantity_on_hand) as total_stock'])
+                            .where('variant.product_id = :productId', { productId: product.id })
+                            .groupBy('variant.id')
+                            .getRawMany();
+
+                        const variantsWithImage = variants.map(v => ({
+                            ...v,
+                            image: null, // will replace when variant has image column
+                        }));
+
+                        return {
+                            ...product,
+                            variants: variantsWithImage,
+                        };
+                    })
+                );
+
+                return {
+                    ...category,
+                    products: productsWithVariants,
+                };
+            })
+        );
+
+        return categoriesWithProducts;
+    }
+
+
+
+    // async getCategoriesWithProductsForPOS(companyId: number) {
+    //     // 1) Get categories
+    //     const categories = await this.productCategory
+    //         .createQueryBuilder('category')
+    //         .select(['category.id as id', 'category.category_name as category_name'])
+    //         .where('category.company_id = :companyId', { companyId })
+    //         .getRawMany();
+    //     const categoriesWithProducts = await Promise.all(
+    //         categories.map(async (category) => {
+    //             const products = await this.productRepo.find({
+    //                 where: { category_id: category.id },
+    //                 select: ['id', 'product_name', 'images'],
+    //             });
+
+    //             const productsWithVariants = await Promise.all(
+    //                 products.map(async (product) => {
+    //                     const variants = await this.productVariantRepo.find({
+    //                         where: { product: { id: product.id } },
+    //                         select: ['id', 'variant_name', 'unit_price'],
+    //                     });
+    //                     const variantsWithStock = await Promise.all(
+    //                         variants.map(async (variant) => {
+    //                             const stockResult = await this.stockRepo
+    //                                 .createQueryBuilder('stock')
+    //                                 .select('SUM(stock.quantity_on_hand)', 'total_stock')
+    //                                 .where('stock.product_id = :productId', { productId: product.id })
+    //                                 .andWhere('stock.variant_id = :variantId', { variantId: variant.id })
+    //                                 .getRawOne();
+
+    //                             return {
+    //                                 ...variant,
+    //                                 image: null,
+    //                                 stock: Number(stockResult?.total_stock || 0), // ✅ return 0 if null
+    //                             };
+    //                         })
+    //                     );
+
+    //                     return {
+    //                         ...product,
+    //                         variants: variantsWithStock,
+    //                     };
+    //                 })
+    //             );
+
+    //             return {
+    //                 ...category,
+    //                 products: productsWithVariants,
+    //             };
+    //         })
+    //     );
+
+    //     return categoriesWithProducts;
+    // }
 
 }
 
