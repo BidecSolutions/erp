@@ -136,9 +136,9 @@ export class DepartmentService {
     }
   }
 
-  async statusUpdate( id: number) {
+  async statusUpdate( id: number,company_id: number) {
     try {
-      const dep = await this.departmentRepository.findOneBy({ id });
+      const dep = await this.departmentRepository.findOneBy({ id ,company_id});
       if (!dep) throw new NotFoundException("Departmentt not found");
 
       dep.status = dep.status === 0 ? 1 : 0;

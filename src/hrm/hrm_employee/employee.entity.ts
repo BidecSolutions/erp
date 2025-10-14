@@ -24,6 +24,7 @@ import { User } from "src/entities/user.entity";
 import { Role } from "src/entities/role.entity";
 import { Branch } from "src/Company/branch/branch.entity";
 import { ProbationSetting } from "../hrm_probation-setting/probation-setting.entity";
+import { EmpRoaster } from "../hrm_shift/emp-roaster.entity";
 
 export enum EmployeeType {
   Probation = "Probation",
@@ -90,9 +91,9 @@ export class Employee {
   fixedSalary: number;
 
 
-  @ManyToOne(() => Shift, (shift) => shift.employees)
-  @JoinColumn({ name: "shiftId" })
-  shift: Shift;
+  // @ManyToOne(() => Shift, (shift) => shift.employees)
+  // @JoinColumn({ name: "shiftId" })
+  // shift: Shift;
 
   @OneToMany(() => Document, (documents) => documents.employee, {
     cascade: true,
@@ -107,7 +108,7 @@ export class Employee {
     nullable: true,
   })
   @JoinColumn({ name: "annual_leave_id" })
-  annualLeave: AnnualLeave;
+  annualLeave: AnnualLeave | null;
 
   @Column("simple-array", { nullable: true })
   allowance_ids: number[];
@@ -140,7 +141,7 @@ export class Employee {
 
   @ManyToOne(() => ProbationSetting, { nullable: true })
   @JoinColumn({ name: "probation_setting_id" })
-  probationSetting?: ProbationSetting;
+  probationSetting?: ProbationSetting | null;
 
   @Column({ type: "int", nullable: true })
   probation_setting_id?: number;
@@ -151,6 +152,10 @@ export class Employee {
     nullable: false, //  required bana diya
   })
   emp_type: EmployeeType;
+
+@OneToMany(() => EmpRoaster, (roaster) => roaster.employee, { cascade: true })
+roasters: EmpRoaster[];
+
 
   @Column({
     type: "int",

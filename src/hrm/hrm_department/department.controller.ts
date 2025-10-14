@@ -74,7 +74,9 @@ export class DepartmentController {
   }
 
   @Get("toogleStatus/:id")
-  statusChange(@Param("id", ParseIntPipe) id: number) {
-    return this.departmentService.statusUpdate(id);
+  async toggleStatus( @Req() req: Request,@Param("id", ParseIntPipe) id: number) {
+    const companyId = req["user"].company_id;
+    const result = await this.departmentService.statusUpdate(id, companyId);
+    return result;
   }
 }
