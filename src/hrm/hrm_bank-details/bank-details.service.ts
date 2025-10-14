@@ -22,12 +22,6 @@ export class BankDetailService {
     return this.bankRepo.save(banks);
   }
 
-  async findByEmployee(employeeId: number) {
-    return this.bankRepo.find({
-      where: { employeeId },
-    });
-  }
-
  
   
 }

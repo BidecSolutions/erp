@@ -85,7 +85,7 @@ export class DesignationController {
   }
 
   // ✅ Toggle Status
-  @Get("toggleStatus/:id")
+  @Get("toogleStatus/:id")
   async toggleStatus(@Param("id", ParseIntPipe) id: number, @Req() req: any) {
     const companyId = req["user"].company_id;
     const result = await this.designationService.statusUpdate(id, companyId);

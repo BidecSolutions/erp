@@ -107,7 +107,15 @@ export class CreateProductVariantDto {
   @IsNotEmpty()
   @Type(() => Number)
   @IsNumber()
-  cost_price?: number;;
+  cost_price?: number;
+
+  @IsOptional()
+@Type(() => Number)
+@IsInt()
+has_variant?: number;
+
+
+
 }
 
 

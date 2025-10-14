@@ -20,6 +20,7 @@ import {
 import { Transform, Type } from "class-transformer";
 import { CreateBankDetailDto } from "src/hrm/hrm_bank-details/dto/create-bank-details.dto";
 import { EmployeeType } from "../employee.entity";
+import { CreateEmpRoasterDto } from "src/hrm/hrm_shift/dto/create-emp-roaster.dto";
 
 export class CreateEmployeeDto {
   @IsString()
@@ -92,6 +93,14 @@ export class CreateEmployeeDto {
   @Type(() => CreateBankDetailDto)
   bankDetails?: CreateBankDetailDto[];
 
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateEmpRoasterDto)
+  roasters?: CreateEmpRoasterDto[];
+
+
+
   @IsOptional()
   @IsNumber()
   @Type(() => Number)
@@ -132,10 +141,10 @@ export class CreateEmployeeDto {
   @Type(() => Number)
   ratePerHour?: number;
 
-  @IsNumber({}, { message: "Shift ID must be a number" })
-  @IsNotEmpty({ message: "Shift is required" })
-  @Type(() => Number)
-  shiftId: number;
+  // @IsNumber({}, { message: "Shift ID must be a number" })
+  // @IsNotEmpty({ message: "Shift is required" })
+  // @Type(() => Number)
+  // shiftId: number;
 
   @IsBoolean()
   @Transform(({ value }) => {
@@ -156,7 +165,7 @@ export class CreateEmployeeDto {
 
   //  Probation setting ID -> sirf PROBATION employees ke liye
   @ValidateIf((o) => o.emp_type === EmployeeType.Probation)
-  @IsNotEmpty({
+  @IsOptional({
     message: "probation_setting_id is required for probation employees",
   })
   @IsInt({ message: "probation_setting_id must be an integer number" })

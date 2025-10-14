@@ -115,10 +115,12 @@ export class Product {
   })
   is_instant_product: number;
 
-  @Column({
-    type: 'int',
-  })
-  has_variant: number;
+@Column({
+  type: 'int',
+  default: 1, // default value add kar di
+})
+has_variant: number;
+
 
   @OneToMany(() => productVariant, (variant) => variant.product)
   variants: productVariant[];
