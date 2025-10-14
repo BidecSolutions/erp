@@ -102,10 +102,11 @@ export class ProductService {
     }
   }
 
-  async findAll(companyId:number) {
+  async findAll(companyId: number) {
     try {
       const [product, total] = await this.productRepo.findAndCount({
         where: { company_id: companyId },
+        relations: ['variants'],
         order: { id: 'DESC' },
       });
 
@@ -117,7 +118,7 @@ export class ProductService {
       return errorResponse('Failed to retrieve product', error.message);
     }
   }
-  async findOne(id: number  ,companyId:number) {
+  async findOne(id: number, companyId: number) {
     try {
       const product = await this.productRepo.findOne({
         where: { id, company_id: companyId },

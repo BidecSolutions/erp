@@ -55,7 +55,7 @@ export class EmployeeService {
 
     @InjectRepository(userCompanyMapping)
     private readonly companyMaping: Repository<userCompanyMapping>
-  ) {}
+  ) { }
 
   private async generateEmployeeCode() {
     const lastEmployee = await this.employeeRepository.find({
@@ -66,15 +66,16 @@ export class EmployeeService {
     return `EMP-${String(newId).padStart(3, "0")}`;
   }
 
-  async findAll(body) {
+  async findAll(body: any, company: number) {
+    const branches = await this.companyMaping.findOne({ where: { company_id: company } })
+
+    const branchArray = branches?.branch_id ?? [];
+
+
     const employees = await this.employeeRepository.find({
-      where: {
-        status: body.status,
-        branch_id: Raw(
-          (alias) =>
-            `JSON_CONTAINS(${alias}, '${JSON.stringify([body.branch_id])}')`
-        ),
-      },
+      where: branchArray.map(id => ({
+        branch_id: Raw(alias => `JSON_CONTAINS(${alias}, '${JSON.stringify([id])}')`)
+      })),
       relations: [
         "department",
         "designation",
@@ -83,7 +84,6 @@ export class EmployeeService {
         "annualLeave",
         "allowances",
         "shift",
-        "branches",
         "probationSetting",
       ],
     });
@@ -128,27 +128,27 @@ export class EmployeeService {
         };
       }
 
-    
+
       baseData.document =
         documents.length > 0
           ? {
-              cv: documents.find((d) => d.type === "cv")?.filePath || null,
-              photo:
-                documents.find((d) => d.type === "photo")?.filePath || null,
-              identity_card:
-                documents
-                  .filter((d) => d.type === "identity_card")
-                  .map((d) => d.filePath) || [],
-              academic_transcript:
-                documents.find((d) => d.type === "academic_transcript")
-                  ?.filePath || null,
-            }
+            cv: documents.find((d) => d.type === "cv")?.filePath || null,
+            photo:
+              documents.find((d) => d.type === "photo")?.filePath || null,
+            identity_card:
+              documents
+                .filter((d) => d.type === "identity_card")
+                .map((d) => d.filePath) || [],
+            academic_transcript:
+              documents.find((d) => d.type === "academic_transcript")
+                ?.filePath || null,
+          }
           : {
-              cv: null,
-              photo: null,
-              identity_card: [],
-              academic_transcript: null,
-            };
+            cv: null,
+            photo: null,
+            identity_card: [],
+            academic_transcript: null,
+          };
 
       baseData.bankDetails = emp.bankDetails || [];
 
@@ -173,6 +173,7 @@ export class EmployeeService {
       return baseData;
     });
   }
+
 
   async findOne(id: number) {
     const emp = await this.employeeRepository.findOne({
@@ -381,7 +382,7 @@ export class EmployeeService {
             : [Number(dto.branch_id)],
           company_id: login_company_id,
 
-          
+
         });
         await this.companyMaping.save(companyMapping);
       }
@@ -450,26 +451,26 @@ export class EmployeeService {
           //   : null,
           ...(saved.emp_type === "Probation"
             ? {
-                probationSetting: saved.probationSetting
-                  ? {
-                      id: saved.probationSetting.id,
-                      leave_days: saved.probationSetting.leave_days,
-                      probation_period: saved.probationSetting.probation_period,
-                      duration_type: saved.probationSetting.duration_type,
-                      status: saved.probationSetting.status,
-                    }
-                  : null,
-              }
+              probationSetting: saved.probationSetting
+                ? {
+                  id: saved.probationSetting.id,
+                  leave_days: saved.probationSetting.leave_days,
+                  probation_period: saved.probationSetting.probation_period,
+                  duration_type: saved.probationSetting.duration_type,
+                  status: saved.probationSetting.status,
+                }
+                : null,
+            }
             : {
-                annualLeave: saved.annualLeave
-                  ? {
-                      id: saved.annualLeave.id,
-                      name: saved.annualLeave.name,
-                      total_leave: saved.annualLeave.total_leave,
-                      status: saved.annualLeave.status,
-                    }
-                  : null,
-              }),
+              annualLeave: saved.annualLeave
+                ? {
+                  id: saved.annualLeave.id,
+                  name: saved.annualLeave.name,
+                  total_leave: saved.annualLeave.total_leave,
+                  status: saved.annualLeave.status,
+                }
+                : null,
+            }),
           allowances: saved.allowances?.map((a) => ({
             id: a.id,
             title: a.title,
@@ -663,11 +664,11 @@ export class EmployeeService {
         shift: fullEmp.shift?.name,
         annualLeave: fullEmp.annualLeave
           ? {
-              id: fullEmp.annualLeave.id,
-              name: fullEmp.annualLeave.name,
-              total_leave: fullEmp.annualLeave.total_leave,
-              status: fullEmp.annualLeave.status,
-            }
+            id: fullEmp.annualLeave.id,
+            name: fullEmp.annualLeave.name,
+            total_leave: fullEmp.annualLeave.total_leave,
+            status: fullEmp.annualLeave.status,
+          }
           : null,
         allowances:
           fullEmp.allowances?.map((a) => ({

@@ -45,8 +45,8 @@ export class LeaveTypeService {
         .select([
           "leave_type.id as id",
           "leave_type.leave_type as leave_type",
-          "leave_type.statusnotific as status",
-                "leave_type.company_id as company_id", 
+          "leave_type.status as status",
+          "leave_type.company_id as company_id",
         ])
         .where("leave_type.company_id = :company_id", { company_id })
         .orderBy("leave_type.id", "DESC")
@@ -68,7 +68,7 @@ export class LeaveTypeService {
           "leave_type.id as id",
           "leave_type.leave_type as leave_type",
           "leave_type.status as status",
-                       "leave_type.company_id as company_id", 
+          "leave_type.company_id as company_id",
         ])
         .where("leave_type.id = :id", { id })
         .getRawOne();
