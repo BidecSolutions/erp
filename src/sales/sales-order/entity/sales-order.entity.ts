@@ -140,26 +140,22 @@ export class SalesOrder {
 
   // // NEW STATUS & AUDIT COLUMNS
   @Column({
-    type: 'smallint',
-    default: 1,
-    nullable: false,
-    comment: '0 = inactive, 1 = active',
-  })
-  status: number;
+        type: 'int',
+        comment: '1 = active, 2 = inactive',
+        default: 1
+    })
+    status: number;
 
-  @Column({ type: 'date', nullable: true })
-  created_at: string;
+    @Column({ type: 'date', nullable: true })
+    created_at: string;
 
-  @Column({ type: 'date', nullable: true })
-  updated_at: string;
+    @Column({ type: 'date', nullable: true })
+    updated_at: string;
 
-
-
-  @BeforeInsert()
-  setCreateDateParts() {
-    const today = new Date();
-    const onlyDate = today.toISOString().split('T')[0]; // YYYY-MM-DD
-    this.created_at = onlyDate;
-    this.updated_at = onlyDate;
-  }
+    @BeforeInsert()
+    setDefaults() {
+        const now = new Date();
+        this.created_at = now.toISOString().split('T')[0];
+        this.updated_at = now.toISOString().split('T')[0];
+    }
 }
