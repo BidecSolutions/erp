@@ -49,45 +49,10 @@ async createOrUpdateConfig(@Body() dto: Partial<AttendanceConfig>, @Req() req: a
       data: result.data,
     };
   }
+  @Post('auto-mark-absent')
+async autoMarkAbsent(@Req() req: any) {
+  const company_id = req.user.company_id;
+  return await this.attendanceService.autoMarkAbsentToday(company_id);
+}
 
-  //   Get Attendance for a Specific Day (join-based)
-// @Get(':employeeId/:date')
-// async getDay(
-//   @Param('employeeId') employeeId: number,
-//   @Param('date') date: string,
-//   @Req() req: any,
-// ) {
-//   const company_id = req.user.company_id;
-//   const attendance = await this.attendanceService.getAttendanceByEmployeeAndDate(
-//     employeeId,
-//     date,
-//     company_id,
-//   );
-
-//   return {
-//     status: attendance.status,
-//     message: attendance.message,
-//     data: attendance.data,
-//   };
-// }
-
-  //   Monthly Report (join-based)
-  // @Get('report/:employeeId/:month')
-  // async getReport(
-  //   @Param('employeeId') employeeId: number,
-  //   @Param('month') month: string,
-  //   @Req() req: any,
-  // ) {
-  //   const company_id = req.user.company_id;
-  //   const report = await this.attendanceService.getMonthlyReport(
-  //     employeeId,
-  //     month,
-  //     company_id,
-  //   );
-  //   return {
-  //     status: report.status,
-  //     message: report.message,
-  //     data: report.data,
-  //   };
-  // }
 }

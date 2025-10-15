@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Attendance, AttendanceStatus } from './attendance.entity';
 import { AttendanceConfig } from './attendance-config.entity';
 import { CreateAttendanceDto } from './dto/create-attendance.dto';
@@ -8,6 +8,7 @@ import { Employee } from '../hrm_employee/employee.entity';
 import moment from 'moment';
 import { LeaveRequest } from '../hrm_leave-request/leave-request.entity';
 import { Holiday } from '../hrm_holiday/holiday.entity';
+import { userCompanyMapping } from 'src/entities/user-company-mapping.entity';
 
 @Injectable()
 export class AttendanceService {
@@ -26,6 +27,8 @@ export class AttendanceService {
 
     @InjectRepository(Holiday)
     private holidayRepo: Repository<Holiday>,
+    @InjectRepository(userCompanyMapping)
+private userCompanyMappingRepo: Repository<userCompanyMapping>,
   ) {}
 
   // 1️⃣ Create or Update Config
@@ -50,24 +53,35 @@ export class AttendanceService {
   }
 
   // 3️⃣ Mark Attendance (auto detects today)
-  async markAttendance(dto: CreateAttendanceDto, company_id: number) {
+ // 3️⃣ Mark Attendance (auto detects today)
+   async markAttendance(dto: CreateAttendanceDto, company_id: number) {
     const today = moment().format('YYYY-MM-DD');
+    const todayDay = moment().format('dddd');
 
+    // ✅ Check if employee belongs to company
+    const mapping = await this.userCompanyMappingRepo.findOne({
+      where: { company_id, user_id: dto.employeeId, status: 1 },
+    });
+    if (!mapping) throw new BadRequestException('Employee does not belong to your company!');
+
+    // ✅ Get employee + today's roaster
     const employee = await this.employeeRepo
       .createQueryBuilder('emp')
-      .leftJoin('emp.shift', 'shift')
+      .leftJoin('emp.roasters', 'roaster')
       .where('emp.id = :id', { id: dto.employeeId })
+      .andWhere('FIND_IN_SET(:todayDay, roaster.days)', { todayDay })
+      .andWhere('roaster.status = 1')
       .select([
         'emp.id',
         'emp.name',
-        'shift.start_time AS shift_start_time',
-        'shift.end_time AS shift_end_time',
+        'roaster.start_time AS shift_start_time',
+        'roaster.end_time AS shift_end_time',
       ])
       .getRawOne();
 
-    if (!employee) throw new NotFoundException('Employee not found!');
+    if (!employee) throw new NotFoundException('Employee or today\'s roaster not found!');
     if (!employee.shift_start_time || !employee.shift_end_time)
-      throw new BadRequestException('Employee shift not assigned!');
+      throw new BadRequestException('Employee shift not assigned for today!');
 
     const cfg = (await this.getActiveConfig(company_id)).data;
 
@@ -91,7 +105,7 @@ export class AttendanceService {
     if (attendance.check_in) {
       const diff = moment(attendance.check_in, 'HH:mm:ss').diff(
         moment(employee.shift_start_time, 'HH:mm:ss'),
-        'minutes',
+        'minutes'
       );
       attendance.late_minutes = diff > cfg.grace_period_minutes ? diff - cfg.grace_period_minutes : 0;
       attendance.attendance_status =
@@ -102,12 +116,12 @@ export class AttendanceService {
     if (attendance.check_out && attendance.check_in) {
       const outDiff = moment(attendance.check_out, 'HH:mm:ss').diff(
         moment(employee.shift_end_time, 'HH:mm:ss'),
-        'minutes',
+        'minutes'
       );
       attendance.overtime_minutes = outDiff > cfg.overtime_after_minutes ? outDiff - cfg.overtime_after_minutes : 0;
       attendance.work_duration_minutes = moment(attendance.check_out, 'HH:mm:ss').diff(
         moment(attendance.check_in, 'HH:mm:ss'),
-        'minutes',
+        'minutes'
       );
     }
 
@@ -124,13 +138,21 @@ export class AttendanceService {
   // 4️⃣ Auto-mark absent employees for today
   async autoMarkAbsentToday(company_id: number) {
     const today = moment().format('YYYY-MM-DD');
-    const employees = await this.employeeRepo.find({ where: { status: 1 } });
-    const cfg = (await this.getActiveConfig(company_id)).data;
-    const weekends = cfg.weekends || ['SATURDAY', 'SUNDAY'];
     const dayName = moment(today).format('dddd').toUpperCase();
 
+    // ✅ Get active employees for this company from mapping
+    const mappings = await this.userCompanyMappingRepo.find({
+      where: { company_id, status: 1 },
+    });
+    const employeeIds = mappings.map(m => m.user_id);
+    const employees = await this.employeeRepo.find({
+      where: { id: In(employeeIds), status: 1 },
+    });
+
+    const cfg = (await this.getActiveConfig(company_id)).data;
+    const weekends = cfg.weekends?.map(d => d.toUpperCase()) || ['SATURDAY', 'SUNDAY'];
+
     for (const emp of employees) {
-      // Skip if already marked
       const attendance = await this.attendanceRepo.findOne({ where: { employee_id: emp.id, company_id, date: today } });
       if (attendance) continue;
 
@@ -157,15 +179,17 @@ export class AttendanceService {
 
       if (leave) {
         await this.createOrUpdateAttendance(emp.id, company_id, today, AttendanceStatus.LEAVE);
-      } else {
-        // Mark absent
-        await this.createOrUpdateAttendance(emp.id, company_id, today, AttendanceStatus.ABSENT);
+        continue;
       }
+
+      // Absent
+      await this.createOrUpdateAttendance(emp.id, company_id, today, AttendanceStatus.ABSENT);
     }
 
     return { status: true, message: 'Daily auto-marking completed!' };
   }
 
+  // Helper: create or update attendance
   private async createOrUpdateAttendance(employee_id: number, company_id: number, date: string, status: AttendanceStatus) {
     let record = await this.attendanceRepo.findOne({ where: { employee_id, company_id, date } });
     const cfg = (await this.getActiveConfig(company_id)).data;
