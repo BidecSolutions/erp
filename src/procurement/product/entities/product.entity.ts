@@ -100,6 +100,9 @@ export class Product {
   @Column({ type: 'date', nullable: true })
   updated_at: string;
 
+  @Column({ type: "int", default: 1 })
+  status: number;
+
   @BeforeInsert()
   setDefaults() {
     const now = new Date();
