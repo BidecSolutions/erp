@@ -9,5 +9,6 @@ import { Company } from 'src/Company/companies/company.entity';
   imports: [TypeOrmModule.forFeature([LeaveType, Company])],
   controllers: [LeaveTypeController],
   providers: [LeaveTypeService],
+  exports: [LeaveTypeService]
 })
-export class LeaveTypeModule {}
+export class LeaveTypeModule { }

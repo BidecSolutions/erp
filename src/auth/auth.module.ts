@@ -36,5 +36,6 @@ import { JwtEmployeeAuth } from './jwt-employee.guard';
   ],
   providers: [AuthService, LocalStrategy, JwtStrategy, MailService, BranchStrategy, JwtBranchAuth, JwtEmployeeAuth, EmployeeStrategy],
   controllers: [AuthController],
+  exports: [AuthService]
 })
 export class AuthModule { }

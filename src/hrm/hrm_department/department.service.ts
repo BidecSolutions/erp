@@ -18,7 +18,7 @@ export class DepartmentService {
 
     @InjectRepository(Company)
     private readonly companyRepo: Repository<Company>
-  ) {}
+  ) { }
 
   async create(dto: CreateDepartmentDto, userId: number, company_id: number) {
     try {
@@ -39,10 +39,8 @@ export class DepartmentService {
 
   async findAll(company_id: number, filterStatus?: number) {
     try {
-      const where: any = {};
-      if (filterStatus !== undefined) {
-        where.status = filterStatus; // filter apply
-      }
+
+      console.log("company ID", company_id);
       const departments = await this.departmentRepository
         .createQueryBuilder("department")
         .leftJoin("department.company", "company")
@@ -70,7 +68,7 @@ export class DepartmentService {
       const department = await this.departmentRepository
         .createQueryBuilder("department")
         .select([
-    "department.id as id",
+          "department.id as id",
           "department.name as name",
           "department.status as status",
           "department.company_id as company_id",
@@ -136,15 +134,15 @@ export class DepartmentService {
     }
   }
 
-  async statusUpdate( id: number,company_id: number) {
+  async statusUpdate(id: number, company_id: number) {
     try {
-      const dep = await this.departmentRepository.findOneBy({ id ,company_id});
+      const dep = await this.departmentRepository.findOneBy({ id, company_id });
       if (!dep) throw new NotFoundException("Departmentt not found");
 
       dep.status = dep.status === 0 ? 1 : 0;
       const saved = await this.departmentRepository.save(dep);
 
-         return toggleStatusResponse("Departmentt", saved.status);
+      return toggleStatusResponse("Departmentt", saved.status);
     } catch (err) {
       return errorResponse("Something went wrong", err.message);
     }

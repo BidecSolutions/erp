@@ -19,14 +19,31 @@ import { Branch } from 'src/Company/branch/branch.entity';
 import { ProbationSetting } from '../hrm_probation-setting/probation-setting.entity';
 import { EmpRoaster } from '../hrm_shift/emp-roaster.entity';
 import { ShiftModule } from '../hrm_shift/shift.module';
+import { DepartmentModule } from '../hrm_department/department.module';
+import { DesignationModule } from '../hrm_designation/designation.module';
+import { AuthModule } from 'src/auth/auth.module';
+import { BranchModule } from 'src/Company/branch/branch.module';
+import { AllowanceModule } from '../hrm_allowance/allowance.module';
+import { LeaveTypeModule } from '../hrm_leave-type/leave-type.module';
+import { AnnualLeaveModule } from '../hrm_annual-leave/annual-leave.module';
+import { ProbationSettingModule } from '../hrm_probation-setting/probation-setting.module';
 // import { LeaveModule } from '../hrm_leave/leave.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([EmpRoaster,userRoleMapping, userCompanyMapping, Employee, Department, Designation, Shift, AnnualLeave, BankDetail, Allowance, User, Role, Branch,ProbationSetting]),
+    TypeOrmModule.forFeature([EmpRoaster, userRoleMapping, userCompanyMapping, Employee, Department, Designation, Shift, AnnualLeave, BankDetail, Allowance, User, Role, Branch, ProbationSetting]),
     BankDetailModule,
     DocumentModule,
-    ShiftModule
+    ShiftModule,
+    DepartmentModule,
+    DesignationModule,
+    AuthModule,
+    BranchModule,
+    AllowanceModule,
+    LeaveTypeModule,
+    AnnualLeaveModule,
+    ProbationSettingModule
+
   ],
   controllers: [EmployeeController],
   providers: [EmployeeService],
