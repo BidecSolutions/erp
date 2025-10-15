@@ -544,6 +544,7 @@ export class EmployeeService {
           fixedSalary: saved.fixedSalary,
           roaster:
             saved.roasters?.map((r) => ({
+              id: r.id,
               shift_id: r.shift_id,
               days: r.days,
               start_time: r.start_time,
@@ -708,31 +709,52 @@ export class EmployeeService {
       }
     }
 
-      if (dto.roasters?.length) {
-      for (const bd of dto.roasters) {
-        if (!bd.id) continue; // skip creation
-          const existing = await this.empRoasterRepo.findOne({ where: { id: bd.id } });
-    if (!existing) continue;
+    //   if (dto.roasters?.length) {
+    //   for (const bd of dto.roasters) {
+    //     if (!bd.id) continue; // skip creation
+    //       const existing = await this.empRoasterRepo.findOne({ where: { id: bd.id } });
+    // if (!existing) continue;
 
-    // 🟢 Check shift_id exists in DB
+    // // 🟢 Check shift_id exists in DB
+    // if (bd.shift_id !== undefined) {
+    //   const shift = await this.shiftRepository.findOne({ where: { id: bd.shift_id } });
+    //   if (!shift) {
+    //     throw new NotFoundException(`Shift ID ${bd.shift_id} not found`);
+    //   }
+    //   existing.shift_id = bd.shift_id;
+    // }
+
+    //     if (bd.shift_id !== undefined) existing.shift_id = bd.shift_id;
+    //     if (bd.days !== undefined) existing.days = bd.days;
+    //     if (bd.start_time !== undefined) existing.start_time = bd.start_time;
+    //     if (bd.end_time !== undefined) existing.end_time = bd.end_time;
+
+    //     existing.employee = { id: emp.id } as Employee; // Ensure FK is set
+    //     await this.empRoasterRepo.save(existing);
+    //   }
+    // }
+ // --- Roasters (safe update)
+if (dto.roasters?.length) {
+  for (const bd of dto.roasters) {
+    if (!bd.id) continue;
+
+    // Validate shift
     if (bd.shift_id !== undefined) {
       const shift = await this.shiftRepository.findOne({ where: { id: bd.shift_id } });
-      if (!shift) {
-        throw new NotFoundException(`Shift ID ${bd.shift_id} not found`);
-      }
-      existing.shift_id = bd.shift_id;
+      if (!shift) throw new NotFoundException(`Shift ID ${bd.shift_id} not found`);
     }
 
-        if (bd.shift_id !== undefined) existing.shift_id = bd.shift_id;
-        if (bd.days !== undefined) existing.days = bd.days;
-        if (bd.start_time !== undefined) existing.start_time = bd.start_time;
-        if (bd.end_time !== undefined) existing.end_time = bd.end_time;
+    // Direct update without touching employee relation
+    await this.empRoasterRepo.update(bd.id, {
+      shift_id: bd.shift_id,
+      days: bd.days,
+      start_time: bd.start_time,
+      end_time: bd.end_time,
+    });
+  }
+}
 
-        existing.employee = { id: emp.id } as Employee; // Ensure FK is set
-        await this.empRoasterRepo.save(existing);
-      }
-    }
-    
+
   
 
     if (dto.allowance_ids?.length) {
@@ -762,7 +784,6 @@ export class EmployeeService {
       mapping.branch_id = (dto.branch_id ?? []).map((b) => Number(b));
       await this.companyMaping.save(mapping);
     }
-
     // Update Employee fields
     Object.assign(emp, dto);
 
@@ -797,6 +818,7 @@ export class EmployeeService {
 
 
     const saved = await this.employeeRepository.save(emp);
+
     // Documents
     // Save/update documents via DocumentService
     if (files && Object.keys(files).length > 0) {

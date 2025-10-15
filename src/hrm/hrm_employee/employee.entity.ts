@@ -153,8 +153,12 @@ export class Employee {
   })
   emp_type: EmployeeType;
 
-@OneToMany(() => EmpRoaster, (roaster) => roaster.employee, { cascade: true })
-roasters: EmpRoaster[];
+// Employee entity mein
+@OneToMany(() => EmpRoaster, roaster => roaster.employee, {
+    cascade: true,        // ✅ CREATE mein help karega
+    eager: false          // ✅ UPDATE mein avoid karega
+  })
+  roasters: EmpRoaster[];
 
 
   @Column({
