@@ -29,6 +29,7 @@ import { Branch } from "src/Company/branch/branch.entity";
 import { ProbationSetting } from "../hrm_probation-setting/probation-setting.entity";
 import { EmpRoaster } from "../hrm_shift/emp-roaster.entity";
 import { Shift } from "../hrm_shift/shift.entity";
+import { ShiftService } from "../hrm_shift/shift.service";
 @Injectable()
 export class EmployeeService {
   constructor(
@@ -54,7 +55,7 @@ export class EmployeeService {
 
     @InjectRepository(userRoleMapping)
     private usersRoleRepository: Repository<userRoleMapping>,
-
+  private readonly shiftService: ShiftService,
     @InjectRepository(userCompanyMapping)
     private readonly companyMaping: Repository<userCompanyMapping>,
 
@@ -88,9 +89,11 @@ export class EmployeeService {
         "bankDetails",
         "annualLeave",
         "allowances",
-        "shift",
+           "roasters",
+          "roasters.shift",
         "probationSetting",
         "user",
+        "branches"
       ],
     });
 
@@ -115,6 +118,7 @@ export class EmployeeService {
         fixedSalary: emp.fixedSalary,
         roaster:
           emp.roasters?.map((r) => ({
+            id: r.id,
             shift_id: r.shift?.id,
             shift_name: r.shift?.name,
             days: r.days,
@@ -202,7 +206,9 @@ export class EmployeeService {
         "roasters",
         "branches",
         "probationSetting",
-        "user", // include user for email/password
+        "user",
+          "roasters",
+          "roasters.shift", 
       ],
     });
 
@@ -229,6 +235,7 @@ export class EmployeeService {
       fixedSalary: emp.fixedSalary,
       roaster:
         emp.roasters?.map((r) => ({
+          id: r.id,
           shift_id: r.shift?.id,
           shift_name: r.shift?.name,
           days: r.days,
@@ -609,6 +616,7 @@ export class EmployeeService {
         "allowances",
         "branches",
         "user",
+        
       ],
     });
     if (!emp) throw new NotFoundException(`Employee ID ${id} not found`);
@@ -691,11 +699,41 @@ export class EmployeeService {
         if (bd.accountHolderName !== undefined) existing.accountHolderName = bd.accountHolderName;
         if (bd.accountNumber !== undefined) existing.accountNumber = bd.accountNumber;
         if (bd.bankName !== undefined) existing.bankName = bd.bankName;
+        if (bd.bankIdentifierCode !== undefined) existing.bankIdentifierCode = bd.bankIdentifierCode;
+        if (bd.taxPayerId !== undefined) existing.taxPayerId = bd.taxPayerId;
+        if (bd.branchLocation !== undefined) existing.branchLocation = bd.branchLocation;
 
         existing.employee = { id: emp.id } as Employee; // Ensure FK is set
         await this.bankDetailRepo.save(existing);
       }
     }
+
+      if (dto.roasters?.length) {
+      for (const bd of dto.roasters) {
+        if (!bd.id) continue; // skip creation
+          const existing = await this.empRoasterRepo.findOne({ where: { id: bd.id } });
+    if (!existing) continue;
+
+    // 🟢 Check shift_id exists in DB
+    if (bd.shift_id !== undefined) {
+      const shift = await this.shiftRepository.findOne({ where: { id: bd.shift_id } });
+      if (!shift) {
+        throw new NotFoundException(`Shift ID ${bd.shift_id} not found`);
+      }
+      existing.shift_id = bd.shift_id;
+    }
+
+        if (bd.shift_id !== undefined) existing.shift_id = bd.shift_id;
+        if (bd.days !== undefined) existing.days = bd.days;
+        if (bd.start_time !== undefined) existing.start_time = bd.start_time;
+        if (bd.end_time !== undefined) existing.end_time = bd.end_time;
+
+        existing.employee = { id: emp.id } as Employee; // Ensure FK is set
+        await this.empRoasterRepo.save(existing);
+      }
+    }
+    
+  
 
     if (dto.allowance_ids?.length) {
       const allowances = await this.allowanceRepo.find({
@@ -757,29 +795,8 @@ export class EmployeeService {
       }
     }
 
+
     const saved = await this.employeeRepository.save(emp);
-
-    if (dto.roasters?.length) {
-      await this.empRoasterRepo.delete({ employee: { id } });
-
-      const empRoasters: EmpRoaster[] = [];
-      for (const r of dto.roasters) {
-        empRoasters.push(
-          this.empRoasterRepo.create({
-            employee: { id },
-            shift: { id: r.shift_id },
-            days: r.days,
-            start_time: r.start_time,
-            end_time: r.end_time,
-            status: 1,
-          })
-        );
-      }
-
-      await this.empRoasterRepo.save(empRoasters);
-    }
-
-
     // Documents
     // Save/update documents via DocumentService
     if (files && Object.keys(files).length > 0) {
@@ -793,7 +810,8 @@ export class EmployeeService {
       relations: [
         "department",
         "designation",
-
+        "roasters",
+          "roasters.shift",
         "annualLeave",
         "allowances",
         "branches",
@@ -821,22 +839,40 @@ export class EmployeeService {
         hoursPerDay: fullEmp.hoursPerDay,
         daysPerWeek: fullEmp.daysPerWeek,
         fixedSalary: fullEmp.fixedSalary,
-        shift:
-          emp.roasters?.map((r) => ({
-            shift_name: r.shift?.name,
-            days: r.days,
-            start_time: r.start_time,
-            end_time: r.end_time,
-          })) || [],
+         roaster:
+  fullEmp.roasters?.map((r) => ({
+    id: r.id,
+    shift_id: r.shift_id,
+    shift_name: r.shift?.name,
+    days: r.days,
+    start_time: r.start_time,
+    end_time: r.end_time,
+  })) || [],
 
-        annualLeave: fullEmp.annualLeave
-          ? {
-            id: fullEmp.annualLeave.id,
-            name: fullEmp.annualLeave.name,
-            total_leave: fullEmp.annualLeave.total_leave,
-            status: fullEmp.annualLeave.status,
-          }
-          : null,
+
+            emp_type: fullEmp.emp_type,
+        ...(fullEmp.emp_type === "Probation"
+            ? {
+              probationSetting: saved.probationSetting
+                ? {
+                  id: saved.probationSetting.id,
+                  leave_days: saved.probationSetting.leave_days,
+                  probation_period: saved.probationSetting.probation_period,
+                  duration_type: saved.probationSetting.duration_type,
+                  status: saved.probationSetting.status,
+                }
+                : null,
+            }
+            : {
+              annualLeave: saved.annualLeave
+                ? {
+                  id: saved.annualLeave.id,
+                  name: saved.annualLeave.name,
+                  total_leave: saved.annualLeave.total_leave,
+                  status: saved.annualLeave.status,
+                }
+                : null,
+            }),
         allowances:
           fullEmp.allowances?.map((a) => ({
             id: a.id,

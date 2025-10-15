@@ -6,8 +6,10 @@ export class BankDetail {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  employeeId?: number;
+
+@Column({ nullable: false })
+employeeId: number;
+
 
   @Column({nullable: true})
   accountHolderName?: string;
