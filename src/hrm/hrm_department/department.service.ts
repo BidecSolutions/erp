@@ -39,8 +39,6 @@ export class DepartmentService {
 
   async findAll(company_id: number, filterStatus?: number) {
     try {
-
-      console.log("company ID", company_id);
       const departments = await this.departmentRepository
         .createQueryBuilder("department")
         .leftJoin("department.company", "company")

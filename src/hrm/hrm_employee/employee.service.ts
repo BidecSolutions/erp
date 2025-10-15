@@ -394,7 +394,7 @@ export class EmployeeService {
       emp.employeeCode = await this.generateEmployeeCode();
 
       if (dto.is_system_user) {
-        // console.log("system user");
+
         if (!dto.email || !dto.password) {
           throw new BadRequestException("Email and password are required");
         }
@@ -456,7 +456,7 @@ export class EmployeeService {
 
       // create System User
       if (saved.is_system_user) {
-        // console.log("system user");
+
         const hashedPassword = await bcrypt.hash(
           dto.password ?? "123456789",
           10

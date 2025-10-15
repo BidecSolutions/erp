@@ -11,12 +11,12 @@ export class GoodsReceivingNoteController {
 
   @Post('store')
   create(@Body() createGoodsReceivingNoteDto: CreatePurchaseGrnDto,
-     @Req() req: Request) {
-        const userData = req["user"];
-        const userId = userData?.user?.id;
-        const companyId = userData?.company_id;
-        console.log("data" , userId ,companyId)
-    return this.goodsReceivingNoteService.store(createGoodsReceivingNoteDto ,userId ,companyId);
+    @Req() req: Request) {
+    const userData = req["user"];
+    const userId = userData?.user?.id;
+    const companyId = userData?.company_id;
+
+    return this.goodsReceivingNoteService.store(createGoodsReceivingNoteDto, userId, companyId);
   }
 
   @Get('list')

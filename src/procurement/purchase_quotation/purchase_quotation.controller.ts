@@ -10,12 +10,12 @@ export class PurchaseQuatiationController {
 
   @Post('store')
   store(@Body() createdto: CreatePurchaseQuotationDto,
-  @Req() req: Request) {
-      const userData = req["user"];
-      const userId = userData?.user?.id;
-      const companyId = userData?.company_id;
-      console.log("data" ,userId ,companyId)
-    return this.PurchaseQuotationService.store(createdto ,userId ,companyId);
+    @Req() req: Request) {
+    const userData = req["user"];
+    const userId = userData?.user?.id;
+    const companyId = userData?.company_id;
+
+    return this.PurchaseQuotationService.store(createdto, userId, companyId);
   }
   @Get('list')
   findAll(@Query('filter') filter?: string) {

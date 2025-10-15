@@ -90,7 +90,7 @@ export class PurchaseRequestService {
       return errorResponse('Failed to retrieve purchase_request', error.message);
     }
   }
-  async findOne(id: number ,companyId: number) {
+  async findOne(id: number, companyId: number) {
     try {
       const purchase_request = await this.prRepo.findOneBy({ id });
       if (!purchase_request) {
@@ -102,7 +102,7 @@ export class PurchaseRequestService {
       return errorResponse('Failed to retrieve purchase_request', error.message);
     }
   }
-  async update(id: number, updateDto: UpdatePurchaseRequestDto , userId: number, companyId: number) {
+  async update(id: number, updateDto: UpdatePurchaseRequestDto, userId: number, companyId: number) {
     try {
       const existing = await this.prRepo.findOne({
         where: { id },
@@ -239,7 +239,7 @@ export class PurchaseRequestService {
 
     for (const approvedItem of approvedItems) {
       const existing = await this.itrItemRepo.findOneBy({ id: approvedItem.itr_item_id });
-      console.log('Found item:', existing);
+
       await this.itrItemRepo.update(
         { id: approvedItem.itr_item_id },
         { approved_qty: approvedItem.approved_qty }
