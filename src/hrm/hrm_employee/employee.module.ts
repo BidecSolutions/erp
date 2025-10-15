@@ -19,6 +19,7 @@ import { Branch } from 'src/Company/branch/branch.entity';
 import { ProbationSetting } from '../hrm_probation-setting/probation-setting.entity';
 import { EmpRoaster } from '../hrm_shift/emp-roaster.entity';
 import { ShiftModule } from '../hrm_shift/shift.module';
+import { ShiftService } from '../hrm_shift/shift.service';
 // import { LeaveModule } from '../hrm_leave/leave.module';
 
 @Module({
@@ -26,9 +27,9 @@ import { ShiftModule } from '../hrm_shift/shift.module';
     TypeOrmModule.forFeature([EmpRoaster,userRoleMapping, userCompanyMapping, Employee, Department, Designation, Shift, AnnualLeave, BankDetail, Allowance, User, Role, Branch,ProbationSetting]),
     BankDetailModule,
     DocumentModule,
-    ShiftModule
+  
   ],
   controllers: [EmployeeController],
-  providers: [EmployeeService],
+  providers: [EmployeeService,ShiftService],
 })
 export class EmployeeModule { }

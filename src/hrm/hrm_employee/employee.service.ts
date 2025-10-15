@@ -613,7 +613,7 @@ export class EmployeeService {
         "designation",
         "annualLeave",
         "probationSetting",
-        "roasters",
+        // "roasters",
         "allowances",
         "branches",
         "user",

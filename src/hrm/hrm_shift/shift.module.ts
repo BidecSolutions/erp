@@ -4,9 +4,13 @@ import { Shift } from './shift.entity';
 import { ShiftService } from './shift.service';
 import { ShiftController } from './shift.controller';
 import { EmpRoaster } from './emp-roaster.entity';
+import { EmployeeModule } from '../hrm_employee/employee.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Shift,EmpRoaster])],
+imports: [
+    TypeOrmModule.forFeature([Shift, EmpRoaster]),
+    EmployeeModule, // ✅ ADD FOR ShiftService injection
+  ],
   providers: [ShiftService],
   controllers: [ShiftController],
   exports: [ShiftService],
