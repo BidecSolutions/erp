@@ -38,7 +38,7 @@ export class ShiftController {
   async findAll(@Req() req: any, @Query('status') status?: string) {
     const companyId = req["user"].company_id;
     const filterStatus = status !== undefined ? Number(status) : undefined;
-    const shifts = await this.shiftService.findAll(companyId, filterStatus);
+    const shifts = await this.shiftService.findAll(companyId);
     return {
       status: true,
       message: 'Get All Shifts',

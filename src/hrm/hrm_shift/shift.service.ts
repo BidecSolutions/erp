@@ -33,18 +33,17 @@ export class ShiftService {
   }
 
 
-  async findAll(company_id: number, filterStatus?: number) {
+  async findAll(company_id: number) {
     try {
       const shifts = await this.shiftRepo
         .createQueryBuilder("shift")
-        .leftJoin("shift.company", "company")
+        .innerJoin("companies", "c", "shift.company_id = c.id")
         .select([
-         "shift.id as id",
+          "shift.id as id",
           "shift.name as name",
-          "shift.start_time as start_time",
-          "shift.end_time as end_time",
           "shift.status as status",
-             "shift.company_id as company_id",
+          "c.id as company_id",
+          "c.company_name as company_name"
         ])
         .where("shift.company_id = :company_id", { company_id })
         .orderBy("shift.id", "DESC")
@@ -60,14 +59,13 @@ export class ShiftService {
     try {
       const shift = await this.shiftRepo
         .createQueryBuilder("shift")
-        .leftJoin("shift.company", "company")
+        .innerJoin("companies", "c", "shift.company_id = c.id")
         .select([
           "shift.id as id",
           "shift.name as name",
-          "shift.start_time as start_time",
-          "shift.end_time as end_time",
           "shift.status as status",
-             "shift.company_id as company_id",
+          "c.id as company_id",
+          "c.company_name as company_name"
         ])
         .where("shift.id = :id", { id })
         .getRawOne();
@@ -79,8 +77,6 @@ export class ShiftService {
       throw e;
     }
   }
-
-
 
   async update(id: number, dto: UpdateShiftDto, company_id: number) {
     try {

@@ -441,18 +441,16 @@ export class AuthService {
   async updateRoles(body: any) {
     const role = await this.sideMenuMapppingRepository.find({ where: { role_id: body.role_id } });
     await this.usersRoles.update({ id: body.role.id }, { role_name: body.role.role_name });
-    if (role.length > 0) {
-      const check = Promise.all(body.permission.map(async (perm: any) => {
-        const exist = await this.sideMenuMapppingRepository.findOneBy({ role_id: body.role_id, side_menu_id: perm.menu_id });
-        if (!exist) {
-          const newRole = this.sideMenuMapppingRepository.create({
-            role_id: body.role_id,
-            side_menu_id: perm.menu_id,
-          });
-          await this.sideMenuMapppingRepository.save(newRole);
-        }
-      }))
-    }
+    const check = Promise.all(body.permission.map(async (perm: any) => {
+      const exist = await this.sideMenuMapppingRepository.findOneBy({ role_id: body.role_id, side_menu_id: perm.menu_id });
+      if (!exist) {
+        const newRole = this.sideMenuMapppingRepository.create({
+          role_id: body.role_id,
+          side_menu_id: perm.menu_id,
+        });
+        await this.sideMenuMapppingRepository.save(newRole);
+      }
+    }))
   }
 
   //Get All Roles # 4
