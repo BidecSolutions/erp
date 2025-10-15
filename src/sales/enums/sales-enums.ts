@@ -11,6 +11,7 @@ export enum InvoiceStatus {
 }
 
 export enum PaymentMethod {
+  CREDIT='credit',
   CASH = 'cash',
   CARD = 'card',
   BANK_TRANSFER = 'bank_transfer',
