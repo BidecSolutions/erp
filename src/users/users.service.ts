@@ -270,7 +270,6 @@ export class UsersService {
   }
 
   async changeImage(id: number, img: any) {
-    console.log(img)
     await this.usersRepository.update(id, { image: img });
     const result = await this.usersRepository.find({ where: { id } });
 

@@ -11,6 +11,9 @@ export class accountsFiscalYear {
     @Column({ type: 'tinyint', default: 1, comment: '1 = active, 0 = inactive' })
     status: number;
 
+    @Column({ type: 'tinyint' })
+    company_id: number;
+
     @Column({ type: 'date', nullable: true })
     created_at: string;
 

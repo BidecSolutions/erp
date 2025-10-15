@@ -10,6 +10,7 @@ import { userCompanyMapping } from 'src/entities/user-company-mapping.entity';
   imports: [TypeOrmModule.forFeature([Branch, Company, userCompanyMapping])],
   controllers: [BranchController],
   providers: [BranchService],
+  exports: [BranchService]
 })
 export class BranchModule { }
 // 

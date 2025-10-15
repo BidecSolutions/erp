@@ -155,8 +155,7 @@ export class SalesOrderService {
 
           // .........debugging
 
-          // console.log('Fetched variant:', variant);
-          // console.log('Variant unit_price value:', variant?.unit_price);
+
 
           if (!variant) {
             throw new BadRequestException(
@@ -165,8 +164,7 @@ export class SalesOrderService {
           }
           let unit_price = variant.unit_price ?? 0;
 
-          // const unit_price = variant.unit_price ?? 0;
-          // console.log('Using unit price:', unit_price);
+
 
 
 
@@ -456,7 +454,7 @@ export class SalesOrderService {
         const variantRepo = manager.getRepository(productVariant);
         const invoiceRepo = manager.getRepository(CustomerInvoice);
 
-        
+
         const existingOrder = await salesOrderRepo.findOne({
           where: { id },
           relations: ['salesOrderDetails'],
@@ -583,7 +581,7 @@ export class SalesOrderService {
 
 
         salesOrderRepo.merge(existingOrder, {
-          
+
           order_date: updateDto.order_date,
           expected_delivery_date: updateDto.expected_delivery_date,
           actual_delivery_date: updateDto.actual_delivery_date,

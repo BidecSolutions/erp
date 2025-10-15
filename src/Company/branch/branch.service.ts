@@ -62,6 +62,46 @@ export class BranchService {
         }
     }
 
+    async findCompanyBranch(company_id: number) {
+        const branch = await this.branchRepo
+            .createQueryBuilder('branch')
+            .innerJoin('companies', 'c', 'branch.companyId = c.id')
+            .where('branch.company = :company_id', { company_id })
+            .select([
+                'branch.id as id',
+                'branch.branch_code as branch_code',
+                'branch.branch_name as branch_name',
+                'branch.branch_type as branch_type',
+                'branch.address_line1 as address_line1',
+                'branch.address_line2 as address_line2',
+                'branch.city as city',
+                'branch.state as state',
+                'branch.country as country',
+                'branch.postal_code as postal_code',
+                'branch.phone as phone',
+                'branch.mobile as mobile',
+                'branch.email as email',
+                'branch.manager_name as manager_name',
+                'branch.manager_email  as manager_email',
+                'branch.manager_phone as manager_phone',
+                'branch.opening_balance as opening_balance',
+                'branch.bank_account_no as bank_account_no',
+                'branch.bank_name as bank_name',
+                'branch.ifsc_code as ifsc_code',
+                'branch.is_head_office as is_head_office',
+                'branch.allow_negative_stock as allow_negative_stock',
+                'branch.is_active as is_active',
+                'branch.created_by as created_by',
+                'branch.created_date as created_date',
+                'branch.updated_by as updated_by',
+                'branch.updated_date as updated_date',
+                'c.id as companyId',
+                'c.company_name as company_name',
+            ])
+            .getRawMany();
+        return { branch }
+    }
+
     async findAll(user_id: number, company_id: number) {
         const findBranches = await this.ucm.findOne({ where: { user_id } });
 

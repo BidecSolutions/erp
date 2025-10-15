@@ -21,7 +21,7 @@ export class AllowanceService {
   constructor(
     @InjectRepository(Allowance)
     private readonly allowanceRepo: Repository<Allowance>
-  ) {}
+  ) { }
 
   //  Create allowance with company
   async create(dto: CreateAllowanceDto, userId: number, company_id: number) {
@@ -34,7 +34,7 @@ export class AllowanceService {
         created_by: userId,
       });
 
-       await this.allowanceRepo.save(allowance);
+      await this.allowanceRepo.save(allowance);
       const saved = await this.findAll(company_id);
       return successResponse("Allowance created successfully!", saved);
     } catch (error) {
@@ -68,7 +68,7 @@ export class AllowanceService {
         .where("allowance.company_id = :company_id", { company_id })
         .orderBy("allowance.id", "DESC")
         .getRawMany();
-        
+
 
       return successResponse("Get All Allowances successfully!", allowances);
     } catch (error) {
@@ -83,7 +83,7 @@ export class AllowanceService {
       const allowance = await this.allowanceRepo
         .createQueryBuilder("allowance")
         .select([
-         "allowance.id as id",
+          "allowance.id as id",
           "allowance.title as title",
           "allowance.type as type",
           "allowance.amount as amount",
@@ -91,7 +91,7 @@ export class AllowanceService {
           "allowance.company_id as company_id",
           "allowance.created_by as created_by",
           "allowance.updated_by as updated_by",
-           "allowance.created_at as created_at",
+          "allowance.created_at as created_at",
           "allowance.updated_at as updated_at",
         ])
         .where("allowance.id = :id", { id })
@@ -130,24 +130,24 @@ export class AllowanceService {
       allowance.updated_by = userId;
       allowance.company_id = company_id;
 
-       await this.allowanceRepo.save(allowance);
-       const updated = await this.allowanceRepo
-      .createQueryBuilder("allowance")
-      .select([
-        "allowance.id",
-        "allowance.title",
-        "allowance.type",
-        "allowance.amount",
-        "allowance.status",
-        "allowance.company_id",
-        "allowance.created_by",
-        "allowance.updated_by",
-        "allowance.created_at",
-        "allowance.updated_at",
-      ])
-      .where("allowance.id = :id", { id })
-      .andWhere("allowance.company_id = :company_id", { company_id })
-      .getOne();
+      await this.allowanceRepo.save(allowance);
+      const updated = await this.allowanceRepo
+        .createQueryBuilder("allowance")
+        .select([
+          "allowance.id",
+          "allowance.title",
+          "allowance.type",
+          "allowance.amount",
+          "allowance.status",
+          "allowance.company_id",
+          "allowance.created_by",
+          "allowance.updated_by",
+          "allowance.created_at",
+          "allowance.updated_at",
+        ])
+        .where("allowance.id = :id", { id })
+        .andWhere("allowance.company_id = :company_id", { company_id })
+        .getOne();
 
       return successResponse("Allowance Updated successfully!", updated);
     } catch (error) {
@@ -165,7 +165,7 @@ export class AllowanceService {
       dep.status = dep.status === 0 ? 1 : 0;
       const saved = await this.allowanceRepo.save(dep);
 
-      
+
       return toggleStatusResponse("Allowance", saved.status);
     } catch (err) {
       return errorResponse("Something went wrong", err.message);

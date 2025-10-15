@@ -55,7 +55,7 @@ export class PosService {
 
     ) { }
 
-    async getAllProducts(companyId:number) {
+    async getAllProducts(companyId: number) {
         try {
             const result = await this.productService.findAll(companyId);
 
@@ -217,8 +217,6 @@ export class PosService {
 
                         unitPrice = variant?.unit_price ?? 0;
                         displayName = variant?.variant_name ?? 'Unknown Variant';
-                        console.log(unitPrice)
-                        console.log(displayName)
 
                         detail = manager.create(SalesOrderDetail, {
                             salesOrder: { id: savedOrder.id },
