@@ -8,12 +8,19 @@ import {
   errorResponse,
   toggleStatusResponse,
 } from "src/commonHelper/response.util";
+import { UpdateEmpRoasterDto } from "./dto/update-emp-roaster.dto";
+import { EmpRoaster } from "./emp-roaster.entity";
+
+
 
 @Injectable()
 export class ShiftService {
   constructor(
     @InjectRepository(Shift)
     private readonly shiftRepo: Repository<Shift>,
+
+    @InjectRepository(EmpRoaster)
+    private readonly empRoasterRepo: Repository<EmpRoaster>,
   ) { }
 
 
@@ -107,4 +114,7 @@ export class ShiftService {
       return errorResponse("Something went wrong", err.message);
     }
   }
+
+
+
 }
