@@ -45,8 +45,9 @@ import { ShiftService } from '../hrm_shift/shift.service';
     AnnualLeaveModule,
     ProbationSettingModule
 
+
   ],
   controllers: [EmployeeController],
-  providers: [EmployeeService],
+  providers: [EmployeeService, ShiftService],
 })
 export class EmployeeModule { }
