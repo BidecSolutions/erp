@@ -17,6 +17,8 @@ import { sideMenuAndRoleSeederService } from './seeder/side-menu-and-role-seeder
 import { subSideMenuPermission } from './entities/sub-side-menu-permission.entity';
 import { sales } from './sales/sales-module-list.module';
 import { POS } from './pos/POS-module-file.module';
+import { FiscalModule } from './accounts/fiscal/fiscal.module';
+import { accounts } from './accounts/accounts-module-list.module';
 
 
 @Module({
@@ -27,7 +29,7 @@ import { POS } from './pos/POS-module-file.module';
       port: 3306,
       username: 'root',
       password: '',
-      database: 'bidec_erp',
+      database: 'bidec_erp1',
       autoLoadEntities: true,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
@@ -41,10 +43,7 @@ import { POS } from './pos/POS-module-file.module';
     ...HRM,
     ...sales,
     ...POS,
-
-
-
-
+    ...accounts,
   ],
   controllers: [AppController],
   providers: [AppService, registerUser, userRoles, sideMenuAndRoleSeederService,],

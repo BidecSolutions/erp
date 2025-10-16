@@ -192,13 +192,7 @@ export class AuthService {
   }
 
 
-
-
-
-
-
   //New Work Here
-
 
   //User Login
   async login(user: any) {
@@ -573,10 +567,6 @@ export class AuthService {
   //end get All Users 
 
 
-
-
-
-
   async getRoles() {
     const roles = await this.usersRoles.find({ where: { status: 1, id: Not(In([1, 2])), } });
     const rolesWithMapping = await Promise.all(roles.map(async (role) => {
@@ -592,10 +582,6 @@ export class AuthService {
     }));
     return rolesWithMapping;
   }
-
-
-
-
 
   async getUserPermissions(userId: number, roleId: number) {
     // Fetch user
@@ -675,11 +661,6 @@ export class AuthService {
     return { success: true, data: menuTrees };
   }
 
-
-
-
-
-
   async roleAndUser(userId: number, roleId: number) {
     let userPerms: any[] = [];
     let allMenus: any[] = [];
@@ -724,4 +705,24 @@ export class AuthService {
 
   }
 
+  async addSubMenuOnly(body: any) {
+
+    for (const sm of body.subMenus || []) {
+      const subMenu = this.subSideMenuRepository.create({
+        name: sm.name,
+        link: sm.link,
+        menu_id: body.menu_id,
+      });
+      const savedSubMenu = await this.subSideMenuRepository.save(subMenu);
+
+      // 3. create permissions
+      for (const p of sm.permissions || []) {
+        const perm = this.subMenuPermRepository.create({
+          name: p.name,
+          sub_menu_id: savedSubMenu.id,
+        });
+        await this.subMenuPermRepository.save(perm);
+      }
+    }
+  }
 }
