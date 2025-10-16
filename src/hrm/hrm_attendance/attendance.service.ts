@@ -1,12 +1,12 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { Between, In, Repository } from 'typeorm';
 import { Attendance, AttendanceStatus } from './attendance.entity';
 import { AttendanceConfig } from './attendance-config.entity';
 import { CreateAttendanceDto } from './dto/create-attendance.dto';
 import { Employee } from '../hrm_employee/employee.entity';
 import moment from 'moment';
-import { LeaveRequest } from '../hrm_leave-request/leave-request.entity';
+import { LeaveRequest, LeaveStatus } from '../hrm_leave-request/leave-request.entity';
 import { Holiday } from '../hrm_holiday/holiday.entity';
 import { userCompanyMapping } from 'src/entities/user-company-mapping.entity';
 
@@ -31,7 +31,7 @@ export class AttendanceService {
 private userCompanyMappingRepo: Repository<userCompanyMapping>,
   ) {}
 
-  // 1️⃣ Create or Update Config
+  //  Create or Update Config
   async createOrUpdateConfig(dto: Partial<AttendanceConfig>, company_id: number) {
     const existing = await this.configRepo.findOne({ where: { company_id } });
     if (existing) {
@@ -45,26 +45,25 @@ private userCompanyMappingRepo: Repository<userCompanyMapping>,
     }
   }
 
-  // 2️⃣ Get Active Config
+  // Get Active Config
   async getActiveConfig(company_id: number) {
     const config = await this.configRepo.findOne({ where: { company_id, status: 1 } });
     if (!config) throw new NotFoundException('Active attendance config not found');
     return { status: true, message: 'Active config fetched successfully!', data: config };
   }
 
-  // 3️⃣ Mark Attendance (auto detects today)
- // 3️⃣ Mark Attendance (auto detects today)
+ //  Mark Attendance (auto detects today)
    async markAttendance(dto: CreateAttendanceDto, company_id: number) {
     const today = moment().format('YYYY-MM-DD');
     const todayDay = moment().format('dddd');
 
-    // ✅ Check if employee belongs to company
+    //  Check if employee belongs to company
     const mapping = await this.userCompanyMappingRepo.findOne({
       where: { company_id, user_id: dto.employeeId, status: 1 },
     });
     if (!mapping) throw new BadRequestException('Employee does not belong to your company!');
 
-    // ✅ Get employee + today's roaster
+    //  Get employee + today's roaster
     const employee = await this.employeeRepo
       .createQueryBuilder('emp')
       .leftJoin('emp.roasters', 'roaster')
@@ -135,12 +134,12 @@ private userCompanyMappingRepo: Repository<userCompanyMapping>,
     };
   }
 
-  // 4️⃣ Auto-mark absent employees for today
+  //  Auto-mark absent employees for today
   async autoMarkAbsentToday(company_id: number) {
     const today = moment().format('YYYY-MM-DD');
     const dayName = moment(today).format('dddd').toUpperCase();
 
-    // ✅ Get active employees for this company from mapping
+    //  Get active employees for this company from mapping
     const mappings = await this.userCompanyMappingRepo.find({
       where: { company_id, status: 1 },
     });
@@ -171,11 +170,12 @@ private userCompanyMappingRepo: Repository<userCompanyMapping>,
 
       // Leave
       const leave = await this.leaveRepo
-        .createQueryBuilder('l')
-        .where('l.employeeId = :employeeId', { employeeId: emp.id })
-        .andWhere(':today BETWEEN l.start_date AND l.end_date', { today })
-        .andWhere('l.status = :status', { status: 'APPROVED' })
-        .getOne();
+  .createQueryBuilder('l')
+  .where('l.employeeId = :employeeId', { employeeId: emp.id })
+  .andWhere(':today BETWEEN l.start_date AND l.end_date', { today })
+  .andWhere('l.leave_status = :status', { status: LeaveStatus.APPROVED })
+  .getOne();
+
 
       if (leave) {
         await this.createOrUpdateAttendance(emp.id, company_id, today, AttendanceStatus.LEAVE);
@@ -208,4 +208,53 @@ private userCompanyMappingRepo: Repository<userCompanyMapping>,
 
     await this.attendanceRepo.save(record);
   }
+
+  async getSingleDayAttendance(employeeId: number, date: string, company_id: number) {
+    // Check if employee belongs to company
+    const mapping = await this.userCompanyMappingRepo.findOne({
+      where: { user_id: employeeId, company_id, status: 1 },
+    });
+    if (!mapping) throw new BadRequestException('Employee does not belong to your company');
+
+    const attendance = await this.attendanceRepo.findOne({
+      where: { employee_id: employeeId, company_id, date },
+    });
+
+    if (!attendance) throw new NotFoundException('Attendance not found for this employee on this date');
+
+    return { status: true, message: 'Attendance fetched successfully', data: attendance };
+  }
+
+  //  All employees' attendance for a date
+async getAllEmployeesAttendance(date: string, company_id: number) {
+  // Get all employee IDs for this company
+  const mappings = await this.userCompanyMappingRepo.find({
+    where: { company_id, status: 1 },
+  });
+
+  const employeeIds = mappings.map((m) => m.user_id);
+
+  if (employeeIds.length === 0) {
+    return { status: false, message: 'No employees found for this company', data: [] };
+  }
+
+  const attendances = await this.attendanceRepo.find({
+    where: { employee_id: In(employeeIds), company_id, date },
+    order: { employee_id: 'ASC' },
+  });
+
+  if (attendances.length === 0) {
+    return { status: false, message: `No attendance records found for ${date}`, data: [] };
+  }
+
+  return {
+    status: true,
+    message: 'Attendance fetched successfully',
+    data: attendances,
+  };
+}
+
+
+
+
 }
