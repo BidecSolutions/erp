@@ -1,54 +1,42 @@
 import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert, BeforeUpdate } from 'typeorm';
 
 export enum VoucherType {
-    normal = '1',
-    purchase = '2',
-    sale = '3',
-    sale_return = '4',
-    purchase_return = '5'
+    payable = '1',
+}
+
+
+export enum PaymentMode {
+    cash = 'cash',
+    credit = 'credit',
+    online = 'online Transfer',
+
 }
 
 @Entity()
-export class accountsJournalVoucher {
+export class accountsPaymentVoucherDetails {
     @PrimaryGeneratedColumn()
     id: number;
 
     @Column()
-    chart_of_account_id: number;
-
-    @Column()
-    fiscal_year_id: string;
-
-    @Column({ type: 'int' })
-    branch_id: number;
-
-    @Column({ type: 'int' })
-    company_id: number;
-
-    @Column({ type: 'int' })
-    total_amount: number;
-
-    @Column()
-    voucher_no: string;
+    payment_voucher_id: number;
 
     @Column({
         type: 'enum',
-        enum: VoucherType,
-        comment: '1 = normal , 2 = purchase , 3 = sale',
+        enum: PaymentMode,
     })
-    voucher_type: VoucherType;
+    payment_mode: PaymentMode;
+
+    @Column({ type: 'int', nullable: true })
+    cheque_id: number;
+
+    @Column({ type: 'int' })
+    amount: number;
 
     @Column({ nullable: true })
     reference_no: string;
 
     @Column({ nullable: true })
     narration: string;
-
-    @Column({ type: 'int' })
-    created_by: number;
-
-    @Column({ type: 'int' })
-    approved_by: number;
 
     @Column({ type: 'tinyint', default: 1, comment: '1 = active, 0 = inactive' })
     status: number;
