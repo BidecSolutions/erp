@@ -9,5 +9,6 @@ import { Department } from '../hrm_department/department.entity';
   imports: [TypeOrmModule.forFeature([Designation, Department])],
   providers: [DesignationService],
   controllers: [DesignationController],
+  exports: [DesignationService]
 })
-export class DesignationModule {}
+export class DesignationModule { }

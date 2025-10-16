@@ -7,6 +7,7 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  BeforeInsert,
 } from 'typeorm';
 
 @Entity('unit_of_measures')
@@ -29,25 +30,25 @@ export class UnitOfMeasure {
   @ManyToOne(() => Company, { eager: true }) // eager true -> auto load
   @JoinColumn({ name: 'company_id' })
   company: Company;
-
   @Column()
   company_id: number;
 
-  @Column({ name: 'branch_id', nullable: false })
-  branch_id:number;
-  // @ManyToOne(() => Branch)
-  // @JoinColumn({name : 'branch_id'})
-  // branch: Branch
+  @Column({ nullable: true })
+  created_by: number;
 
-  @Column({ name: 'created_by', type: 'int', nullable: true })
-  created_by?: number;
+  @Column({ nullable: true })
+  updated_by: number;
 
-  @CreateDateColumn({ name: 'created_date', type: 'timestamp' })
-  created_date: Date;
+  @Column({ type: 'date', nullable: true })
+  created_at: string;
 
-  @Column({ name: 'updated_by', type: 'int', nullable: true })
-  updated_by?: number;
+  @Column({ type: 'date', nullable: true })
+  updated_at: string;
 
-  @UpdateDateColumn({ name: 'updated_date', type: 'timestamp', nullable: true })
-  updated_date?: Date;
+  @BeforeInsert()
+  setDefaults() {
+    const now = new Date();
+    this.created_at = now.toISOString().split('T')[0];
+    this.updated_at = now.toISOString().split('T')[0];
+  }
 }

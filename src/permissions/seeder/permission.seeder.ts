@@ -73,8 +73,8 @@ export const PermissionSeeder = async (dataSource: DataSource) => {
 
   // if (toInsert.length) {
   //   await permissionRepo.insert(toInsert);
-  //   console.log(`Inserted ${toInsert.length} new permissions.`);
+
   // } else {
-  //   console.log('No new permissions to insert.');
+
   // }
 };

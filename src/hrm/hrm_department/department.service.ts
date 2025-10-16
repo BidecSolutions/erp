@@ -18,13 +18,14 @@ export class DepartmentService {
 
     @InjectRepository(Company)
     private readonly companyRepo: Repository<Company>
-  ) {}
+  ) { }
 
-  async create(dto: CreateDepartmentDto, company_id: number) {
+  async create(dto: CreateDepartmentDto, userId: number, company_id: number) {
     try {
       const department = this.departmentRepository.create({
         name: dto.name,
         company_id: company_id,
+        created_by: userId,
       });
 
       await this.departmentRepository.save(department);
@@ -32,58 +33,68 @@ export class DepartmentService {
 
       return savedDept;
     } catch (e) {
-      return { message: e.message };
+      throw e;
     }
   }
 
   async findAll(company_id: number, filterStatus?: number) {
-    const status = filterStatus !== undefined ? filterStatus : 1;
     try {
       const departments = await this.departmentRepository
         .createQueryBuilder("department")
         .leftJoin("department.company", "company")
         .select([
-          "department.id",
-          "department.name",
-          "company.company_name", // sirf company name select
-          "department.status",
+          "department.id as id",
+          "department.name as name",
+          "department.status as status",
+          "department.company_id as company_id",
+          "department.created_by as created_by",
+          "department.updated_by as updated_by",
+          "department.created_at as created_at",
+          "department.updated_at as updated_at",
         ])
         .where("department.company_id = :company_id", { company_id })
-        .where("department.status = :status", { status })
         .orderBy("department.id", "DESC")
         .getRawMany();
       return departments;
     } catch (e) {
-      return { message: e.message };
+      throw e;
     }
   }
 
- async findOne(id: number) {
-  try {
-    const department = await this.departmentRepository
-      .createQueryBuilder("department")
-      .leftJoin("department.company", "company")
-      .select([
-        "department.id",
-        "department.name",
-        "department.status",
-        "company.company_name", // sirf company ka name select
-      ])
-      .where("department.id = :id", { id })
-      .getRawOne();
+  async findOne(id: number, company_id: number) {
+    try {
+      const department = await this.departmentRepository
+        .createQueryBuilder("department")
+        .select([
+          "department.id as id",
+          "department.name as name",
+          "department.status as status",
+          "department.company_id as company_id",
+          "department.created_by as created_by",
+          "department.updated_by as updated_by",
+          "department.created_at as created_at",
+          "department.updated_at as updated_at",
+        ])
+        .where("department.id = :id", { id })
+        .andWhere("department.company_id = :company_id", { company_id })
+        .getRawOne();
 
-    if (!department) {
-      throw new NotFoundException(`Department with ID ${id} not found`);
+      if (!department) {
+        throw new NotFoundException(`Department with ID ${id} not found`);
+      }
+
+      return department;
+    } catch (e) {
+      throw e;
     }
-
-    return department;
-  } catch (e) {
-    return { message: e.message };
   }
-}
 
-
-  async update(id: number, dto: UpdateDepartmentDto, company_id: number) {
+  async update(
+    id: number,
+    dto: UpdateDepartmentDto,
+    userId: number,
+    company_id: number
+  ) {
     try {
       const department = await this.departmentRepository.findOne({
         where: { id, company_id },
@@ -95,24 +106,41 @@ export class DepartmentService {
 
       if (dto.name) department.name = dto.name;
 
-      await this.departmentRepository.save(department);
+      department.updated_by = userId;
+      department.company_id = company_id;
 
-      const updatedDept = await this.findAll(company_id);
+      await this.departmentRepository.save(department);
+      const updatedDept = await this.departmentRepository
+        .createQueryBuilder("department")
+        .select([
+          "department.id as id",
+          "department.name as name",
+          "department.status as status",
+          "department.company_id as company_id",
+          "department.created_by as created_by",
+          "department.updated_by as updated_by",
+          "department.created_at as created_at",
+          "department.updated_at as updated_at",
+        ])
+        .where("department.id = :id", { id })
+        .andWhere("department.company_id = :company_id", { company_id })
+        .getRawOne();
+
       return updatedDept;
     } catch (e) {
-      return { message: e.message };
+      throw e;
     }
   }
 
-  async statusUpdate(id: number) {
+  async statusUpdate(id: number, company_id: number) {
     try {
-      const dep = await this.departmentRepository.findOneBy({ id });
+      const dep = await this.departmentRepository.findOneBy({ id, company_id });
       if (!dep) throw new NotFoundException("Departmentt not found");
 
       dep.status = dep.status === 0 ? 1 : 0;
-      await this.departmentRepository.save(dep);
+      const saved = await this.departmentRepository.save(dep);
 
-      return toggleStatusResponse("Department", dep.status);
+      return toggleStatusResponse("Departmentt", saved.status);
     } catch (err) {
       return errorResponse("Something went wrong", err.message);
     }

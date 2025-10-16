@@ -1,84 +1,133 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { CreateWarrantyDto } from './dto/create-warranty.dto';
-import { UpdateWarrantyDto } from './dto/update-warranty.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Warranty } from './entities/warranty.entity';
-import { Repository } from 'typeorm';
-import { errorResponse, successResponse, toggleStatusResponse } from 'src/commonHelper/response.util';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
+import { CreateWarrantyDto } from "./dto/create-warranty.dto";
+import { UpdateWarrantyDto } from "./dto/update-warranty.dto";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Warranty } from "./entities/warranty.entity";
+import { Repository } from "typeorm";
+import {
+  errorResponse,
+  successResponse,
+  toggleStatusResponse,
+} from "src/commonHelper/response.util";
 
 @Injectable()
 export class WarrantyService {
-constructor(
-      @InjectRepository(Warranty)
-    private readonly repo: Repository<Warranty>) {}
-    
-   async create(dto: CreateWarrantyDto, companyId: number) {
-     try {
-       const warranty = this.repo.create({
-         ...dto,
-         company_id:companyId
-       });
-       await this.repo.save(warranty);
-       return successResponse('warranty created successfully!', warranty);
- 
-     } catch (error) {
-       throw new BadRequestException(error.message || 'Failed to create warranty');
-     }
-   }
-  async findAll(filter?: number) {
+  constructor(
+    @InjectRepository(Warranty)
+    private readonly repo: Repository<Warranty>
+  ) {}
+
+  async create(dto: CreateWarrantyDto, userId: number, companyId: number) {
     try {
-      const where: any = {};
+      const warranty = this.repo.create({
+        ...dto,
+        company_id: companyId,
+        created_by: userId,
+      });
+      await this.repo.save(warranty);
+      return successResponse("warranty created successfully!", warranty);
+    } catch (error) {
+      throw new BadRequestException(
+        error.message || "Failed to create warranty"
+      );
+    }
+  }
+  async findAll(company_id: number,filter?: number, ) {
+    try {
+      const where: any = { };
       if (filter !== undefined) {
         where.status = filter; // filter apply
       }
-      const [warranty, total] = await this.repo.findAndCount({
-        where,
-      });
-      return successResponse('warranty retrieved successfully!', {
+   const [warranty, total] = await this.repo
+  .createQueryBuilder('warranty')
+  .select([
+    'warranty.id',
+    'warranty.warranty_type',
+    'warranty.duration',
+    'warranty.status',
+    'warranty.company_id',
+    'warranty.created_at',
+    'warranty.updated_at',
+    'warranty.created_by',
+    'warranty.updated_by',
+  ])
+  .where('warranty.company_id = :company_id', { company_id })
+  .getManyAndCount();
+      return successResponse("warranty retrieved successfully!", {
         total_record: total,
         warranty,
       });
     } catch (error) {
-      return errorResponse('Failed to retrieve warranty', error.message);
+      return errorResponse("Failed to retrieve warranty", error.message);
     }
   }
 
-  async findOne(id: number) {
-    try {
-      const warranty = await this.repo.findOneBy({ id });
-      if (!warranty) {
-        return errorResponse(`warranty #${id} not found`);
-      }
+ async findOne(id: number, company_id: number) {
+  try {
+    const warranty = await this.repo
+      .createQueryBuilder('warranty')
+      .select([
+        'warranty.id',
+        'warranty.warranty_type',
+        'warranty.duration',
+        'warranty.status',
+        'warranty.company_id',
+        'warranty.created_at',
+        'warranty.updated_at',
+        'warranty.created_by',
+        'warranty.updated_by',
+      ])
+      .where('warranty.id = :id', { id })
+      .andWhere('warranty.company_id = :company_id', { company_id })
+      .getOne();
 
-      return successResponse('warranty retrieved successfully!', warranty);
-    } catch (error) {
-      return errorResponse('Failed to retrieve warranty', error.message);
+    if (!warranty) {
+      return errorResponse(`Warranty #${id} not found`);
     }
+
+    return successResponse('Warranty retrieved successfully!', warranty);
+  } catch (error) {
+    return errorResponse('Failed to retrieve warranty', error.message);
   }
-  async update(id: number, updateDto: UpdateWarrantyDto) {
+}
+
+
+  async update(id: number, updateDto: UpdateWarrantyDto,userId:number,  company_id: number) {
     try {
-      const existing = await this.repo.findOne({ where: { id } });
+      const existing = await this.repo.findOne({ where: { id,company_id } });
       if (!existing) {
         return errorResponse(`warranty #${id} not found`);
       }
 
-      const warranty = await this.repo.save({ id, ...updateDto });
-      return successResponse('warranty updated successfully!', warranty);
-    } catch (error) {
-      return errorResponse('Failed to update warranty', error.message);
-    }
+     const updated = await this.repo.save({
+         id,
+          ...updateDto,
+       company_id,
+      created_by: userId,
+      updated_by: userId,
+      
+        });
+      return successResponse("Warranty updated successfully!", updated);
+  } catch (e) {
+    return errorResponse(e.message);
   }
+}
+
   async statusUpdate(id: number) {
-  try {
-    const warranty = await this.repo.findOne({ where: { id } });
-    if (!warranty) throw new NotFoundException('warranty not found');
+    try {
+      const warranty = await this.repo.findOne({ where: { id } });
+      if (!warranty) throw new NotFoundException("warranty not found");
 
-    warranty.status = warranty.status === 0 ? 1 : 0;
-    const saved = await this.repo.save(warranty);
+      warranty.status = warranty.status === 0 ? 1 : 0;
+      const saved = await this.repo.save(warranty);
 
-    return toggleStatusResponse('warranty', saved.status);
-  } catch (err) {
-    return errorResponse('Something went wrong', err.message);
-  }
+      return toggleStatusResponse("warranty", saved.status);
+    } catch (err) {
+      return errorResponse("Something went wrong", err.message);
     }
+  }
 }

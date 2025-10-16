@@ -19,42 +19,33 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @Controller('allowance')
 export class AllowanceController {
-  constructor(private readonly allowanceService: AllowanceService) {}
+  constructor(private readonly allowanceService: AllowanceService) { }
 
   // Create allowance
   @Post('create')
   async create(@Body() dto: CreateAllowanceDto, @Req() req: any) {
-    const companyId = req.user.company_id;
-    const allowances = await this.allowanceService.create(dto, companyId);
-    return {
-      status: true,
-      message: 'Allowance Created Successfully',
-      data: allowances,
-    };
+      const userData = req["user"];
+      const userId = userData?.user?.id;
+      const companyId = userData?.company_id;
+    return await this.allowanceService.create(dto,userId, companyId);
   }
 
   // Get all allowances for company with optional status filter
   @Get('list')
-  async findAll(@Req() req: any, @Query('status') status?: string) {
-    const companyId = req.user.company_id;
-    const filterStatus = status !== undefined ? Number(status) : undefined;
-    const allowances = await this.allowanceService.findAll(companyId, filterStatus);
-    return {
-      status: true,
-      message: 'Get All Allowances',
-      data: allowances,
-    };
+  async findAll(@Req() req: any, @Query('filter') filter?: string) {
+    const companyId = req["user"].company_id;
+    return await this.allowanceService.findAll(
+      companyId,
+         filter !== undefined ? Number(filter) : undefined,
+    );
+    
   }
 
   // Get single allowance by ID
   @Get(':id/get')
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    const allowance = await this.allowanceService.findOne(id);
-    return {
-      status: true,
-      message: `Get Allowance with ID ${id}`,
-      data: allowance,
-    };
+  async findOne(@Req() req: Request,@Param('id', ParseIntPipe) id: number) {
+      const companyId = req["user"].company_id;
+    return await this.allowanceService.findOne(id,companyId);
   }
 
   // Update allowance
@@ -64,19 +55,18 @@ export class AllowanceController {
     @Body() dto: UpdateAllowanceDto,
     @Req() req: any,
   ) {
-    const companyId = req.user.company_id;
-    const updated = await this.allowanceService.update(id, dto, companyId);
-    return {
-      status: true,
-      message: 'Allowance Updated Successfully',
-      data: updated,
-    };
+          const userData = req["user"];
+      const userId = userData?.user?.id;
+      const companyId = userData?.company_id;
+    return await this.allowanceService.update(id, dto,userId, companyId);
+
   }
 
   // Toggle allowance status
   @Get('toogleStatus/:id')
-  async statusChange(@Param('id', ParseIntPipe) id: number) {
-    return this.allowanceService.statusUpdate(id);
+  async statusChange(@Req() req: any, @Param('id', ParseIntPipe) id: number) {
+    const companyId = req["user"].company_id;
+    return this.allowanceService.statusUpdate(id, companyId);
   }
 
 }

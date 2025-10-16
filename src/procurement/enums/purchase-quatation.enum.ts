@@ -3,3 +3,4 @@ export enum PurchaseQuotationStatus {
   APPROVED = 'approved',
   REJECTED = 'rejected',
 }
+

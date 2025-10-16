@@ -15,13 +15,9 @@ export class CustomerCategory {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Company, (company) => company.customerCategories, { onDelete: 'CASCADE', })
-  // @ManyToOne(() => Company, { eager: true }) // eager true -> auto load
-  // @JoinColumn({ name: 'company_id' })
-  company: Company;
 
-  // @Column()
-  // company_id: number;
+  @Column()
+  companyId: number;
 
   @OneToMany(() => Customer, (customer) => customer.category_customer)
   customers: Customer[];

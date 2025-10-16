@@ -3,7 +3,7 @@ import { Company } from 'src/Company/companies/company.entity';
 import { Product } from 'src/procurement/product/entities/product.entity';
 import { productVariant } from 'src/procurement/product/entities/variant.entity';
 import { Warehouse } from 'src/procurement/warehouse/entities/warehouse.entity';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert } from 'typeorm';
 
 @Entity('inventory_stock')
 export class Stock {
@@ -17,10 +17,10 @@ export class Stock {
   product: Product;
 
   @Column({ type: 'int', nullable: true })
-  variant_id?: number | null;
+  variant_id: number
   @ManyToOne(() => productVariant, { nullable: true })
   @JoinColumn({ name: 'variant_id' })
-  variant?: productVariant | null;
+  variant: productVariant;
 
   @Column()
   warehouse_id: number;
@@ -47,20 +47,27 @@ export class Stock {
   @Column({ type: 'int', default: 0 })
   alert_qty: number;
 
-  @Column({ type: 'int', default: 1 })
+ @Column({ name: 'status', type: 'tinyint', default: 1 })
   status: number;
 
-  @Column({ name: 'created_by', type: 'int', nullable: true })
-  created_by?: number;
+  @Column({ nullable: true })
+  created_by: number;
 
-  @CreateDateColumn({ name: 'created_date', type: 'timestamp' })
-  created_date: Date;
+  @Column({ nullable: true })
+  updated_by: number;
 
-  @Column({ name: 'updated_by', type: 'int', nullable: true })
-  updated_by?: number;
+  @Column({ type: 'date', nullable: true })
+  created_at: string;
 
-  @UpdateDateColumn({ name: 'updated_date', type: 'timestamp', nullable: true })
-  updated_date?: Date;
+  @Column({ type: 'date', nullable: true })
+  updated_at: string;
+
+  @BeforeInsert()
+  setDefaults() {
+    const now = new Date();
+    this.created_at = now.toISOString().split('T')[0];
+    this.updated_at = now.toISOString().split('T')[0];
+  }
 
 
 

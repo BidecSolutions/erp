@@ -18,6 +18,7 @@ import { subSideMenuPermission } from './entities/sub-side-menu-permission.entit
 import { sales } from './sales/sales-module-list.module';
 import { POS } from './pos/POS-module-file.module';
 
+
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -43,6 +44,7 @@ import { POS } from './pos/POS-module-file.module';
 
 
 
+
   ],
   controllers: [AppController],
   providers: [AppService, registerUser, userRoles, sideMenuAndRoleSeederService,],
@@ -55,8 +57,8 @@ export class AppModule implements OnModuleInit {
 
   ) { }
   async onModuleInit() {
-    await this.registration.run()
-    await this.userRole.run()
-    await this.menus.run()
+    // await this.registration.run()
+    // await this.userRole.run()
+    // await this.menus.run()
   }
 }

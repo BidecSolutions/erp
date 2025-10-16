@@ -24,8 +24,10 @@ export class SupplierController {
   // Create supplier
   @Post('create')
   async create(@Body() dto: CreateSupplierDto, @Req() req: any) {
-    const companyId = req["user"].company_id;
-    const supplier = await this.supplierService.create(dto, companyId);
+      const userData = req["user"];
+      const userId = userData?.user?.id;
+      const companyId = userData?.company_id;
+    const supplier = await this.supplierService.create(dto,userId, companyId);
     return {
       status: true,
       message: 'Supplier Created Successfully',
@@ -37,8 +39,7 @@ export class SupplierController {
   @Get('list')
   async findAll(@Req() req: any, @Query('status') status?: string) {
     const companyId = req["user"].company_id;
-    const filterStatus = status !== undefined ? Number(status) : undefined;
-    const suppliers = await this.supplierService.findAll(companyId, filterStatus);
+    const suppliers = await this.supplierService.findAll(companyId);
     return {
       status: true,
       message: 'Get All Suppliers',
@@ -74,8 +75,9 @@ export class SupplierController {
   }
 
   @Get('toggleStatus/:id')
-  async toggleStatus(@Param('id', ParseIntPipe) id: number) {
-    return this.supplierService.toggleStatus(id);
+  async toggleStatus(@Req() req: Request, @Param('id', ParseIntPipe) id: number) {
+    const companyId = req["user"].company_id;
+    return this.supplierService.toggleStatus(companyId, id);
   }
 
 }

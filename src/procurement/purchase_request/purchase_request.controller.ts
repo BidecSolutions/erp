@@ -15,30 +15,33 @@ export class PurchaseRequestController {
   }
   @Post('store')
   store(@Body() createPurchaseRequestDto: CreatePurchaseRequestDto, @Req() req: Request) {
-    const userData = req["user"];
-    const userId = userData?.user?.id;
-    const companyId = userData?.company_id;
-
-
+    const userId = req["user"].user.id;
+    const companyId = req["user"].company_id;
     return this.purchaseRequestService.store(createPurchaseRequestDto, userId, companyId);
   }
 
 
   @Get('list')
-  findAll(@Query('filter') filter?: string) {
-    return this.purchaseRequestService.findAll(
-      filter !== undefined ? Number(filter) : undefined,
-    );
+  findAll(@Req() req: Request) {
+
+    const companyId = req["user"].company_id;
+    return this.purchaseRequestService.findAll(companyId);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.purchaseRequestService.findOne(+id);
+  findOne(@Param('id') id: string,
+    @Req() req: Request) {
+    const companyId = req["user"].company_id;
+    return this.purchaseRequestService.findOne(+id, companyId);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePurchaseRequestDto: UpdatePurchaseRequestDto) {
-    return this.purchaseRequestService.update(+id, updatePurchaseRequestDto);
+  update(@Param('id') id: string, @Body() dto: UpdatePurchaseRequestDto,
+    @Req() req: Request) {
+    const companyId = req["user"].company_id;
+    const userId = req["user"].user.id;
+
+    return this.purchaseRequestService.update(+id, dto, companyId, userId);
   }
 
   @Get('toogleStatus/:id')
@@ -49,8 +52,29 @@ export class PurchaseRequestController {
 
   @Post('approve/:id')
   async approvePurchaseReq(
-    @Param('id') id: number) {
-    return this.purchaseRequestService.approvePr(id);
+    @Param('id') id: number,
+    @Req() req: Request) {
+    const companyId = req["user"].company_id;
+    const userId = req["user"].user.id;
+    return this.purchaseRequestService.approvePr(id, companyId, userId);
 
   }
+
+  @Post('approveitr/:id')
+  async approveItrReq(
+    @Param('id') id: number,
+    @Body() body: { approvedItems: any[] },
+    @Req() req: Request
+  ) {
+    const companyId = req["user"].company_id;
+    const userId = req["user"].user.id;
+    return this.purchaseRequestService.approveItr(
+      id,
+      companyId,
+      userId,
+      body.approvedItems 
+    );
+  }
+
+
 }

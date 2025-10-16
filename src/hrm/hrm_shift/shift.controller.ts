@@ -19,12 +19,12 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @Controller('shifts')
 export class ShiftController {
-  constructor(private readonly shiftService: ShiftService) {}
+  constructor(private readonly shiftService: ShiftService) { }
 
   //  Create Shift
   @Post('create')
   async create(@Body() dto: CreateShiftDto, @Req() req: any) {
-    const companyId = req.user.company_id;
+    const companyId = req["user"].company_id;
     const shifts = await this.shiftService.create(dto, companyId);
     return {
       status: true,
@@ -36,9 +36,9 @@ export class ShiftController {
   //  Get all Shifts (with optional status filter)
   @Get('list')
   async findAll(@Req() req: any, @Query('status') status?: string) {
-    const companyId = req.user.company_id;
+    const companyId = req["user"].company_id;
     const filterStatus = status !== undefined ? Number(status) : undefined;
-    const shifts = await this.shiftService.findAll(companyId, filterStatus);
+    const shifts = await this.shiftService.findAll(companyId);
     return {
       status: true,
       message: 'Get All Shifts',
@@ -64,7 +64,7 @@ export class ShiftController {
     @Body() dto: UpdateShiftDto,
     @Req() req: any,
   ) {
-    const companyId = req.user.company_id;
+    const companyId = req["user"].company_id;
     const updated = await this.shiftService.update(id, dto, companyId);
     return {
       status: true,

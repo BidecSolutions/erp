@@ -10,8 +10,8 @@ export class Shift {
   @Column()
   name: string;
 
-   @OneToMany(() => Employee, (emp) => emp.shift)
-  employees: Employee[];
+//    @OneToMany(() => Employee, (emp) => emp.shift)
+//   employees: Employee[];
 
   @ManyToOne(() => Company, { eager: true }) // eager true -> auto load
   @JoinColumn({ name: 'company_id' })

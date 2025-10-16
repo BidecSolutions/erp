@@ -10,12 +10,11 @@ export class SupplierInvoiceController {
 
   @Post('store')
   store(@Body() dto: CreateSupplierInvoiceDto
-  , @Req() req: Request) {
-      const userData = req["user"];
-      const userId = userData?.user?.id;
-      const companyId = userData?.company_id;
-      console.log("data" ,userId , companyId)
-    return this.invoiceService.store(dto , userId, companyId);
+    , @Req() req: Request) {
+    const userData = req["user"];
+    const userId = userData?.user?.id;
+    const companyId = userData?.company_id;
+    return this.invoiceService.store(dto, userId, companyId);
   }
   @Get('list')
   findAll(@Query('filter') filter?: string) {

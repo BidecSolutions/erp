@@ -22,7 +22,7 @@ export class SupplierService {
     private readonly supplierAccountRepo: Repository<SupplierAccount>,
   ) { }
 
-  async create(dto: CreateSupplierDto, company_id: number) {
+  async create(dto: CreateSupplierDto,userId:number, company_id: number) {
     try {
       // Validate category
       const category = await this.categoryRepo.findOne({
@@ -36,7 +36,9 @@ export class SupplierService {
       const supplier = this.supplierRepo.create({
         ...dto,
         company: { id: company_id } as Company,
+            created_by: userId,
         category: { id: dto.supplier_category_id } as SupplierCategory,
+          
       });
 
       const saved = await this.supplierRepo.save(supplier);
@@ -58,8 +60,7 @@ export class SupplierService {
   }
 
 
-  async findAll(company_id: number, filterStatus?: number) {
-    const is_active = filterStatus !== undefined ? filterStatus : 1; // default active=1
+  async findAll(company_id: number) {
     try {
       const suppliers = await this.supplierRepo
         .createQueryBuilder("supplier")
@@ -95,11 +96,11 @@ export class SupplierService {
           "supplier.bank_name as bank_name",
           "supplier.ifsc_code as ifsc_code",
           "supplier.is_active as is_active",
-          "company.company_name as company_name",
+          "supplier.company_id as company_id",
           "category.category_name as category_name",
+          "supplier.created_by as created_by",
         ])
         .where("supplier.company_id = :company_id", { company_id })
-        .andWhere("supplier.is_active = :is_active", { is_active })
         .orderBy("supplier.id", "DESC")
         .getRawMany();
 
@@ -146,8 +147,9 @@ export class SupplierService {
           "supplier.bank_name as bank_name",
           "supplier.ifsc_code as ifsc_code",
           "supplier.is_active as is_active",
-          "company.company_name as company_name",
+         "supplier.company_id as company_id",
           "category.category_name as category_name",
+                    "supplier.created_by as created_by",
         ])
         .where("supplier.id = :id", { id })
         .getRawOne();
@@ -163,7 +165,7 @@ export class SupplierService {
 
   async update(id: number, dto: UpdateSupplierDto, company_id: number) {
     try {
-      const supplier = await this.supplierRepo.findOne({ where: { id, is_active: 1, } });
+      const supplier = await this.supplierRepo.findOne({ where: { id, is_active: 1,} });
       if (!supplier) return { success: false, message: 'Supplier not found or inactive' };
 
       if (dto.supplier_category_id) {
@@ -183,7 +185,7 @@ export class SupplierService {
     }
   }
 
-  async toggleStatus(id: number) {
+  async toggleStatus(company: number, id: number) {
     try {
       const supplier = await this.supplierRepo.findOneBy({ id });
       if (!supplier) throw new NotFoundException("Supplier not found");
@@ -194,7 +196,7 @@ export class SupplierService {
       await this.supplierRepo.save(supplier);
 
       // Use your existing response helper (like in Customer)
-      return toggleStatusResponse("Supplier", supplier.is_active);
+      return this.findAll(company);
     } catch (err) {
       return errorResponse("Something went wrong", err.message);
     }

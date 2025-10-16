@@ -19,9 +19,9 @@ export class CustomerCategoryService {
     private companyRepo: Repository<Company>,
   ) { }
 
-  async create(dto: CreateCustomerCategoryDto, companyId: any) {
+  async create(dto: CreateCustomerCategoryDto, company_id: number) {
     try {
-      const company = await this.companyRepo.findOne({ where: { id: companyId } });
+      const company = await this.companyRepo.findOne({ where: { id: company_id } });
       if (!company) return { success: false, message: 'Company not found' };
 
       const category = this.categoryRepo.create({
@@ -30,7 +30,7 @@ export class CustomerCategoryService {
         description: dto.description,
         discount_percent: dto.discount_percent,
         is_active: 1,
-        company: companyId,
+        companyId: company_id,
       });
 
       const savedCategory = await this.categoryRepo.save(category);
@@ -45,7 +45,7 @@ export class CustomerCategoryService {
     try {
       const categories = await this.categoryRepo
         .createQueryBuilder("category")
-        .leftJoin("category.company", "company")
+        .innerJoin("companies", "c", "category.companyId = c.id")
         .orderBy('category.id', 'DESC')
         .select([
           "category.id as id",
@@ -54,7 +54,7 @@ export class CustomerCategoryService {
           "category.description as description",
           "category.discount_percent as discount_percent",
           "category.is_active as is_active",
-          "company.company_name as company_name",
+          "c.company_name as company_name",
         ])
         .where("category.companyId = :company_id", { company_id })
         .orderBy("category.id", "DESC")
@@ -70,7 +70,8 @@ export class CustomerCategoryService {
     try {
       const category = await this.categoryRepo
         .createQueryBuilder("category")
-        .leftJoin("category.company", "company")
+        .innerJoin("companies", "c", "category.companyId = c.id")
+        .orderBy('category.id', 'DESC')
         .select([
           "category.id as id",
           "category.category_code as category_code",
@@ -78,7 +79,7 @@ export class CustomerCategoryService {
           "category.description as description",
           "category.discount_percent as discount_percent",
           "category.is_active as is_active",
-          "company.company_name as company_name",
+          "c.company_name as company_name",
         ])
         .where("category.companyId = :id", { id })
         .getRawOne();
@@ -96,7 +97,6 @@ export class CustomerCategoryService {
     try {
       const category = await this.categoryRepo.findOne({
         where: { id },
-
       });
       if (!category)
         throw new NotFoundException(`Customer Category ID ${id} not found`);

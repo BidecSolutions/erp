@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Res, Req } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Res, Req, ParseIntPipe } from '@nestjs/common';
 import { BranchService } from './branch.service';
 import { CreateBranchDto } from './dto/create-branch.dto';
 import { UpdateBranchDto } from './dto/update-branch.dto';
@@ -20,7 +20,8 @@ export class BranchController {
     @Get('list')
     findAll(@Req() req: Request) {
         const userId = req['user'].user.id;
-        return this.branchService.findAll(userId);
+        const compnayId = req['user'].company_id;
+        return this.branchService.findAll(userId, compnayId);
     }
 
     @Get('findby/:id')
@@ -36,8 +37,11 @@ export class BranchController {
     }
 
     // Soft delete
-    @Delete('delete/:id')
-    remove(@Param('id') id: number, @Body('updated_by') updatedBy: number) {
-        return this.branchService.remove(id, updatedBy);
+    @Get('toggleStatus/:id')
+    toggleStatus(
+        @Param('id', ParseIntPipe) id: number,
+    ) {
+        return this.branchService.toggleStatus(id);
     }
+
 }

@@ -5,7 +5,10 @@ import { NotificationType } from "./notification-type.entity";
 import { CreateNotificationTypeDto } from "./dto/create-notification-type.dto";
 import { UpdateNotificationTypeDto } from "./dto/update-notification-type.dto";
 import { Company } from "src/Company/companies/company.entity";
-import { errorResponse, toggleStatusResponse } from "src/commonHelper/response.util";
+import {
+  errorResponse,
+  toggleStatusResponse,
+} from "src/commonHelper/response.util";
 
 @Injectable()
 export class NotificationTypeService {
@@ -14,7 +17,7 @@ export class NotificationTypeService {
     private repo: Repository<NotificationType>,
 
     @InjectRepository(Company)
-    private readonly companyRepo: Repository<Company>,
+    private readonly companyRepo: Repository<Company>
   ) {}
 
   // Create notification type with company_id
@@ -29,7 +32,7 @@ export class NotificationTypeService {
       const saved = await this.findAll(company_id);
       return saved;
     } catch (e) {
-      return { message: e.message };
+      throw e;
     }
   }
 
@@ -41,10 +44,10 @@ export class NotificationTypeService {
         .createQueryBuilder("notification_type")
         .leftJoin("notification_type.company", "company")
         .select([
-          "notification_type.id",
-          "notification_type.type",
-          "notification_type.status",
-          "company.company_name",
+          "notification_type.id as id",
+          "notification_type.type as type",
+          "notification_type.status as status",
+                       "notification_type.company_id as company_id", 
         ])
         .where("notification_type.company_id = :company_id", { company_id })
         .andWhere("notification_type.status = :status", { status })
@@ -53,7 +56,7 @@ export class NotificationTypeService {
 
       return types;
     } catch (e) {
-      return { message: e.message };
+      throw e;
     }
   }
 
@@ -64,18 +67,19 @@ export class NotificationTypeService {
         .createQueryBuilder("notification_type")
         .leftJoin("notification_type.company", "company")
         .select([
-          "notification_type.id",
-          "notification_type.type",
-          "notification_type.status",
-          "company.company_name",
+          "notification_type.id as id",
+          "notification_type.type as type",
+          "notification_type.status as status",
+                       "notification_type.company_id as company_id", 
         ])
         .where("notification_type.id = :id", { id })
         .getRawOne();
 
-      if (!type) throw new NotFoundException(`Notification Type ID ${id} not found`);
+      if (!type)
+        throw new NotFoundException(`Notification Type ID ${id} not found`);
       return type;
     } catch (e) {
-      return { message: e.message };
+      throw e;
     }
   }
 
@@ -83,7 +87,8 @@ export class NotificationTypeService {
   async update(id: number, dto: UpdateNotificationTypeDto, company_id: number) {
     try {
       const record = await this.repo.findOne({ where: { id, company_id } });
-      if (!record) throw new NotFoundException(`Notification Type ID ${id} not found`);
+      if (!record)
+        throw new NotFoundException(`Notification Type ID ${id} not found`);
 
       Object.assign(record, dto);
       await this.repo.save(record);
@@ -91,7 +96,7 @@ export class NotificationTypeService {
       const updated = await this.findAll(company_id);
       return updated;
     } catch (e) {
-      return { message: e.message };
+      throw e;
     }
   }
 

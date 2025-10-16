@@ -13,6 +13,10 @@ class ReturnItemDto {
   product_id: number;
 
   @IsInt()
+  @IsNotEmpty({ message: 'Variant ID is required' })
+  variant_id: number;
+
+  @IsInt()
   @Min(1, { message: 'Quantity must be at least 1' })
   quantity: number;
 }

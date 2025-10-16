@@ -22,31 +22,33 @@ export class DepartmentController {
   constructor(private readonly departmentService: DepartmentService) {}
 
   @Get("list")
-  async findAll(@Req() req: Request, @Query("status") status?: string) {
-    const company = req["user"].company_id;
-    const filterStatus = status !== undefined ? Number(status) : undefined;
+  async findAll(@Req() req: any, @Query("filter") filter?: string) {
+   const companyId = req["user"].company_id;
     const departments = await this.departmentService.findAll(
-      company,
-      filterStatus,
+       companyId,
+      filter !== undefined ? Number(filter) : undefined
     );
 
     return { status: true, message: "Get All Departments", data: departments };
   }
 
   @Get(":id/get")
-async findOne(@Param("id", ParseIntPipe) id: number) {
-  const department = await this.departmentService.findOne(id);
-  return {
-    status: true,
-    message: `Get Department with ID ${id}`,
-    data: department,
-  };
-}
+  async findOne(@Req() req: Request, @Param("id", ParseIntPipe) id: number) {
+      const companyId = req["user"].company_id;
+    const department = await this.departmentService.findOne(id,companyId);
+    return {
+      status: true,
+      message: `Get Department with ID ${id}`,
+      data: department,
+    };
+  }
 
   @Post("create")
   async create(@Body() dto: CreateDepartmentDto, @Req() req: Request) {
-    const company = req["user"].company_id;
-    const departments = await this.departmentService.create(dto, company);
+     const userData = req["user"];
+    const userId = userData?.user?.id;
+    const companyId = userData?.company_id;
+    const departments = await this.departmentService.create(dto,userId, companyId);
     return {
       status: true,
       message: "Department Created Successfully...!",
@@ -60,8 +62,10 @@ async findOne(@Param("id", ParseIntPipe) id: number) {
     @Body() dto: UpdateDepartmentDto,
     @Req() req: Request
   ) {
-    const company = req["user"].company_id;
-    const dept = await this.departmentService.update(id, dto, company);
+    const userData = req["user"];
+    const userId = userData?.user?.id;
+    const companyId = userData?.company_id;
+    const dept = await this.departmentService.update(id, dto,userId, companyId);
     return {
       status: true,
       message: "Department Updated Successfully...!",
@@ -70,7 +74,9 @@ async findOne(@Param("id", ParseIntPipe) id: number) {
   }
 
   @Get("toogleStatus/:id")
-  statusChange(@Param("id", ParseIntPipe) id: number) {
-    return this.departmentService.statusUpdate(id);
+  async toggleStatus( @Req() req: Request,@Param("id", ParseIntPipe) id: number) {
+    const companyId = req["user"].company_id;
+    const result = await this.departmentService.statusUpdate(id, companyId);
+    return result;
   }
 }

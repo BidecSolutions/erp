@@ -21,7 +21,7 @@ export class StockMovement {
 
     @Column()
   variant_id: number;
-  @ManyToOne(() => Product)
+  @ManyToOne(() => productVariant)
   @JoinColumn({ name: 'variant_id' })
   variant: productVariant;
 
@@ -39,9 +39,6 @@ export class StockMovement {
 
   @Column({ type: 'int' })
   quantity: number;
-
-  @Column({ type: 'varchar', length: 100, nullable: true })
-  reference_type: string;   // e.g. PO, SALE, RETURN
 
   @Column({
     type: 'enum',

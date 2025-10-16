@@ -37,6 +37,9 @@ export class productVariant {
     @Column('decimal', { precision: 10, scale: 2, nullable: true })
     cost_price?: number;
 
+    @Column({ type: 'json', nullable: true })
+    images: string[];
+
     @Column({ name: 'created_by', type: 'int', nullable: true })
     created_by?: number;
 

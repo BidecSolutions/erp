@@ -8,9 +8,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-
 export class CreateStockDto {
-
 
   @IsNumber()
   @IsNotEmpty()
@@ -32,7 +30,7 @@ export class ProductDto {
 
   @IsOptional()
   @IsNumber()
-  variant_id?: number | null;
+  variant_id: number;
 
   @IsInt()
   @Min(0)
@@ -45,3 +43,6 @@ export class ProductDto {
 
 }
 
+
+import { PartialType } from '@nestjs/mapped-types';
+export class UpdateStockDto extends PartialType(CreateStockDto) { }

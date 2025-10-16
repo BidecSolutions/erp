@@ -43,7 +43,7 @@ export class SystemConfigurationsService {
 
     async findAll() {
         return await this.configRepo.find({
-            where: { status: 1 },
+            // where: { status: 1 },
             relations: ['company'],
             select: {
                 id: true,
@@ -53,6 +53,7 @@ export class SystemConfigurationsService {
                 facebook_link: true,
                 youtube_link: true,
                 linkdin_link: true,
+                status:true,
                 company: { id: true, company_name: true }
             },
             order: { id: 'DESC' },
@@ -70,6 +71,7 @@ export class SystemConfigurationsService {
                 facebook_link: true,
                 youtube_link: true,
                 linkdin_link: true,
+                status:true,
                 company: { id: true, company_name: true }
             },
         });
@@ -102,18 +104,28 @@ export class SystemConfigurationsService {
         }
     }
 
-    async delete(id: number) {
+    async toggleStatus(id: number) {
         try {
-            const config = await this.configRepo.findOne({ where: { id } });
+            const config = await this.configRepo.findOneBy({ id });
             if (!config) {
-                return { success: false, message: `System configuration with ID ${id} not found` };
+                return { status: false, message: `System configuration with ID ${id} not found` };
             }
-             config.status = 0;
-            await this.configRepo.remove(config);
-            return { success: true, message: 'System configuration soft-deleted successfully',
-                 data: config };
+
+            // Toggle status (1 = active, 0 = inactive)
+            config.status = config.status === 1 ? 0 : 1;
+
+            await this.configRepo.save(config);
+
+            const action = config.status === 1 ? 'activated' : 'deactivated';
+
+            return {
+                status: true,
+                message: `System configuration ${action} successfully`,
+                data: config,
+            };
         } catch (error) {
-            return { success: false, message: error.message };
+            return { status: false, message: 'Failed to toggle configuration status', error: error.message };
         }
     }
+
 }
