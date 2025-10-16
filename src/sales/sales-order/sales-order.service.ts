@@ -19,6 +19,9 @@ import { Stock } from 'src/procurement/stock/entities/stock.entity';
 import { CustomerInvoice } from 'src/Company/customer-invoice/entity/customer-invoice.entity';
 import { CustomerAccount } from 'src/Company/customers/customer.customer_account.entity';
 import { PaymentMethod } from '../enums/sales-enums';
+import { CreateSalesReturnDto } from 'src/pos/dto/create-sales-return.dto';
+import { SalesReturn } from 'src/pos/entities/sales-return.entity';
+import { SalesReturnDetail } from 'src/pos/entities/sales-return-detail.entity';
 
 @Injectable()
 export class SalesOrderService {
@@ -93,9 +96,9 @@ export class SalesOrderService {
             );
           }
           let unit_price = variant.unit_price ?? 0;
-          
+
           let stock = await stockRepo.findOne({
- 
+
             where: {
               product_id: detailDto.product_id,
               variant_id: detailDto.variant_id,
@@ -249,6 +252,131 @@ export class SalesOrderService {
       throw new BadRequestException(error.message || 'Failed to create sales order');
     }
   }
+
+
+  async createSalesReturn(createDto: CreateSalesReturnDto) {
+    try {
+      return await this.dataSource.transaction(async (manager) => {
+        const salesReturnRepo = manager.getRepository(SalesReturn);
+        const returnDetailRepo = manager.getRepository(SalesReturnDetail);
+        const orderRepo = manager.getRepository(SalesOrder);
+        const productRepo = manager.getRepository(Product);
+        const stockRepo = manager.getRepository(Stock);
+        const variantRepo = manager.getRepository(productVariant);
+        const customerAccountRepo = manager.getRepository(CustomerAccount);
+
+        
+        const salesOrder = await orderRepo.findOne({
+          where: { id: createDto.sales_order_id },
+          relations: ['customer', 'company', 'branch', 'salesOrderDetails'],
+        });
+        if (!salesOrder) {
+          throw new BadRequestException('Sales Order not found!');
+        }
+
+
+        const return_no = await generateCode('sales-return', 'SR', this.dataSource);
+        const salesReturn = salesReturnRepo.create({
+          return_no,
+          salesOrder,
+          company: salesOrder.company,
+          branch: salesOrder.branch,
+          customer: salesOrder.customer,
+          total_return_amount: 0,
+          return_date: new Date(),
+        });
+        const savedReturn = await salesReturnRepo.save(salesReturn);
+
+        let total_return_amount = 0;
+        for (const item of createDto.return_items) {
+
+          const variant = await variantRepo.findOne({
+            where: { id: item.variant_id, product_id: item.product_id },
+            select: ['unit_price']
+          });
+          const unitPrice = variant?.unit_price ?? 0;
+           const unit_price = unitPrice;
+          const total = unit_price * item.quantity;
+          // total_return_amount += total;
+
+         
+        const soldItem = salesOrder.salesOrderDetails.find(
+          (d) => d.product_id === item.product_id && d.variant_id === item.variant_id,
+        );
+
+        if (!soldItem) {
+          throw new BadRequestException(`This product was not in the original sales order.`);
+        }
+
+       
+        if (item.quantity > soldItem.quantity) {
+          throw new BadRequestException(
+            `Cannot return more than sold quantity (${soldItem.quantity}) for this product.`,
+          );
+        }
+
+        total_return_amount += total;
+
+          const detail = returnDetailRepo.create({
+            salesReturn: savedReturn,
+            quantity: item.quantity,
+            unit_price,
+            total,
+          });
+          await returnDetailRepo.save(detail);
+         
+
+            let stock = await stockRepo.findOne({
+          where: { product_id: item.product_id , variant_id:item.variant_id},
+          
+        });
+
+        if (stock) {
+          stock.quantity_on_hand += item.quantity;
+          await stockRepo.save(stock);
+        } else {
+         
+          const newStock = stockRepo.create({
+            product_id: item.product_id,
+            variant_id: item.variant_id,
+            quantity_on_hand: item.quantity,
+          });
+          await stockRepo.save(newStock);
+        }
+        }
+
+        savedReturn.total_return_amount = total_return_amount;
+        await salesReturnRepo.save(savedReturn);
+
+        
+        if (salesOrder.payment_method === 'credit' && salesOrder.customer) {
+          const customerAccount = await customerAccountRepo.findOne({
+            where: { customer: { id: salesOrder.customer.id } },
+          });
+
+          if (customerAccount) {
+            const updatedAmount = Math.max(0,Number(customerAccount.amount) - total_return_amount);
+            customerAccount.amount = updatedAmount;
+            await customerAccountRepo.save(customerAccount);
+          }
+        }
+
+        return {
+          success: true,
+          message: 'Sales return created successfully!',
+          return_no,
+          sales_order_no: salesOrder.order_no,
+          customer_name: salesOrder.customer?.customer_name ?? 'N/A',
+          total_return_amount,
+          return_date: savedReturn.return_date,
+        };
+      });
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(error.message || 'Failed to create sales return');
+    }
+  }
+
 
 
   async findAll() {

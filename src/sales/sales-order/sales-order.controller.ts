@@ -14,6 +14,7 @@ import {
 import { SalesOrderService } from './sales-order.service';
 import { CreateSalesOrderDto, UpdateSalesOrderDto } from './dto/sales-order.dto';
 import { JwtEmployeeAuth } from 'src/auth/jwt-employee.guard';
+import { CreateSalesReturnDto } from 'src/pos/dto/create-sales-return.dto';
 // @UseGuards(JwtEmployeeAuth)
 @Controller('sales-order')
 export class SalesOrderController {
@@ -22,6 +23,11 @@ export class SalesOrderController {
   @Post('store')
   async create(@Body() dto: CreateSalesOrderDto) {
     return this.salesOrderService.store(dto);
+  }
+
+  @Post('create')
+  async createSalesReturn(@Body()dto: CreateSalesReturnDto) {
+    return this.salesOrderService.createSalesReturn(dto);
   }
 
   @Get('list')
