@@ -7,9 +7,10 @@ import { AttendanceController } from './attendance.controller';
 import { Employee } from '../hrm_employee/employee.entity';
 import { Holiday } from '../hrm_holiday/holiday.entity';
 import { LeaveRequest } from '../hrm_leave-request/leave-request.entity';
+import { userCompanyMapping } from 'src/entities/user-company-mapping.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Attendance, AttendanceConfig, Employee,Holiday,LeaveRequest])],
+  imports: [TypeOrmModule.forFeature([userCompanyMapping,Attendance, AttendanceConfig, Employee,Holiday,LeaveRequest])],
   controllers: [AttendanceController],
   providers: [AttendanceService],
   exports: [AttendanceService],

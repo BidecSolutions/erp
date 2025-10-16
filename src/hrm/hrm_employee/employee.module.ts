@@ -27,6 +27,7 @@ import { AllowanceModule } from '../hrm_allowance/allowance.module';
 import { LeaveTypeModule } from '../hrm_leave-type/leave-type.module';
 import { AnnualLeaveModule } from '../hrm_annual-leave/annual-leave.module';
 import { ProbationSettingModule } from '../hrm_probation-setting/probation-setting.module';
+import { ShiftService } from '../hrm_shift/shift.service';
 // import { LeaveModule } from '../hrm_leave/leave.module';
 
 @Module({

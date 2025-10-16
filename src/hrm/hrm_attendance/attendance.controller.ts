@@ -6,11 +6,15 @@ import {
   Param,
   Req,
   UseGuards,
+  ParseIntPipe,
+  Query,
+  BadRequestException,
 } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
 import { AttendanceConfig } from './attendance-config.entity';
 import { CreateAttendanceDto } from './dto/create-attendance.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { UpdateAttendanceDto } from './dto/update-mark-attendance.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('attendance')
@@ -37,7 +41,7 @@ async createOrUpdateConfig(@Body() dto: Partial<AttendanceConfig>, @Req() req: a
     };
   }
 
-  //  3️ Mark or Update Attendance
+  //   Mark or Update Attendance
   @Post('mark')
   async markAttendance(@Body() dto: CreateAttendanceDto, @Req() req: any) {
     const company_id = req.user.company_id;
@@ -50,44 +54,31 @@ async createOrUpdateConfig(@Body() dto: Partial<AttendanceConfig>, @Req() req: a
     };
   }
 
-  //   Get Attendance for a Specific Day (join-based)
-// @Get(':employeeId/:date')
-// async getDay(
-//   @Param('employeeId') employeeId: number,
-//   @Param('date') date: string,
-//   @Req() req: any,
-// ) {
-//   const company_id = req.user.company_id;
-//   const attendance = await this.attendanceService.getAttendanceByEmployeeAndDate(
-//     employeeId,
-//     date,
-//     company_id,
-//   );
+  @Post('auto-mark-absent')
+async autoMarkAbsent(@Req() req: any) {
+  const company_id = req.user.company_id;
+  return await this.attendanceService.autoMarkAbsentToday(company_id);
+}
 
-//   return {
-//     status: attendance.status,
-//     message: attendance.message,
-//     data: attendance.data,
-//   };
-// }
+  //  Get all employees' attendance for a specific date
+  @Get('all/:date')
+  async getAllEmployeesAttendance(
+    @Param('date') date: string,
+    @Req() req: any,
+  ) {
+    const company_id = req.user.company_id;
+    return await this.attendanceService.getAllEmployeesAttendance(date, company_id);
+  }
 
-  //   Monthly Report (join-based)
-  // @Get('report/:employeeId/:month')
-  // async getReport(
-  //   @Param('employeeId') employeeId: number,
-  //   @Param('month') month: string,
-  //   @Req() req: any,
-  // ) {
-  //   const company_id = req.user.company_id;
-  //   const report = await this.attendanceService.getMonthlyReport(
-  //     employeeId,
-  //     month,
-  //     company_id,
-  //   );
-  //   return {
-  //     status: report.status,
-  //     message: report.message,
-  //     data: report.data,
-  //   };
-  // }
+    @Get(':employeeId/:date')
+  async getSingleDayAttendance(
+    @Param('employeeId') employeeId: number,
+    @Param('date') date: string,
+    @Req() req: any,
+  ) {
+    const company_id = req.user.company_id;
+    return await this.attendanceService.getSingleDayAttendance(employeeId, date, company_id);
+  }
+
+
 }
