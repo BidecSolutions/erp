@@ -1,7 +1,8 @@
 // create-session.dto.ts
-import { IsNumber, IsOptional, Min } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, Min } from 'class-validator';
 
 export class CreateSessionDto {
+  @IsNotEmpty()
   @IsNumber()
   @Min(0)
   opening_balance: number;
@@ -13,6 +14,7 @@ export class CreateSessionDto {
 
 // close-session.dto.ts
 export class CloseSessionDto {
+  @IsNotEmpty()
   @IsNumber()
   @Min(0)
   closing_balance: number;

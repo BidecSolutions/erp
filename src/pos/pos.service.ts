@@ -885,27 +885,27 @@ export class PosService {
 
     /** Return active OPEN session for employee (or null) */
     // Check if employee has active session
-    async getActiveSessionForEmployee(employeeId: number) {
+    async getActiveSessionForEmployee(userId: number) {
         return this.repo.findOne({
-            where: { employee_id: employeeId, status: CashRegisterStatus.OPEN },
+            where: { user_id: userId, status: CashRegisterStatus.OPEN },
         });
     }
 
     // Return flag: true = can continue POS, false = needs opening balance
-    async requiresOpeningBalance(employeeId: number): Promise<boolean> {
-        const active = await this.getActiveSessionForEmployee(employeeId);
+    async requiresOpeningBalance(userId: number): Promise<boolean> {
+        const active = await this.getActiveSessionForEmployee(userId);
         return !!active;
     }
 
     // Start session with opening balance
-    async startSession(employeeId: number, opening_balance: number, branch_id?: number) {
-        const existing = await this.getActiveSessionForEmployee(employeeId);
+    async startSession(userId: number, opening_balance: number, branch_id?: number) {
+        const existing = await this.getActiveSessionForEmployee(userId);
         if (existing) {
             throw new BadRequestException('You already have an active session.');
         }
 
         const session = this.repo.create({
-            employee_id: employeeId,
+            user_id: userId,
             branch_id: branch_id ?? undefined,
             opening_balance,
             start_date: new Date(),
@@ -915,18 +915,105 @@ export class PosService {
         return this.repo.save(session);
     }
 
-    // Close session
-    async closeSession(sessionId: number, employeeId: number, closing_balance: number) {
-        const session = await this.repo.findOne({ where: { id: sessionId } });
-        if (!session) throw new BadRequestException('Session not found');
-        if (session.employee_id !== employeeId) throw new BadRequestException('Cannot close this session');
-        if (session.status !== CashRegisterStatus.OPEN) throw new BadRequestException('Session not open');
 
-        session.closing_balance = closing_balance;
-        session.end_date = new Date();
-        session.status = CashRegisterStatus.CLOSED;
+    async closeSession(sessionId: number, userId: number, closing_balance: number) {
+        try {
+            const session = await this.repo.findOne({ where: { id: sessionId } });
+            if (!session) {
+                throw new BadRequestException('Session not found');
+            }
 
-        return this.repo.save(session);
+
+            if (session.user_id !== userId) {
+                throw new BadRequestException('Cannot close this session');
+            }
+
+            if (session.status !== CashRegisterStatus.OPEN) {
+                throw new BadRequestException('Session not open');
+            }
+
+
+            if (!session.start_date) {
+                throw new BadRequestException('Session start date missing - cannot calculate totals');
+            }
+
+
+            const startDate = session.start_date;
+            const endDate = new Date();
+
+
+            const salesQuery = this.salesOrderRepo.createQueryBuilder('so')
+                .select('COALESCE(SUM(so.total_amount), 0)', 'total')
+                .where('so.sales_person_id = :userId', { userId })
+                .andWhere('so.order_date BETWEEN :start AND :end', { start: startDate, end: endDate });
+
+            if (session.branch_id) {
+                salesQuery.andWhere('so.branch_id = :branchId', { branchId: session.branch_id });
+            }
+
+            const salesRow = await salesQuery.getRawOne();
+            const totalSales = Number(salesRow?.total ?? 0);
+
+
+            const returnsQuery = this.salesReturnRepo.createQueryBuilder('sr')
+                .select('COALESCE(SUM(sr.total_return_amount), 0)', 'total')
+                .where('sr.created_by = :userId', { userId })
+                .andWhere('sr.return_date BETWEEN :start AND :end', { start: startDate, end: endDate });
+
+            if (session.branch_id) {
+                returnsQuery.andWhere('sr.branch_id = :branchId', { branchId: session.branch_id });
+            }
+
+            const returnsRow = await returnsQuery.getRawOne();
+            const totalReturns = Number(returnsRow?.total ?? 0);
+
+            const opening = Number(session.opening_balance ?? 0);
+            const expected = Number((opening + totalSales - totalReturns).toFixed(2));
+            const difference = Number((closing_balance - expected).toFixed(2));
+
+          
+            const saved = await this.dataSource.transaction(async (manager) => {
+                const sess = await manager.findOne(CashRegisterSession, { where: { id: sessionId } });
+                if (!sess) throw new BadRequestException('Session not found in transaction');
+
+                
+                sess.closing_balance = Number(closing_balance.toFixed ? closing_balance.toFixed(2) : closing_balance);
+                sess.end_date = endDate;
+                sess.status = CashRegisterStatus.CLOSED;
+
+                
+                (sess as any).total_sales = Number(totalSales.toFixed ? totalSales.toFixed(2) : totalSales);
+                (sess as any).total_refunds = Number(totalReturns.toFixed ? totalReturns.toFixed(2) : totalReturns);
+                (sess as any).expected_balance = expected;
+                (sess as any).difference = difference;
+
+                const updated = await manager.save(sess);
+                return updated;
+            });
+
+            return {
+                success: true,
+                message: 'Session closed successfully',
+                data: {
+                    session_id: saved.id,
+                    user_id: saved.user_id,
+                    branch_id: saved.branch_id ?? null,
+                    opening_balance: Number(opening.toFixed ? opening.toFixed(2) : opening),
+                    total_sales: Number(totalSales.toFixed ? totalSales.toFixed(2) : totalSales),
+                    total_returns: Number(totalReturns.toFixed ? totalReturns.toFixed(2) : totalReturns),
+                    expected_balance: Number(expected.toFixed ? expected.toFixed(2) : expected),
+                    closing_balance: Number(saved.closing_balance ?? closing_balance),
+                    difference: Number(difference.toFixed ? difference.toFixed(2) : difference),
+                    start_date: session.start_date,
+                    end_date: saved.end_date,
+                    status: saved.status,
+                },
+                //  session: saved,
+            };
+        } catch (error) {
+            if (error instanceof BadRequestException) throw error;
+            throw new BadRequestException(error?.message ?? 'Failed to close session');
+        }
     }
 
 }

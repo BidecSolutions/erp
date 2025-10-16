@@ -93,37 +93,44 @@ export class PosController {
     // Start session (enter opening balance)
     @Post('start-session')
     async startSession(@Req() req, @Body() dto: CreateSessionDto) {
-        const employeeId = req['user'].company_id;
-        const session = await this.posService.startSession(employeeId, dto.opening_balance, dto.branch_id);
+        const userId = req['user'].user.id;
+        const session = await this.posService.startSession(userId, dto.opening_balance, dto.branch_id);
         return { success: true, session };
     }
 
     // Close session
     @Post('close-session/:id')
     async closeSession(@Req() req, @Param('id') id: string, @Body() dto: CloseSessionDto) {
-        const employeeId = req['user'].company_id;
-        const session = await this.posService.closeSession(Number(id), employeeId, dto.closing_balance);
-        return { success: true, session };
+        try {
+            const userId = req['user'].user.id;
+            const session = await this.posService.closeSession(Number(id), userId, dto.closing_balance);
+            return  session;
+        } catch (err) {
+            return {
+                success: false,
+                message: err.message ?? 'Failed to close session',
+            };
+        }
     }
 
     // Get active session
     @Get('active-session')
     async activeSession(@Req() req) {
-        const employeeId = req['user'].company_id;
-        const session = await this.posService.getActiveSessionForEmployee(employeeId);
+        const userId = req['user'].user.id;
+        const session = await this.posService.getActiveSessionForEmployee(userId);
         return { active: !!session, session };
     }
 
     // POS controller (temporary test)
-    @Get('test-active-session/:employeeId')
-    async testActiveSession(@Param('employeeId') employeeId: string) {
-        const session = await this.posService.getActiveSessionForEmployee(Number(employeeId));
+    @Get('test-active-session/:userId')
+    async testActiveSession(@Param('userId') userId: string) {
+        const session = await this.posService.getActiveSessionForEmployee(Number(userId));
         return { session };
     }
 
-    @Get('test-requires-opening/:employeeId')
-    async testRequiresOpening(@Param('employeeId') employeeId: string) {
-        const requiresOpening = await this.posService.requiresOpeningBalance(Number(employeeId));
+    @Get('test-requires-opening/:userId')
+    async testRequiresOpening(@Param('userId') userId: string) {
+        const requiresOpening = await this.posService.requiresOpeningBalance(Number(userId));
         return { requiresOpening };
     }
 

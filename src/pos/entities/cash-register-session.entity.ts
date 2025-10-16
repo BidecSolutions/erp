@@ -11,7 +11,7 @@ export class CashRegisterSession {
   id: number;
 
   @Column()
-  employee_id: number;
+  user_id: number;
 
   @Column({ nullable: true })
   branch_id: number;
@@ -22,10 +22,22 @@ export class CashRegisterSession {
   @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
   closing_balance: number | null;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
+  expected_balance: number | null;
+
+  @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
+  difference: number | null;
+
+  @Column({ type: 'decimal', precision: 15, scale: 2, default: 0 })
+  total_sales: number; // optional
+
+  @Column({ type: 'decimal', precision: 15, scale: 2, default: 0 })
+  total_refunds: number;
+
+  @Column({ type: 'date', nullable: true })
   start_date: Date | null;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'date', nullable: true })
   end_date: Date | null;
 
   @Column({ type: 'enum', enum: CashRegisterStatus, default: CashRegisterStatus.CLOSED })
@@ -37,4 +49,3 @@ export class CashRegisterSession {
   @UpdateDateColumn({ type: 'timestamp' })
   updated_at: Date;
 }
-    
