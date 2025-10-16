@@ -37,9 +37,11 @@ export class CreateEmployeeDto {
   @IsNotEmpty({ message: "Gender is required" })
   gender: string;
 
+  @IsOptional()
   @IsEmail()
   email?: string;
 
+  @IsOptional()
   @IsString()
   @Length(6, 100)
   password?: string;

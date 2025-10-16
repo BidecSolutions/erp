@@ -362,4 +362,16 @@ export class AuthController {
     };
   }
 
+  // @UseGuards(JwtAuthGuard)
+  @Post('create-sub-menu-only')
+  async createSubMenuOnly(@Body() body: any, @Req() req: Request) {
+    const user = await this.authService.addSubMenuOnly(body);
+    return {
+      status: true,
+      message: 'Add Successfully',
+      data: user,
+    };
+  }
+
+
 }

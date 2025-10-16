@@ -106,6 +106,7 @@ export class CustomerService {
           "customer.is_active as is_active",
           "company.company_name as company_name",
           "category_customer.category_name as category_name",
+          "category_customer.id as category_id",
         ])
         .where("customer.company_id  = :company_id", { company_id })
 
