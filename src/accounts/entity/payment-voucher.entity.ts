@@ -1,15 +1,11 @@
 import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert, BeforeUpdate } from 'typeorm';
 
 export enum VoucherType {
-    normal = '1',
-    purchase = '2',
-    sale = '3',
-    sale_return = '4',
-    purchase_return = '5'
+    payable = '1',
 }
 
 @Entity()
-export class accountsJournalVoucher {
+export class accountsPaymentVoucher {
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -25,16 +21,13 @@ export class accountsJournalVoucher {
     @Column({ type: 'int' })
     company_id: number;
 
-    @Column({ type: 'int' })
-    total_amount: number;
-
     @Column()
     voucher_no: string;
 
     @Column({
         type: 'enum',
         enum: VoucherType,
-        comment: '1 = normal , 2 = purchase , 3 = sale',
+        comment: '1 = payable',
     })
     voucher_type: VoucherType;
 
@@ -43,6 +36,9 @@ export class accountsJournalVoucher {
 
     @Column({ nullable: true })
     narration: string;
+
+    @Column({ type: 'int' })
+    total_amount: number;
 
     @Column({ type: 'int' })
     created_by: number;
