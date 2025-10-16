@@ -102,7 +102,8 @@ export class EmployeeController {
     },
   ) {
     const login_company_id = req["user"].company_id;
-    return this.employeeService.create(dto, files, login_company_id);
+    const userId = req["user"].user?.id;
+    return this.employeeService.create(dto, files, login_company_id,userId);
   }
 
   // @Get('list')
@@ -142,10 +143,12 @@ export class EmployeeController {
   )
   update(
     @Param('id', ParseIntPipe) id: number,
+     @Req() req: Request,
     @Body() dto: UpdateEmployeeDto,
     @UploadedFiles() files: { cv?: Express.Multer.File[]; photo?: Express.Multer.File[] },
   ) {
-    return this.employeeService.update(id, dto, files);
+        const userId = req["user"].user?.id;
+    return this.employeeService.update(id, dto,userId, files);
   }
 
   // @Delete(':id/delete')
