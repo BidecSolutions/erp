@@ -321,7 +321,8 @@ export class EmployeeService {
       academic_transcript?: Express.Multer.File[];
       identity_card?: Express.Multer.File[];
     },
-    login_company_id: number
+    login_company_id: number,
+     userId: number,
   ) {
     try {
       const department = await this.departmentRepository.findOneBy({
@@ -393,6 +394,7 @@ export class EmployeeService {
         // shift,
         ...(annualLeave ? { annualLeave } : {}),
         ...(probationSetting ? { probationSetting } : {}),
+          created_by: userId,
       });
 
       emp.is_system_user = dto.is_system_user ?? false;
@@ -591,6 +593,8 @@ export class EmployeeService {
             })) || [],
           emp_type: saved.emp_type,
           status: saved.status,
+          created_by: saved.created_by,
+          updated_by: saved.updated_by,
           created_at: saved.created_at,
           updated_at: saved.updated_at,
         },
@@ -602,6 +606,7 @@ export class EmployeeService {
   async update(
     id: number,
     dto: UpdateEmployeeDto,
+    userId:number,
     files?: {
       cv?: Express.Multer.File[];
       photo?: Express.Multer.File[];
@@ -624,6 +629,8 @@ export class EmployeeService {
       ],
     });
     if (!emp) throw new NotFoundException(`Employee ID ${id} not found`);
+
+          emp.updated_by = userId;
 
     // Update relations
     if (dto.departmentId) {
@@ -886,6 +893,8 @@ export class EmployeeService {
             name: b.branch_name,
           })) || [],
         status: fullEmp.status,
+        created_by: fullEmp.created_by,
+        updated_by: fullEmp.updated_by,
         created_at: fullEmp.created_at,
         updated_at: fullEmp.updated_at,
       },
