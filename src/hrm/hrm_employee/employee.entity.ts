@@ -153,8 +153,8 @@ export class Employee {
   })
   emp_type: EmployeeType;
 
-// Employee entity mein
-@OneToMany(() => EmpRoaster, roaster => roaster.employee, {
+  // Employee entity mein
+  @OneToMany(() => EmpRoaster, roaster => roaster.employee, {
     cascade: true,        // ✅ CREATE mein help karega
     eager: false          // ✅ UPDATE mein avoid karega
   })
@@ -173,6 +173,7 @@ export class Employee {
 
   @Column({ type: "date" })
   updated_at: string;
+
 
   @BeforeInsert()
   setDefaults() {

@@ -98,10 +98,12 @@ export class EmployeeService {
     });
 
     return employees.map((emp) => {
+
+
       const documents = emp.documents || [];
       const baseData: any = {
-        id: emp.id,
-        name: emp.name,
+
+        name: emp.name, id: emp.id,
         email: emp.user?.email || null,
         phone: emp.phone,
         gender: emp.gender,
@@ -116,6 +118,8 @@ export class EmployeeService {
         hoursPerDay: emp.hoursPerDay,
         daysPerWeek: emp.daysPerWeek,
         fixedSalary: emp.fixedSalary,
+        department_id: emp.department?.id || null,
+        designation_id: emp.designation?.id || null,
         roaster:
           emp.roasters?.map((r) => ({
             id: r.id,
