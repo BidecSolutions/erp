@@ -54,18 +54,18 @@ export class ProductService {
   async store(createDto: CreateProductDto, imagePath: string[], companyId: number) {
     try {
       return await this.dataSource.transaction(async (manager) => {
-          if (createDto.has_variant == 1) {
-            // product has variants → ignore unit/cost price
-            createDto.unit_price = 0;
-            createDto.cost_price = 0;
-          } else {
-            // product has no variants → require them
-            if (!createDto.unit_price || !createDto.cost_price) {
-              throw new BadRequestException(
-                'unit_price and cost_price are required when product has no variants',
-              );
-            }
+        if (createDto.has_variant == 1) {
+          // product has variants → ignore unit/cost price
+          createDto.unit_price = 0;
+          createDto.cost_price = 0;
+        } else {
+          // product has no variants → require them
+          if (!createDto.unit_price || !createDto.cost_price) {
+            throw new BadRequestException(
+              'unit_price and cost_price are required when product has no variants',
+            );
           }
+        }
 
         const productRepo = manager.getRepository(Product);
         const productCode = await generateCode('product', 'PRO', this.dataSource);
@@ -96,8 +96,40 @@ export class ProductService {
           });
         }
 
+        const productWithVariants = await productRepo.findOne({
+          where: { id: savedProduct.id },
+          relations: ['variants'], select: {
+            id: true,
+            category_id: true,
+            brand_id: true,
+            uom_id: true,
+            company_id: true,
+            description: true,
+            product_name: true,
+            product_code: true,
+            product_type: true,
+            has_variant: true,
+            unit_price: true,
+            cost_price: true,
+            mrp: true,
+            warranty_type: true,
+            status: true,
+            images: true,
+            is_instant_product: true,
+            created_by: true,
+            variants: {
+              id: true,
+              variant_code: true,
+              variant_name: true,
+              unit_price: true,
+              cost_price: true,
+              barcode: true
+            }
+          }
+        });
+
         return successResponse('product created successfully!', {
-          savedProduct,
+          savedProduct: productWithVariants,
         });
       });
     } catch (error) {
@@ -115,7 +147,34 @@ export class ProductService {
       }
       const [product, total] = await this.productRepo.findAndCount({
         where,
-        relations: ['variants'],
+        relations: ['variants'], select: {
+          id: true,
+          category_id: true,
+          brand_id: true,
+          uom_id: true,
+          company_id: true,
+          description: true,
+          product_name: true,
+          product_code: true,
+          product_type: true,
+          has_variant: true,
+          unit_price: true,
+          cost_price: true,
+          mrp: true,
+          warranty_type: true,
+          status: true,
+          images: true,
+          is_instant_product: true,
+          created_by: true,
+          variants: {
+            id: true,
+            variant_code: true,
+            variant_name: true,
+            unit_price: true,
+            cost_price: true,
+            barcode: true
+          }
+        }
       });
       if (total == 0) {
         return successResponse('No record found!')
@@ -133,7 +192,34 @@ export class ProductService {
     try {
       const product = await this.productRepo.findOne({
         where: { id },
-        relations: ['variants'],
+        relations: ['variants'], select: {
+          id: true,
+          category_id: true,
+          brand_id: true,
+          uom_id: true,
+          company_id: true,
+          description: true,
+          product_name: true,
+          product_code: true,
+          product_type: true,
+          has_variant: true,
+          unit_price: true,
+          cost_price: true,
+          mrp: true,
+          warranty_type: true,
+          status: true,
+          images: true,
+          is_instant_product: true,
+          created_by: true,
+          variants: {
+            id: true,
+            variant_code: true,
+            variant_name: true,
+            unit_price: true,
+            cost_price: true,
+            barcode: true
+          }
+        },
       });
       if (!product) {
         return errorResponse(`product not found`);

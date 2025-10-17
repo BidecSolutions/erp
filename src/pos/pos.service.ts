@@ -971,17 +971,17 @@ export class PosService {
             const expected = Number((opening + totalSales - totalReturns).toFixed(2));
             const difference = Number((closing_balance - expected).toFixed(2));
 
-          
+
             const saved = await this.dataSource.transaction(async (manager) => {
                 const sess = await manager.findOne(CashRegisterSession, { where: { id: sessionId } });
                 if (!sess) throw new BadRequestException('Session not found in transaction');
 
-                
+
                 sess.closing_balance = Number(closing_balance.toFixed ? closing_balance.toFixed(2) : closing_balance);
                 sess.end_date = endDate;
                 sess.status = CashRegisterStatus.CLOSED;
 
-                
+
                 (sess as any).total_sales = Number(totalSales.toFixed ? totalSales.toFixed(2) : totalSales);
                 (sess as any).total_refunds = Number(totalReturns.toFixed ? totalReturns.toFixed(2) : totalReturns);
                 (sess as any).expected_balance = expected;
@@ -1015,6 +1015,58 @@ export class PosService {
             throw new BadRequestException(error?.message ?? 'Failed to close session');
         }
     }
+
+    async findByBarcode(barcode: string) {
+        // 1) Find variant by barcode
+        const variant = await this.productVariantRepo.findOne({
+            where: { barcode },
+        });
+
+        if (!variant) {
+            return {
+                success: false,
+                message: 'Barcode not found',
+            };
+        }
+
+        // 2) Find full product with all variants (like store API response)
+        const product = await this.productRepo.findOne({
+            where: { id: variant.product_id },
+            relations: ['variants'],
+        });
+
+        if (!product) {
+            return {
+                success: false,
+                message: 'Product not found for this barcode',
+            };
+        }
+
+        // 3) Format response exactly like your create API
+        const responseProduct = {
+            ...product,
+            variants: [
+                {
+                    id: variant.id,
+                    variant_name: variant.variant_name,
+                    variant_code: variant.variant_code,
+                    unit_price: variant.unit_price,
+                    cost_price: variant.cost_price,
+                    barcode: variant.barcode
+                }
+            ]
+        };
+
+        // 4) Build response in SAME SHAPE as your create response
+        return {
+            success: true,
+            message: 'Product found successfully!',
+            data: {
+                savedProduct: responseProduct
+            }
+        };
+    }
+
 
 }
 

@@ -104,7 +104,7 @@ export class PosController {
         try {
             const userId = req['user'].user.id;
             const session = await this.posService.closeSession(Number(id), userId, dto.closing_balance);
-            return  session;
+            return session;
         } catch (err) {
             return {
                 success: false,
@@ -132,6 +132,12 @@ export class PosController {
     async testRequiresOpening(@Param('userId') userId: string) {
         const requiresOpening = await this.posService.requiresOpeningBalance(Number(userId));
         return { requiresOpening };
+    }
+
+
+    @Get('findByBarcode/:barcode')
+    async findByBarcode(@Param('barcode') barcode: string) {
+        return this.posService.findByBarcode(barcode);
     }
 
 }
