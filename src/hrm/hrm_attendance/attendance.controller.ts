@@ -14,19 +14,19 @@ import { AttendanceService } from './attendance.service';
 import { AttendanceConfig } from './attendance-config.entity';
 import { CreateAttendanceDto } from './dto/create-attendance.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { UpdateAttendanceDto } from './dto/update-mark-attendance.dto';
+import { JwtEmployeeAuth } from "src/auth/jwt-employee.guard";
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtEmployeeAuth)
 @Controller('attendance')
 export class AttendanceController {
-  constructor(private readonly attendanceService: AttendanceService) {}
+  constructor(private readonly attendanceService: AttendanceService) { }
 
   //   Create or Update Config (based on company token)
-@Post('config')
-async createOrUpdateConfig(@Body() dto: Partial<AttendanceConfig>, @Req() req: any) {
-  const company_id = req.user.company_id;
-  return await this.attendanceService.createOrUpdateConfig(dto, company_id);
-}
+  @Post('config')
+  async createOrUpdateConfig(@Body() dto: Partial<AttendanceConfig>, @Req() req: any) {
+    const company_id = req.user.company_id;
+    return await this.attendanceService.createOrUpdateConfig(dto, company_id);
+  }
 
 
   //   Get Active Config for Logged-in Company
@@ -36,7 +36,7 @@ async createOrUpdateConfig(@Body() dto: Partial<AttendanceConfig>, @Req() req: a
     const config = await this.attendanceService.getActiveConfig(company_id);
     return {
       status: config.status,
-        message: config.message,
+      message: config.message,
       data: config.data,
     };
   }
@@ -49,16 +49,16 @@ async createOrUpdateConfig(@Body() dto: Partial<AttendanceConfig>, @Req() req: a
 
     return {
       status: result.status,
-      message: result.message, 
+      message: result.message,
       data: result.data,
     };
   }
 
   @Post('auto-mark-absent')
-async autoMarkAbsent(@Req() req: any) {
-  const company_id = req.user.company_id;
-  return await this.attendanceService.autoMarkAbsentToday(company_id);
-}
+  async autoMarkAbsent(@Req() req: any) {
+    const company_id = req.user.company_id;
+    return await this.attendanceService.autoMarkAbsentToday(company_id);
+  }
 
   //  Get all employees' attendance for a specific date
   @Get('all/:date')
@@ -70,7 +70,7 @@ async autoMarkAbsent(@Req() req: any) {
     return await this.attendanceService.getAllEmployeesAttendance(date, company_id);
   }
 
-    @Get(':employeeId/:date')
+  @Get(':employeeId/:date')
   async getSingleDayAttendance(
     @Param('employeeId') employeeId: number,
     @Param('date') date: string,

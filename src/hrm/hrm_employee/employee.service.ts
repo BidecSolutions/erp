@@ -13,7 +13,6 @@ import { Department } from "../hrm_department/department.entity";
 import { Designation } from "../hrm_designation/designation.entity";
 import { BankDetailService } from "../hrm_bank-details/bank-details.service";
 import { BankDetail } from "../hrm_bank-details/bank-detail.entity";
-// import { Shift } from "../hrm_shift/shift.entity";
 import { DocumentService } from "../hrm_document/document.service";
 import { Allowance } from "../hrm_allowance/allowance.entity";
 import { AnnualLeave } from "../hrm_annual-leave/annual-leave.entity";
@@ -322,7 +321,7 @@ export class EmployeeService {
       identity_card?: Express.Multer.File[];
     },
     login_company_id: number,
-     userId: number,
+    userId: number,
   ) {
     try {
       const department = await this.departmentRepository.findOneBy({
@@ -394,7 +393,7 @@ export class EmployeeService {
         // shift,
         ...(annualLeave ? { annualLeave } : {}),
         ...(probationSetting ? { probationSetting } : {}),
-          created_by: userId,
+        created_by: userId,
       });
 
       emp.is_system_user = dto.is_system_user ?? false;
@@ -606,7 +605,7 @@ export class EmployeeService {
   async update(
     id: number,
     dto: UpdateEmployeeDto,
-    userId:number,
+    userId: number,
     files?: {
       cv?: Express.Multer.File[];
       photo?: Express.Multer.File[];
@@ -630,7 +629,7 @@ export class EmployeeService {
     });
     if (!emp) throw new NotFoundException(`Employee ID ${id} not found`);
 
-          emp.updated_by = userId;
+    emp.updated_by = userId;
 
     // Update relations
     if (dto.departmentId) {

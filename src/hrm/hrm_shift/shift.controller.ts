@@ -16,7 +16,9 @@ import { CreateShiftDto } from './dto/create-shift.dto';
 import { UpdateShiftDto } from './dto/update-shift.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
-@UseGuards(JwtAuthGuard)
+import { JwtEmployeeAuth } from "src/auth/jwt-employee.guard";
+
+@UseGuards(JwtEmployeeAuth)
 @Controller('shifts')
 export class ShiftController {
   constructor(private readonly shiftService: ShiftService) { }

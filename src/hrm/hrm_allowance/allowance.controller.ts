@@ -15,8 +15,9 @@ import { AllowanceService } from './allowance.service';
 import { CreateAllowanceDto } from './dto/create-allowance.dto';
 import { UpdateAllowanceDto } from './dto/update-allowance.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { JwtEmployeeAuth } from 'src/auth/jwt-employee.guard';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtEmployeeAuth)
 @Controller('allowance')
 export class AllowanceController {
   constructor(private readonly allowanceService: AllowanceService) { }
@@ -24,10 +25,10 @@ export class AllowanceController {
   // Create allowance
   @Post('create')
   async create(@Body() dto: CreateAllowanceDto, @Req() req: any) {
-      const userData = req["user"];
-      const userId = userData?.user?.id;
-      const companyId = userData?.company_id;
-    return await this.allowanceService.create(dto,userId, companyId);
+    const userData = req["user"];
+    const userId = userData?.user?.id;
+    const companyId = userData?.company_id;
+    return await this.allowanceService.create(dto, userId, companyId);
   }
 
   // Get all allowances for company with optional status filter
@@ -36,16 +37,16 @@ export class AllowanceController {
     const companyId = req["user"].company_id;
     return await this.allowanceService.findAll(
       companyId,
-         filter !== undefined ? Number(filter) : undefined,
+      filter !== undefined ? Number(filter) : undefined,
     );
-    
+
   }
 
   // Get single allowance by ID
   @Get(':id/get')
-  async findOne(@Req() req: Request,@Param('id', ParseIntPipe) id: number) {
-      const companyId = req["user"].company_id;
-    return await this.allowanceService.findOne(id,companyId);
+  async findOne(@Req() req: Request, @Param('id', ParseIntPipe) id: number) {
+    const companyId = req["user"].company_id;
+    return await this.allowanceService.findOne(id, companyId);
   }
 
   // Update allowance
@@ -55,10 +56,10 @@ export class AllowanceController {
     @Body() dto: UpdateAllowanceDto,
     @Req() req: any,
   ) {
-          const userData = req["user"];
-      const userId = userData?.user?.id;
-      const companyId = userData?.company_id;
-    return await this.allowanceService.update(id, dto,userId, companyId);
+    const userData = req["user"];
+    const userId = userData?.user?.id;
+    const companyId = userData?.company_id;
+    return await this.allowanceService.update(id, dto, userId, companyId);
 
   }
 

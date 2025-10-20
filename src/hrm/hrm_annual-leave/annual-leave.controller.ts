@@ -15,11 +15,12 @@ import { AnnualLeaveService } from "./annual-leave.service";
 import { CreateAnnualLeaveDto } from "./dto/create-annual-leave.dto";
 import { UpdateAnnualLeaveDto } from "./dto/update-annual-leave.dto";
 import { JwtAuthGuard } from "src/auth/jwt-auth.guard";
+import { JwtEmployeeAuth } from "src/auth/jwt-employee.guard";
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtEmployeeAuth)
 @Controller("annual-leave")
 export class AnnualLeaveController {
-  constructor(private readonly annualLeaveService: AnnualLeaveService) {}
+  constructor(private readonly annualLeaveService: AnnualLeaveService) { }
 
   @Post("create")
   async create(@Body() dto: CreateAnnualLeaveDto, @Req() req: any) {
