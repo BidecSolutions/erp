@@ -11,16 +11,20 @@ import {
   IsEnum,
 } from 'class-validator';
 import { CreateSalesOrderDetailDto } from './sales-order-detail.dto';
-import { SalesStatus } from 'src/sales/enums/sales-enums';
+import { PaymentMethod, SalesStatus } from 'src/sales/enums/sales-enums';
 
 export class CreateSalesOrderDto {
-  @IsDateString()
-  @IsNotEmpty()
-  order_date: Date;
+  // @IsDateString()
+  // @IsNotEmpty()
+  // order_date: Date;
 
   @IsEnum(SalesStatus)
   @IsNotEmpty()
   sales_status: SalesStatus;
+
+  @IsEnum(PaymentMethod)
+  @IsNotEmpty()
+  payment_method: PaymentMethod;
 
   @IsDateString()
   @IsOptional()
@@ -34,7 +38,13 @@ export class CreateSalesOrderDto {
   @IsOptional()
   order_priority?: string;
 
+  @IsNumber()
+  @IsOptional()
+  tax_amount?: number;
 
+  @IsNumber()
+  @IsOptional()
+  discount_amount?: number;
 
   @IsNumber()
   @IsOptional()

@@ -10,18 +10,27 @@ import {
   Delete,
   BadRequestException,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { SalesOrderService } from './sales-order.service';
 import { CreateSalesOrderDto, UpdateSalesOrderDto } from './dto/sales-order.dto';
 import { JwtEmployeeAuth } from 'src/auth/jwt-employee.guard';
+import { CreateSalesReturnDto } from 'src/pos/dto/create-sales-return.dto';
 // @UseGuards(JwtEmployeeAuth)
 @Controller('sales-order')
 export class SalesOrderController {
   constructor(private readonly salesOrderService: SalesOrderService) { }
 
   @Post('store')
-  async create(@Body() dto: CreateSalesOrderDto) {
-    return this.salesOrderService.store(dto);
+  async create(@Body() dto: CreateSalesOrderDto, @Req() req: any) {
+    const user = req.user;
+    return this.salesOrderService.store(dto, user);
+  }
+
+  @Post('create-return')
+  async createSalesReturn(@Body() dto: CreateSalesReturnDto, @Req() req: any) {
+    const user = req.user; 
+    return this.salesOrderService.createSalesReturn(dto, user);
   }
 
   @Get('list')

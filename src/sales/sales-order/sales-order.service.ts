@@ -17,6 +17,11 @@ import { CreateSalesOrderDetailDto } from './dto/sales-order-detail.dto';
 import { productVariant } from 'src/procurement/product/entities/variant.entity';
 import { Stock } from 'src/procurement/stock/entities/stock.entity';
 import { CustomerInvoice } from 'src/Company/customer-invoice/entity/customer-invoice.entity';
+import { CustomerAccount } from 'src/Company/customers/customer.customer_account.entity';
+import { PaymentMethod } from '../enums/sales-enums';
+import { CreateSalesReturnDto } from 'src/pos/dto/create-sales-return.dto';
+import { SalesReturn } from 'src/pos/entities/sales-return.entity';
+import { SalesReturnDetail } from 'src/pos/entities/sales-return-detail.entity';
 
 @Injectable()
 export class SalesOrderService {
@@ -52,109 +57,38 @@ export class SalesOrderService {
   ) { }
 
 
-  // async store(createDto: CreateSalesOrderDto) {
-  //   try {
-  //     return await this.dataSource.transaction(async (manager) => {
-  //       const salesOrderRepo = manager.getRepository(SalesOrder);
-  //       const detailRepo = manager.getRepository(SalesOrderDetail);
-  //       const stockRepo = manager.getRepository(Stock);
-
-  //       // ---------------- CALCULATIONS ----------------
-  //       let subtotal = 0;
-
-  //       const salesOrderDetails: SalesOrderDetail[] = (createDto.salesOrderDetails ?? []).map(
-
-  //         (detailDto) => {
-
-  //           const line_total = detailDto.quantity * 23;
-  //           subtotal += line_total;
 
 
-  //           return detailRepo.create({
-  //             product_id: detailDto.product_id,
-  //             varient_id: detailDto.variant_id,
-  //             // description: detailDto.description,
-  //             unit_price: 12,
-  //             quantity: detailDto.quantity,
-  //             // discount_percent: detailDto.discount_percent ?? 0,
-  //             // tax_rate: detailDto.tax_rate ?? 0,
-  //             salesOrder: undefined, // will set after saving order
-  //           });
-  //         },
-  //       );
-
-  //       // ---------------- CREATE SALES ORDER ----------------
-  //       const order = salesOrderRepo.create({
-  //         order_no: createDto.order_no,
-  //         order_date: createDto.order_date,
-  //         expected_delivery_date: createDto.expected_delivery_date,
-  //         actual_delivery_date: createDto.actual_delivery_date,
-  //         order_priority: createDto.order_priority,
-  //         shipping_charges: createDto.shipping_charges ?? 0,
-  //         order_status: createDto.order_status,
-  //         delivery_status: createDto.delivery_status ?? 'pending',
-  //         payment_status: createDto.payment_status,
-  //         currency_code: createDto.currency_code,
-  //         exchange_rate: createDto.exchange_rate,
-  //         notes: createDto.notes,
-  //         terms_conditions: createDto.terms_conditions,
-  //         delivery_address: createDto.delivery_address,
-  //         company_id: createDto.company_id,
-  //         branch_id: createDto.branch_id,
-  //         customer_id: createDto.customer_id,
-  //         sales_person_id: createDto.sales_person_id,
-  //         sales_status: createDto.sales_status,
-  //         subtotal: subtotal,
-  //         total_amount: subtotal + (createDto.shipping_charges ?? 0), // can add tax/discount if needed
-  //       });
-
-  //       const savedOrder = await salesOrderRepo.save(order);
-
-  //       // ---------------- LINK DETAILS & SAVE ----------------
-  //       for (const detail of salesOrderDetails) {
-  //         detail.salesOrder = savedOrder; // link to saved order
-  //       }
-  //       const savedDetails = await detailRepo.save(salesOrderDetails);
-
-  //       return {
-  //         success: true,
-  //         message: 'Sales order created successfully!',
-  //         data: {
-  //           salesOrder: savedOrder,
-  //           salesOrderDetails: savedDetails,
-  //         },
-  //       };
-  //     });
-  //   } catch (error) {
-  //     if (error.code === 'ER_DUP_ENTRY') {
-  //       throw new BadRequestException('Sales order already exists');
-  //     }
-  //     throw new BadRequestException(error.message || 'Failed to create sales order');
-  //   }
-  // }
-
-  async store(createDto: CreateSalesOrderDto) {
+  async store(createDto: CreateSalesOrderDto, user?: any) {
     try {
       return await this.dataSource.transaction(async (manager) => {
         const salesOrderRepo = manager.getRepository(SalesOrder);
         const detailRepo = manager.getRepository(SalesOrderDetail);
         const stockRepo = manager.getRepository(Stock);
         const variantRepo = manager.getRepository(productVariant);
+        const customerAccountRepo = manager.getRepository(CustomerAccount)
+        const branchRepo = manager.getRepository(Branch);
+        const companyRepo = manager.getRepository(Company);
+        const customerRepo = manager.getRepository(Customer);
 
 
-
+        const createdBy = user?.id ?? null;
         let subtotal = 0;
 
         const salesOrderDetails: SalesOrderDetail[] = [];
+        const orderItems: {
+          product_id: number;
+          variant_id: number;
+          quantity: number;
+          unit_price: number;
+          subtotal: number;
+        }[] = [];
 
         for (const detailDto of createDto.salesOrderDetails ?? []) {
 
           const variant = await variantRepo.findOne({
             where: { id: detailDto.variant_id },
           });
-
-          // .........debugging
-
 
 
           if (!variant) {
@@ -164,17 +98,8 @@ export class SalesOrderService {
           }
           let unit_price = variant.unit_price ?? 0;
 
-
-
-
-
-
-          // if (!stock || stock.quantity_on_hand < detailDto.quantity) {
-          //   throw new BadRequestException(
-          //     `Insufficient stock for product ID ${detailDto.product_id}, variant ID ${detailDto.variant_id}. Available: ${stock?.quantity_on_hand ?? 0}, Requested: ${detailDto.quantity}`,
-          //   );
-          // }
           let stock = await stockRepo.findOne({
+
             where: {
               product_id: detailDto.product_id,
               variant_id: detailDto.variant_id,
@@ -184,7 +109,6 @@ export class SalesOrderService {
             stock.quantity_on_hand -= detailDto.quantity;
             await stockRepo.save(stock);
           }
-
 
 
           const line_total = detailDto.quantity * unit_price;
@@ -200,51 +124,252 @@ export class SalesOrderService {
           });
 
           salesOrderDetails.push(orderDetail);
+
+          orderItems.push({
+            product_id: detailDto.product_id,
+            variant_id: detailDto.variant_id,
+            quantity: detailDto.quantity,
+            unit_price,
+            subtotal: line_total,
+          });
         }
 
         const orderNumber = await generateCode('sale-order', 'SO', this.dataSource);
         const order = salesOrderRepo.create({
           order_no: orderNumber,
-          order_date: createDto.order_date,
+          order_date: new Date().toISOString().split('T')[0],
           expected_delivery_date: createDto.expected_delivery_date,
           actual_delivery_date: createDto.actual_delivery_date,
           order_priority: createDto.order_priority,
           shipping_charges: createDto.shipping_charges ?? 0,
-          order_status: createDto.order_status,
-          delivery_status: createDto.delivery_status ?? 'pending',
-          payment_status: createDto.payment_status,
-          currency_code: createDto.currency_code,
-          exchange_rate: createDto.exchange_rate,
-          notes: createDto.notes,
-          terms_conditions: createDto.terms_conditions,
-          delivery_address: createDto.delivery_address,
+          tax_amount: createDto.tax_amount ?? 0,
+          discount_amount: createDto.discount_amount ?? 0,
+          order_status: createDto.order_status,        
+          customer_id: createDto.customer_id,
           company_id: createDto.company_id,
           branch_id: createDto.branch_id,
-          customer_id: createDto.customer_id,
           sales_person_id: createDto.sales_person_id,
           sales_status: createDto.sales_status,
           subtotal,
-          total_amount: subtotal + (createDto.shipping_charges ?? 0),
+          total_amount:
+            subtotal +
+            (createDto.tax_amount ?? 0) +
+            (createDto.shipping_charges ?? 0) -
+            (createDto.discount_amount ?? 0),
+             created_by: createdBy,
         });
 
         const savedOrder = await salesOrderRepo.save(order);
-
 
         for (const detail of salesOrderDetails) {
           detail.salesOrder = savedOrder;
         }
         const savedDetails = await detailRepo.save(salesOrderDetails);
 
-        return successResponse('Sales order created successfully!', {
-          salesOrder: savedOrder,
-          salesOrderDetails: savedDetails,
-        });
+
+        if (
+          createDto.payment_method === PaymentMethod.CREDIT &&
+          createDto.customer_id
+        ) {
+          const customerAccount = await customerAccountRepo.findOne({
+            where: { customer: { id: createDto.customer_id } },
+          });
+
+          const currentAmount = customerAccount?.amount || 0;
+          const newAmount = Math.round(currentAmount + order.total_amount);
+
+          if (customerAccount) {
+
+            await customerAccountRepo.update(
+              { customer: { id: createDto.customer_id } },
+              { amount: newAmount },
+            );
+          }
+        }
+
+        const company = await companyRepo.findOne({
+          where: { id: createDto.company_id },
+          select: ['company_name', 'company_logo_path', 'address_line1', 'phone']
+        })
+
+        const branch = createDto.branch_id
+          ? await branchRepo.findOne({
+            where: { id: createDto.branch_id },
+            select: ['branch_name'],
+          })
+          : null;
+
+        let customerName = 'Registered Customer';
+
+        if (createDto.customer_id) {
+          const customer = await customerRepo
+            .createQueryBuilder('customer')
+            .select(['customer.customer_name'])
+            .where('customer.id = :id', { id: createDto.customer_id })
+            .getOne();
+
+          if (customer) {
+            customerName = customer.customer_name;
+          }
+        }
+
+        return {
+          success: true,
+          message: 'Sales order created successfully!',
+          order_id: savedOrder.id,
+          order_no: savedOrder.order_no,
+          order_date: savedOrder.order_date,
+          branch_name: branch?.branch_name ?? null,
+          customer_name: customerName,
+          company: {
+            name: company?.company_name ?? null,
+            logo: company?.company_logo_path ?? null,
+            address: company?.address_line1 ?? null,
+            contact_no: company?.phone ?? null,
+          },
+          order_items: orderItems,
+          subtotal,
+          tax_amount: createDto.tax_amount ?? 0,
+          shipping_charges: createDto.shipping_charges ?? 0,
+          discount_amount: createDto.discount_amount ?? 0,
+          total_amount:
+            subtotal +
+            (createDto.tax_amount ?? 0) +
+            (createDto.shipping_charges ?? 0) -
+            (createDto.discount_amount ?? 0),
+        };
       });
     } catch (error) {
       if (error.code === 'ER_DUP_ENTRY') {
         throw new BadRequestException('Sales order already exists');
       }
       throw new BadRequestException(error.message || 'Failed to create sales order');
+    }
+  }
+
+
+  async createSalesReturn(createDto: CreateSalesReturnDto, user?: any) {
+    try {
+      return await this.dataSource.transaction(async (manager) => {
+        const salesReturnRepo = manager.getRepository(SalesReturn);
+        const returnDetailRepo = manager.getRepository(SalesReturnDetail);
+        const orderRepo = manager.getRepository(SalesOrder);
+        const productRepo = manager.getRepository(Product);
+        const stockRepo = manager.getRepository(Stock);
+        const variantRepo = manager.getRepository(productVariant);
+        const customerAccountRepo = manager.getRepository(CustomerAccount);
+
+         const createdBy = user?.id ?? null;
+
+        const salesOrder = await orderRepo.findOne({
+          where: { id: createDto.sales_order_id },
+          relations: ['customer', 'company', 'branch', 'salesOrderDetails'],
+        });
+        if (!salesOrder) {
+          throw new BadRequestException('Sales Order not found!');
+        }
+
+
+        const return_no = await generateCode('sales-return', 'SR', this.dataSource);
+        const salesReturn = salesReturnRepo.create({
+          return_no,
+          salesOrder,
+          company: salesOrder.company,
+          branch: salesOrder.branch,
+          customer: salesOrder.customer,
+          total_return_amount: 0,
+          return_date: new Date(),
+          created_by: createdBy,
+        });
+        const savedReturn = await salesReturnRepo.save(salesReturn);
+
+        let total_return_amount = 0;
+        for (const item of createDto.return_items) {
+
+          const variant = await variantRepo.findOne({
+            where: { id: item.variant_id, product_id: item.product_id },
+            select: ['unit_price']
+          });
+          const unitPrice = variant?.unit_price ?? 0;
+           const unit_price = unitPrice;
+          const total = unit_price * item.quantity;
+        
+
+         
+        const soldItem = salesOrder.salesOrderDetails.find(
+          (d) => d.product_id === item.product_id && d.variant_id === item.variant_id,
+        );
+
+        if (!soldItem) {
+          throw new BadRequestException(`This product was not in the original sales order.`);
+        }
+
+       
+        if (item.quantity > soldItem.quantity) {
+          throw new BadRequestException(
+            `Cannot return more than sold quantity (${soldItem.quantity}) for this product.`,
+          );
+        }
+
+        total_return_amount += total;
+
+          const detail = returnDetailRepo.create({
+            salesReturn: savedReturn,
+            quantity: item.quantity,
+            unit_price,
+            total,
+          });
+          await returnDetailRepo.save(detail);
+         
+
+            let stock = await stockRepo.findOne({
+          where: { product_id: item.product_id , variant_id:item.variant_id},
+          
+        });
+
+        if (stock) {
+          stock.quantity_on_hand += item.quantity;
+          await stockRepo.save(stock);
+        } else {
+         
+          const newStock = stockRepo.create({
+            product_id: item.product_id,
+            variant_id: item.variant_id,
+            quantity_on_hand: item.quantity,
+          });
+          await stockRepo.save(newStock);
+        }
+        }
+
+        savedReturn.total_return_amount = total_return_amount;
+        await salesReturnRepo.save(savedReturn);
+
+        
+        if (salesOrder.payment_method === 'credit' && salesOrder.customer) {
+          const customerAccount = await customerAccountRepo.findOne({
+            where: { customer: { id: salesOrder.customer.id } },
+          });
+
+          if (customerAccount) {
+            const updatedAmount = Math.max(0,Number(customerAccount.amount) - total_return_amount);
+            customerAccount.amount = updatedAmount;
+            await customerAccountRepo.save(customerAccount);
+          }
+        }
+
+        return {
+          success: true,
+          message: 'Sales return created successfully!',
+          return_no,
+          sales_order_no: salesOrder.order_no,
+          customer_name: salesOrder.customer?.customer_name ?? 'N/A',
+          total_return_amount,
+          return_date: savedReturn.return_date,
+        };
+      });
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(error.message || 'Failed to create sales return');
     }
   }
 
@@ -582,7 +707,7 @@ export class SalesOrderService {
 
         salesOrderRepo.merge(existingOrder, {
 
-          order_date: updateDto.order_date,
+          order_date: new Date().toISOString().split('T')[0],
           expected_delivery_date: updateDto.expected_delivery_date,
           actual_delivery_date: updateDto.actual_delivery_date,
           order_priority: updateDto.order_priority,

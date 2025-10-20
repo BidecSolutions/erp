@@ -13,7 +13,7 @@ import { Company } from 'src/Company/companies/company.entity';
 import { Branch } from 'src/Company/branch/branch.entity';
 import { Customer } from 'src/Company/customers/customer.entity';
 import { CustomerInvoice } from 'src/Company/customer-invoice/entity/customer-invoice.entity';
-import { SalesStatus } from 'src/sales/enums/sales-enums';
+import { PaymentMethod, SalesStatus } from 'src/sales/enums/sales-enums';
 import { customer_invoice_items } from 'src/Company/customer-invoice/entity/customer-invoice-items.entity';
 import { SalesReturn } from 'src/pos/entities/sales-return.entity';
 
@@ -110,6 +110,12 @@ export class SalesOrder {
 
   @Column({ length: 50, nullable: true })
   payment_status: string;
+
+   @Column({
+    type: 'enum',
+    enum: PaymentMethod,
+  })
+  payment_method: PaymentMethod;
 
   @Column({ length: 10, nullable: true })
   currency_code: string;
