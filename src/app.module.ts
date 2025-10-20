@@ -29,7 +29,7 @@ import { accounts } from './accounts/accounts-module-list.module';
       port: 3306,
       username: 'root',
       password: '',
-      database: 'bidec_erp',
+      database: 'bidec_erp1',
       autoLoadEntities: true,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
