@@ -59,7 +59,7 @@ export class SalesOrderService {
 
 
 
-  async store(createDto: CreateSalesOrderDto) {
+  async store(createDto: CreateSalesOrderDto, user?: any) {
     try {
       return await this.dataSource.transaction(async (manager) => {
         const salesOrderRepo = manager.getRepository(SalesOrder);
@@ -72,6 +72,7 @@ export class SalesOrderService {
         const customerRepo = manager.getRepository(Customer);
 
 
+        const createdBy = user?.id ?? null;
         let subtotal = 0;
 
         const salesOrderDetails: SalesOrderDetail[] = [];
@@ -143,17 +144,7 @@ export class SalesOrderService {
           shipping_charges: createDto.shipping_charges ?? 0,
           tax_amount: createDto.tax_amount ?? 0,
           discount_amount: createDto.discount_amount ?? 0,
-          order_status: createDto.order_status,
-          payment_method: createDto.payment_method,
-          delivery_status: createDto.delivery_status ?? 'pending',
-          payment_status: createDto.payment_status,
-          currency_code: createDto.currency_code,
-          exchange_rate: createDto.exchange_rate,
-          notes: createDto.notes,
-          terms_conditions: createDto.terms_conditions,
-          delivery_address: createDto.delivery_address,
-          company_id: createDto.company_id,
-          branch_id: createDto.branch_id,
+          order_status: createDto.order_status,        
           customer_id: createDto.customer_id,
           sales_person_id: createDto.sales_person_id,
           sales_status: createDto.sales_status,
@@ -163,6 +154,7 @@ export class SalesOrderService {
             (createDto.tax_amount ?? 0) +
             (createDto.shipping_charges ?? 0) -
             (createDto.discount_amount ?? 0),
+             created_by: createdBy,
         });
 
         const savedOrder = await salesOrderRepo.save(order);
@@ -254,7 +246,7 @@ export class SalesOrderService {
   }
 
 
-  async createSalesReturn(createDto: CreateSalesReturnDto) {
+  async createSalesReturn(createDto: CreateSalesReturnDto, user?: any) {
     try {
       return await this.dataSource.transaction(async (manager) => {
         const salesReturnRepo = manager.getRepository(SalesReturn);
@@ -265,7 +257,8 @@ export class SalesOrderService {
         const variantRepo = manager.getRepository(productVariant);
         const customerAccountRepo = manager.getRepository(CustomerAccount);
 
-        
+         const createdBy = user?.id ?? null;
+
         const salesOrder = await orderRepo.findOne({
           where: { id: createDto.sales_order_id },
           relations: ['customer', 'company', 'branch', 'salesOrderDetails'],
@@ -284,6 +277,7 @@ export class SalesOrderService {
           customer: salesOrder.customer,
           total_return_amount: 0,
           return_date: new Date(),
+          created_by: createdBy,
         });
         const savedReturn = await salesReturnRepo.save(salesReturn);
 
@@ -297,7 +291,7 @@ export class SalesOrderService {
           const unitPrice = variant?.unit_price ?? 0;
            const unit_price = unitPrice;
           const total = unit_price * item.quantity;
-          // total_return_amount += total;
+        
 
          
         const soldItem = salesOrder.salesOrderDetails.find(

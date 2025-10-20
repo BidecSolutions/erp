@@ -10,6 +10,7 @@ import {
   Delete,
   BadRequestException,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { SalesOrderService } from './sales-order.service';
 import { CreateSalesOrderDto, UpdateSalesOrderDto } from './dto/sales-order.dto';
@@ -21,13 +22,15 @@ export class SalesOrderController {
   constructor(private readonly salesOrderService: SalesOrderService) { }
 
   @Post('store')
-  async create(@Body() dto: CreateSalesOrderDto) {
-    return this.salesOrderService.store(dto);
+  async create(@Body() dto: CreateSalesOrderDto, @Req() req: any) {
+    const user = req.user;
+    return this.salesOrderService.store(dto, user);
   }
 
-  @Post('create')
-  async createSalesReturn(@Body()dto: CreateSalesReturnDto) {
-    return this.salesOrderService.createSalesReturn(dto);
+  @Post('create-return')
+  async createSalesReturn(@Body() dto: CreateSalesReturnDto, @Req() req: any) {
+    const user = req.user; 
+    return this.salesOrderService.createSalesReturn(dto, user);
   }
 
   @Get('list')
