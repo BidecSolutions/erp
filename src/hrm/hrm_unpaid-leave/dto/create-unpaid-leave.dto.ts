@@ -9,7 +9,7 @@ export class CreateUnpaidLeaveDto {
   @IsInt({ message: 'Leave Request ID must be an integer' })
   leaveRequestId: number;
 
-  @IsInt({ message: 'Extra days must be an integer' })
-  @Min(1, { message: 'Extra days must be at least 1' })
+  @IsInt({ message: 'UnPaid days must be an integer' })
+  @Min(1, { message: 'UnPaid days must be at least 1' })
   unpain_days: number;
 }

@@ -294,6 +294,11 @@ export class CreateEmployeeDto {
   @Type(() => CreateEmpRoasterDto)
   roasters?: CreateEmpRoasterDto[];
 
+  //   @IsArray()
+  // @ValidateNested({ each: true })
+  // @Type(() => CreateEmpRoasterDto)
+  // roasters?: CreateEmpRoasterDto[];
+
   @IsOptional()
   @IsNumber({}, { message: "hoursPerDay must be a number" })
   @Type(() => Number)

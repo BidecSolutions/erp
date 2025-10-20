@@ -1,44 +1,30 @@
-import { Employee } from 'src/hrm/hrm_employee/employee.entity';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, BeforeInsert } from 'typeorm';
+import { BeforeInsert, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('hrm_payroll')
 export class Payroll {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Employee)
-  @JoinColumn({ name: 'employee_id' })
-  employee: Employee;
-
-  @Column({ type: 'int' })
+  @Column()
   employee_id: number;
 
-  @Column({ type: 'int' })
+  @Column()
   month: number;
 
-  @Column({ type: 'int' })
+  @Column()
   year: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
-  total_work_hours: number;
-
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
-  worked_hours: number;
-
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
-  late_hours: number;
-
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  @Column('decimal', { precision: 10, scale: 2 })
   salary: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
-  allowance_amount: number;
+  @Column('decimal', { precision: 10, scale: 2 })
+  total_work_hours: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
-  loan_amount: number;
+  @Column('decimal', { precision: 10, scale: 2 })
+  worked_hours: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
-  unpaid_leave_deduction: number;
+  @Column('decimal', { precision: 10, scale: 2 })
+  late_hours: number;
 
   @Column({
     type: "int",

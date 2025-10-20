@@ -8,10 +8,12 @@ import { Allowance } from '../hrm_allowance/allowance.entity';
 import { LoanRequest } from '../hrm_loan-request/loan-request.entity';
 import { UnpaidLeave } from '../hrm_unpaid-leave/unpaid-leave.entity';
 import { userCompanyMapping } from 'src/entities/user-company-mapping.entity';
+import { Payroll } from './entities/payroll.entity';
 
 @Injectable()
 export class PayrollService {
   constructor(
+    @InjectRepository(Payroll) private readonly payrollRepo: Repository<Payroll>,
     @InjectRepository(Employee) private readonly employeeRepo: Repository<Employee>,
     @InjectRepository(Attendance) private readonly attendanceRepo: Repository<Attendance>,
     @InjectRepository(AttendanceConfig) private readonly configRepo: Repository<AttendanceConfig>,
@@ -89,16 +91,21 @@ async generatePayroll(employee_id: number, month: number, year: number) {
     const unpaidHours = unpaid.unpain_days * dailyHours;
     salaryAfterLate -= unpaidHours * salaryPerHour;
   }
+  const payrollRecord = this.payrollRepo.create({
+  employee_id,
+  month,
+  year,
+  salary: salaryAfterLate,
+  total_work_hours: totalWorkHours,
+  worked_hours: workedHours,
+  late_hours: lateHours,
+});
 
-  return {
-    employee: emp.name,
-    month,
-    year,
-    totalWorkHours,
-    workedHours,
-    lateHours,
-    salary: salaryAfterLate.toFixed(2),
-  };
+await this.payrollRepo.save(payrollRecord);
+
+
+return payrollRecord;
+
 }
 
 private timeStringToHours(time: string): number {
