@@ -19,9 +19,6 @@ import { sales } from './sales/sales-module-list.module';
 import { POS } from './pos/POS-module-file.module';
 import { FiscalModule } from './accounts/fiscal/fiscal.module';
 import { accounts } from './accounts/accounts-module-list.module';
-
-
-
 @Module({
   imports: [
     TypeOrmModule.forRoot({
