@@ -27,14 +27,15 @@ import { AllowanceModule } from '../hrm_allowance/allowance.module';
 import { LeaveTypeModule } from '../hrm_leave-type/leave-type.module';
 import { AnnualLeaveModule } from '../hrm_annual-leave/annual-leave.module';
 import { ProbationSettingModule } from '../hrm_probation-setting/probation-setting.module';
-// import { LeaveModule } from '../hrm_leave/leave.module';
+import { ShiftService } from '../hrm_shift/shift.service';
+
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([EmpRoaster, userRoleMapping, userCompanyMapping, Employee, Department, Designation, Shift, AnnualLeave, BankDetail, Allowance, User, Role, Branch, ProbationSetting]),
     BankDetailModule,
     DocumentModule,
-    ShiftModule,
+    // ShiftModule,
     DepartmentModule,
     DesignationModule,
     AuthModule,
@@ -44,8 +45,10 @@ import { ProbationSettingModule } from '../hrm_probation-setting/probation-setti
     AnnualLeaveModule,
     ProbationSettingModule
 
+
   ],
   controllers: [EmployeeController],
-  providers: [EmployeeService],
+  providers: [EmployeeService, ShiftService],
+  exports: [EmployeeService]
 })
 export class EmployeeModule { }

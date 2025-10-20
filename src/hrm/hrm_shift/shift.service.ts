@@ -11,7 +11,14 @@ import {
 import { UpdateEmpRoasterDto } from "./dto/update-emp-roaster.dto";
 import { EmpRoaster } from "./emp-roaster.entity";
 
-
+export interface RoasterResponse {
+  id: number;
+  shift_id: number;
+  shift_name: string | null;
+  days: string[];
+  start_time: string;
+  end_time: string;
+}
 
 @Injectable()
 export class ShiftService {
@@ -114,7 +121,5 @@ export class ShiftService {
       return errorResponse("Something went wrong", err.message);
     }
   }
-
-
 
 }

@@ -14,9 +14,9 @@ import {
 import { LeaveTypeService } from './leave-type.service';
 import { CreateLeaveTypeDto } from './dto/create-leave-type.dto';
 import { UpdateLeaveTypeDto } from './dto/update-leave-type.dto';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { JwtEmployeeAuth } from "src/auth/jwt-employee.guard";
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtEmployeeAuth)
 @Controller('leave-type')
 export class LeaveTypeController {
   constructor(private readonly leaveTypeService: LeaveTypeService) { }

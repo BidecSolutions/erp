@@ -25,7 +25,8 @@ export class ProbationSettingController {
   @Post("create")
   async create(@Body() dto: CreateProbationSettingDto, @Req() req: any) {
     const companyId = req.user.company_id;
-    const created = await this.probationService.create(dto, companyId);
+       const userId = req["user"].user?.id;
+    const created = await this.probationService.create(dto, companyId,userId);
     return {
       status: true,
       message: "Probation Setting Created Successfully",
@@ -68,7 +69,8 @@ export class ProbationSettingController {
     @Req() req: any
   ) {
     const companyId = req.user.company_id;
-    const updated = await this.probationService.update(id, dto, companyId);
+           const userId = req["user"].user?.id;
+    const updated = await this.probationService.update(id, dto, companyId,userId);
     return {
       status: true,
       message: "Probation Setting Updated Successfully",

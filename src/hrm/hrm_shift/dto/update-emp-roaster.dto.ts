@@ -1,29 +1,27 @@
 import { Type } from 'class-transformer';
-import { CreateEmpRoasterDto } from './create-emp-roaster.dto';
-import { IsOptional, IsInt, IsArray, ArrayNotEmpty, IsString } from 'class-validator';
+import { IsOptional, IsInt, IsArray, IsString } from 'class-validator';
 
 export class UpdateEmpRoasterDto {
   @IsOptional()
   @IsInt()
   @Type(() => Number)
-  id?: number; // optional ID for existing roasters
+  id: number; // Required for update
 
-   @IsArray({ message: "Days must be an array" })
-     @IsOptional()
-    @IsString({ each: true, message: "Each day must be a string" })
-    days: string[]; // ✅ array of days
-    
-    @IsInt()
-    @Type(() => Number)
-      @IsOptional()
-    shift_id: number;
-  
-    @IsString()
-     @IsOptional()
-    start_time: string;
-  
-    @IsString()
-     @IsOptional()
-    end_time: string;
-  
+  @IsOptional()
+  @IsArray({ message: "Days must be an array" })
+  @IsString({ each: true, message: "Each day must be a string" })
+  days: string[];
+
+  @IsOptional()
+  @IsInt()
+  @Type(() => Number)
+  shift_id: number;
+
+  @IsOptional()
+  @IsString()
+  start_time: string;
+
+  @IsOptional()
+  @IsString()
+  end_time: string;
 }

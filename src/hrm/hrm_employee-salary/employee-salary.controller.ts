@@ -1,11 +1,14 @@
-import { Controller, Post, Get, Param, Delete, Body, Put } from '@nestjs/common';
+import { Controller, Post, Get, Param, Delete, Body, Put, UseGuards } from '@nestjs/common';
 import { EmployeeSalaryService } from './employee-salary.service';
 import { CreateEmployeeSalaryDto } from './dto/create-employee-salary.dto';
 import { UpdateEmployeeSalaryDto } from './dto/update-employee-salary.dto';
 
+import { JwtEmployeeAuth } from "src/auth/jwt-employee.guard";
+
+@UseGuards(JwtEmployeeAuth)
 @Controller('employee-salary')
 export class EmployeeSalaryController {
-  constructor(private readonly salaryService: EmployeeSalaryService) {}
+  constructor(private readonly salaryService: EmployeeSalaryService) { }
 
   @Post('create')
   create(@Body() dto: CreateEmployeeSalaryDto) {

@@ -15,10 +15,12 @@ import { DesignationService } from "./designation.service";
 import { CreateDesignationDto } from "./dto/create-designation.dto";
 import { UpdateDesignationDto } from "./dto/update-designation.dto";
 
-@UseGuards(JwtAuthGuard)
+import { JwtEmployeeAuth } from "src/auth/jwt-employee.guard";
+
+@UseGuards(JwtEmployeeAuth)
 @Controller("designations")
 export class DesignationController {
-  constructor(private readonly designationService: DesignationService) {}
+  constructor(private readonly designationService: DesignationService) { }
 
   // ✅ List all designations
   @Get("list")

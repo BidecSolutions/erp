@@ -13,7 +13,6 @@ import { Department } from "../hrm_department/department.entity";
 import { Designation } from "../hrm_designation/designation.entity";
 import { BankDetailService } from "../hrm_bank-details/bank-details.service";
 import { BankDetail } from "../hrm_bank-details/bank-detail.entity";
-// import { Shift } from "../hrm_shift/shift.entity";
 import { DocumentService } from "../hrm_document/document.service";
 import { Allowance } from "../hrm_allowance/allowance.entity";
 import { AnnualLeave } from "../hrm_annual-leave/annual-leave.entity";
@@ -98,10 +97,12 @@ export class EmployeeService {
     });
 
     return employees.map((emp) => {
+
+
       const documents = emp.documents || [];
       const baseData: any = {
-        id: emp.id,
-        name: emp.name,
+
+        name: emp.name, id: emp.id,
         email: emp.user?.email || null,
         phone: emp.phone,
         gender: emp.gender,
@@ -116,6 +117,8 @@ export class EmployeeService {
         hoursPerDay: emp.hoursPerDay,
         daysPerWeek: emp.daysPerWeek,
         fixedSalary: emp.fixedSalary,
+        department_id: emp.department?.id || null,
+        designation_id: emp.designation?.id || null,
         roaster:
           emp.roasters?.map((r) => ({
             id: r.id,
@@ -317,7 +320,8 @@ export class EmployeeService {
       academic_transcript?: Express.Multer.File[];
       identity_card?: Express.Multer.File[];
     },
-    login_company_id: number
+    login_company_id: number,
+    userId: number,
   ) {
     try {
       const department = await this.departmentRepository.findOneBy({
@@ -389,6 +393,7 @@ export class EmployeeService {
         // shift,
         ...(annualLeave ? { annualLeave } : {}),
         ...(probationSetting ? { probationSetting } : {}),
+        created_by: userId,
       });
 
       emp.is_system_user = dto.is_system_user ?? false;
@@ -587,6 +592,8 @@ export class EmployeeService {
             })) || [],
           emp_type: saved.emp_type,
           status: saved.status,
+          created_by: saved.created_by,
+          updated_by: saved.updated_by,
           created_at: saved.created_at,
           updated_at: saved.updated_at,
         },
@@ -598,6 +605,7 @@ export class EmployeeService {
   async update(
     id: number,
     dto: UpdateEmployeeDto,
+    userId: number,
     files?: {
       cv?: Express.Multer.File[];
       photo?: Express.Multer.File[];
@@ -612,7 +620,7 @@ export class EmployeeService {
         "designation",
         "annualLeave",
         "probationSetting",
-        "roasters",
+        // "roasters",
         "allowances",
         "branches",
         "user",
@@ -620,6 +628,8 @@ export class EmployeeService {
       ],
     });
     if (!emp) throw new NotFoundException(`Employee ID ${id} not found`);
+
+    emp.updated_by = userId;
 
     // Update relations
     if (dto.departmentId) {
@@ -882,6 +892,8 @@ export class EmployeeService {
             name: b.branch_name,
           })) || [],
         status: fullEmp.status,
+        created_by: fullEmp.created_by,
+        updated_by: fullEmp.updated_by,
         created_at: fullEmp.created_at,
         updated_at: fullEmp.updated_at,
       },

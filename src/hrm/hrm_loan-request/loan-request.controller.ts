@@ -10,14 +10,19 @@ import {
   ParseIntPipe,
   NotFoundException,
   Put,
+  UseGuards,
 } from "@nestjs/common";
 import { LoanRequestService } from "./loan-request.service";
 import { CreateLoanRequestDto } from "./dto/create-loan-request.dto";
 import { UpdateLoanRequestDto } from "./dto/update-loan-request.dto";
 
+
+import { JwtEmployeeAuth } from "src/auth/jwt-employee.guard";
+
+@UseGuards(JwtEmployeeAuth)
 @Controller("loan-request")
 export class LoanRequestController {
-  constructor(private readonly loanRequestService: LoanRequestService) {}
+  constructor(private readonly loanRequestService: LoanRequestService) { }
 
   @Post("create")
   create(@Body() dto: CreateLoanRequestDto) {
@@ -25,7 +30,7 @@ export class LoanRequestController {
   }
 
 
-    @Get('list')
+  @Get('list')
   findAll(@Query('status') status?: string) {
     //  query param se status ko number me convert kar rahe
     const filterStatus = status !== undefined ? Number(status) : undefined;
@@ -57,8 +62,8 @@ export class LoanRequestController {
     return this.loanRequestService.rejectLoanRequest(id, reason);
   }
 
-   @Get('toogleStatus/:id')
-    statusChange(@Param('id', ParseIntPipe) id: number){
-      return this.loanRequestService.statusUpdate(id);
-    }
+  @Get('toogleStatus/:id')
+  statusChange(@Param('id', ParseIntPipe) id: number) {
+    return this.loanRequestService.statusUpdate(id);
+  }
 }

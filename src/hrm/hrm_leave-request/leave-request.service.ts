@@ -108,7 +108,7 @@ export class LeaveRequestService {
 
     return {
       success: true,
-      message: "Loan Request created successfully",
+      message: "Leave Request created successfully",
       data: this.formatResponse(savedWithRelations),
     };
   }

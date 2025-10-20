@@ -19,7 +19,8 @@ export class ProbationSettingService {
       probation_period: number;
       duration_type?: "days" | "months";
     },
-    company_id: number
+    company_id: number,
+    userId: number
   ) {
     try {
       const ps = this.probationRepo.create({
@@ -27,6 +28,7 @@ export class ProbationSettingService {
         probation_period: data.probation_period,
         duration_type: data.duration_type ?? "months",
         company_id,
+        created_by: userId,
       });
 
       await this.probationRepo.save(ps);
@@ -47,13 +49,17 @@ export class ProbationSettingService {
           "probation_setting.probation_period as probation_period",
           "probation_setting.duration_type as duration_type",
           "probation_setting.status as status",
+          "probation_setting.created_by as created_by",
           "probation_setting.company_id as company_id",
+          "probation_setting.updated_by as updated_by",
         ])
         .where("probation_setting.company_id = :company_id", { company_id });
 
       // ✅ Apply status filter only if provided
       if (filterStatus !== undefined) {
-        query.andWhere("probation_setting.status = :status", { status: filterStatus });
+        query.andWhere("probation_setting.status = :status", {
+          status: filterStatus,
+        });
       }
 
       query.orderBy("probation_setting.id", "DESC");
@@ -76,6 +82,8 @@ export class ProbationSettingService {
           "probation_setting.duration_type as duration_type",
           "probation_setting.status as status",
           "probation_setting.company_id as company_id",
+          "probation_setting.updated_by as updated_by",
+          "probation_setting.company_id as company_id",
         ])
         .where("probation_setting.id = :id", { id })
         .getRawOne();
@@ -96,7 +104,8 @@ export class ProbationSettingService {
       probation_period?: number;
       duration_type?: "days" | "months";
     },
-    company_id: number
+    company_id: number,
+    userId: number
   ) {
     try {
       // // Find record for same company
@@ -114,6 +123,8 @@ export class ProbationSettingService {
       if (data.leave_days) ps.leave_days = data.leave_days;
       if (data.probation_period) ps.probation_period = data.probation_period;
       if (data.duration_type) ps.duration_type = data.duration_type;
+
+      ps.updated_by = userId;
 
       await this.probationRepo.save(ps);
 

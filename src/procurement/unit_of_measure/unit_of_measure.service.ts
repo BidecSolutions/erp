@@ -33,30 +33,38 @@ export class UnitOfMeasureService {
       throw new BadRequestException(error.message || 'Failed to create unit_of_measure');
     }
   }
-  async findAll(company_id: number, filterStatus?: number) {
-    const status = filterStatus !== undefined ? filterStatus : 1; // default active
-    try {
-      const units = await this.repo
-        .createQueryBuilder("unit")
-        .leftJoin("unit.company", "company")
-        .select([
-          "unit.id as id",
-          "unit.uom_name as uom_name",
-          "unit.uom_code as uom_code",
-          "unit.status as status",
-          "unit.description as description",
-          "company.company_name as company_name",
-        ])
-        .where("unit.company_id = :company_id", { company_id })
-        .andWhere("unit.status = :status", { status })
-        .orderBy("unit.id", "DESC")
-        .getRawMany();
+ async findAll(company_id: number, filterStatus?: number) {
+  try {
+    const uom = this.repo
+      .createQueryBuilder("unit")
+      .leftJoin("unit.company", "company")
+      .select([
+        "unit.id as id",
+        "unit.uom_name as uom_name",
+        "unit.uom_code as uom_code",
+        "unit.status as status",
+        "unit.description as description",
+        "company.company_name as company_name",
+      ])
+      .where("unit.company_id = :company_id", { company_id })
+      .orderBy("unit.id", "DESC");
 
-      return { total_record: units.length, unit_of_measure: units, }
-    } catch (error) {
-      return errorResponse(error.message);
+    // 🔹 Filter tabhi lagao jab filterStatus defined ho
+    if (filterStatus !== undefined) {
+      uom.andWhere("unit.status = :status", { status: filterStatus });
     }
+
+    const units = await uom.getRawMany();
+
+    return {
+      total_record: units.length,
+      unit_of_measure: units,
+    };
+  } catch (error) {
+    return errorResponse(error.message);
   }
+}
+
   async findOne(id: number) {
     try {
       const unit_of_measure = await this.repo

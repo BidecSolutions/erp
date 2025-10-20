@@ -16,10 +16,12 @@ import { HolidayService } from './holiday.service';
 import { CreateHolidayDto } from './dto/create-holiday.dto';
 import { UpdateHolidayDto } from './dto/update-holiday.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-@UseGuards(JwtAuthGuard)
+import { JwtEmployeeAuth } from "src/auth/jwt-employee.guard";
+
+@UseGuards(JwtEmployeeAuth)
 @Controller('holiday')
 export class HolidayController {
-  constructor(private readonly holidayService: HolidayService) {}
+  constructor(private readonly holidayService: HolidayService) { }
 
   // Create Holiday
   @Post('create')
@@ -31,8 +33,8 @@ export class HolidayController {
   // Get All Holidays (by token’s company_id)
   @Get('list')
   async findAll(@Req() req: any, @Query('status') status?: string) {
-     const company_id = req.user.company_id;
-     const filterStatus = status !== undefined ? Number(status) : undefined;
+    const company_id = req.user.company_id;
+    const filterStatus = status !== undefined ? Number(status) : undefined;
     return await this.holidayService.findAll(company_id, filterStatus);
   }
 
@@ -54,9 +56,9 @@ export class HolidayController {
     return await this.holidayService.update(id, dto, company_id);
   }
 
-     @Get('toogleStatus/:id')
-      statusChange(@Param('id', ParseIntPipe) id: number){
-        return this.holidayService.statusUpdate(id);
-      }
+  @Get('toogleStatus/:id')
+  statusChange(@Param('id', ParseIntPipe) id: number) {
+    return this.holidayService.statusUpdate(id);
+  }
 
 }

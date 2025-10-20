@@ -34,12 +34,6 @@ export class Attendance {
   @Column({ type: 'date' })
   date: string;
 
-  @Column({ type: 'time', nullable: true })
-  check_in?: string;
-
-  @Column({ type: 'time', nullable: true })
-  check_out?: string;
-
   @Column({
     type: 'enum',
     enum: AttendanceStatus,
@@ -47,17 +41,23 @@ export class Attendance {
   })
   attendance_status: AttendanceStatus;
 
-  @Column({ type: 'int', nullable: true })
-  late_minutes?: number;
+ @Column({ type: 'time', nullable: true })
+check_in?: string | null;
 
-  @Column({ type: 'int', nullable: true })
-  overtime_minutes?: number;
+@Column({ type: 'time', nullable: true })
+check_out?: string | null;
 
-  @Column({ type: 'int', nullable: true })
-  work_duration_minutes?: number;
+@Column({ type: 'int', nullable: true })
+late_minutes?: number | null;
 
- @Column({ type: 'int', nullable: true })
-  config_id?: number;
+@Column({ type: 'int', nullable: true })
+overtime_minutes?: number | null;
+
+@Column({ type: 'int', nullable: true })
+work_duration_minutes?: number | null;
+
+@Column({ type: 'int', nullable: true })
+config_id?: number | null;
 
   
    @Column({

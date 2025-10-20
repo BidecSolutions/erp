@@ -27,4 +27,9 @@ export class accountsFiscalYear {
         this.updated_at = today;
     }
 
+    @BeforeUpdate()
+    setUpdatedDate() {
+        this.updated_at = new Date().toISOString().slice(0, 10);
+    }
+
 }
