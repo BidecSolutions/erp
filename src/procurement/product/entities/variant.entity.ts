@@ -1,8 +1,9 @@
-import { PrimaryGeneratedColumn, Entity, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from "typeorm";
+import { BeforeInsert, PrimaryGeneratedColumn, Entity, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from "typeorm";
 import { Product } from "./product.entity";
 import { Branch } from "src/Company/branch/branch.entity";
 import { Company } from "src/Company/companies/company.entity";
 import { SalesOrderDetail } from "src/sales/sales-order/entity/sales-order-detail.entity";
+import { randomBytes } from 'crypto';
 
 @Entity('variants')
 export class productVariant {
@@ -57,4 +58,19 @@ export class productVariant {
     })
     salesOrderDetails: SalesOrderDetail[];
 
+    @Column({ nullable: true })
+    barcode: string;
+
+    @BeforeInsert()
+    generateBarcodeIfMissing() {
+        if (!this.barcode) {
+            this.barcode = this.generateBarcode();
+        }
+
+    }
+
+    private generateBarcode(): string {
+        // You can implement any logic here (e.g., timestamp + random, UUID, sequence)
+        return 'BAR-' + Date.now().toString() + '-' + Math.floor(Math.random() * 100000);
+    }
 }

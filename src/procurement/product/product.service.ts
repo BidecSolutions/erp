@@ -89,9 +89,41 @@ export class ProductService {
             where: { product: { id: savedProduct.id } },
           });
         }
-        return successResponse('Product created successfully!', {
-          product: savedProduct,
-          variants: savedVariants,
+
+        const productWithVariants = await productRepo.findOne({
+          where: { id: savedProduct.id },
+          relations: ['variants'], select: {
+            id: true,
+            category_id: true,
+            brand_id: true,
+            uom_id: true,
+            company_id: true,
+            description: true,
+            product_name: true,
+            product_code: true,
+            product_type: true,
+            has_variant: true,
+            unit_price: true,
+            cost_price: true,
+            mrp: true,
+            warranty_type: true,
+            status: true,
+            images: true,
+            is_instant_product: true,
+            created_by: true,
+            variants: {
+              id: true,
+              variant_code: true,
+              variant_name: true,
+              unit_price: true,
+              cost_price: true,
+              barcode: true
+            }
+          }
+        });
+
+        return successResponse('product created successfully!', {
+          savedProduct: productWithVariants,
         });
       });
     } catch (error) {
@@ -106,8 +138,34 @@ export class ProductService {
     try {
       const [product, total] = await this.productRepo.findAndCount({
         where: { company_id: companyId },
-        relations: ['variants'],
-        order: { id: 'DESC' },
+        relations: ['variants'], select: {
+          id: true,
+          category_id: true,
+          brand_id: true,
+          uom_id: true,
+          company_id: true,
+          description: true,
+          product_name: true,
+          product_code: true,
+          product_type: true,
+          has_variant: true,
+          unit_price: true,
+          cost_price: true,
+          mrp: true,
+          warranty_type: true,
+          status: true,
+          images: true,
+          is_instant_product: true,
+          created_by: true,
+          variants: {
+            id: true,
+            variant_code: true,
+            variant_name: true,
+            unit_price: true,
+            cost_price: true,
+            barcode: true
+          }
+        }
       });
 
       return successResponse('product retrieved successfully!', {
@@ -121,8 +179,35 @@ export class ProductService {
   async findOne(id: number, companyId: number) {
     try {
       const product = await this.productRepo.findOne({
-        where: { id, company_id: companyId },
-        relations: ['variants'],
+        where: { id },
+        relations: ['variants'], select: {
+          id: true,
+          category_id: true,
+          brand_id: true,
+          uom_id: true,
+          company_id: true,
+          description: true,
+          product_name: true,
+          product_code: true,
+          product_type: true,
+          has_variant: true,
+          unit_price: true,
+          cost_price: true,
+          mrp: true,
+          warranty_type: true,
+          status: true,
+          images: true,
+          is_instant_product: true,
+          created_by: true,
+          variants: {
+            id: true,
+            variant_code: true,
+            variant_name: true,
+            unit_price: true,
+            cost_price: true,
+            barcode: true
+          }
+        },
       });
       if (!product) {
         return errorResponse(`product not found`);
