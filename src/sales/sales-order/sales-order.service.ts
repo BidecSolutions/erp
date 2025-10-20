@@ -146,6 +146,8 @@ export class SalesOrderService {
           discount_amount: createDto.discount_amount ?? 0,
           order_status: createDto.order_status,        
           customer_id: createDto.customer_id,
+          company_id: createDto.company_id,
+          branch_id: createDto.branch_id,
           sales_person_id: createDto.sales_person_id,
           sales_status: createDto.sales_status,
           subtotal,
