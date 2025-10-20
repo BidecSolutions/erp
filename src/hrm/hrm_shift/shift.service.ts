@@ -11,15 +11,6 @@ import {
 import { UpdateEmpRoasterDto } from "./dto/update-emp-roaster.dto";
 import { EmpRoaster } from "./emp-roaster.entity";
 
-export interface RoasterResponse {
-  id: number;
-  shift_id: number;
-  shift_name: string | null;
-  days: string[];
-  start_time: string;
-  end_time: string;
-}
-
 @Injectable()
 export class ShiftService {
   constructor(
@@ -55,8 +46,7 @@ export class ShiftService {
         .select([
          "shift.id as id",
           "shift.name as name",
-          "shift.start_time as start_time",
-          "shift.end_time as end_time",
+       
           "shift.status as status",
              "shift.company_id as company_id",
         ])
@@ -78,8 +68,7 @@ export class ShiftService {
         .select([
           "shift.id as id",
           "shift.name as name",
-          "shift.start_time as start_time",
-          "shift.end_time as end_time",
+         
           "shift.status as status",
              "shift.company_id as company_id",
         ])

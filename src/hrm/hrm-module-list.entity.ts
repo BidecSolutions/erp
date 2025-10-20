@@ -16,6 +16,7 @@ import { LoanRequestModule } from "./hrm_loan-request/loan-request.module";
 // import { LoanModule } from "./hrm_loan/loan.module";
 import { NotificationTypeModule } from "./hrm_notification-type/notification-type.module";
 import { NotificationModule } from "./hrm_notification/notification.module";
+import { PayrollModule } from "./hrm_payroll/payroll.module";
 import { PaysliptypeModule } from "./hrm_paysliptype/paysliptype.module";
 import { ProbationSettingModule } from "./hrm_probation-setting/probation-setting.module";
 import { ShiftModule } from "./hrm_shift/shift.module";
@@ -45,4 +46,5 @@ export const HRM = [
      ProbationSettingModule,
       LoanRequestModule,
           HolidayModule,
+              PayrollModule,
 ]
