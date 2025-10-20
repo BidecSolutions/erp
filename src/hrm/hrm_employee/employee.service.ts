@@ -59,7 +59,7 @@ export class EmployeeService {
     private readonly companyMaping: Repository<userCompanyMapping>,
 
     @InjectRepository(EmpRoaster)
-    private readonly empRoasterRepo: Repository<EmpRoaster>, // ✅ Add this
+    private readonly empRoasterRepo: Repository<EmpRoaster>, //  Add this
 
     @InjectRepository(Shift)
     private readonly shiftRepository: Repository<Shift>
@@ -700,12 +700,44 @@ export class EmployeeService {
       emp.probationSetting = null;
     }
 
-    if (dto.bankDetails?.length) {
-      for (const bd of dto.bankDetails) {
-        if (!bd.id) continue; // skip creation
-        const existing = await this.bankDetailRepo.findOne({ where: { id: bd.id } });
-        if (!existing) continue;
+    // if (dto.bankDetails?.length) {
+    //   for (const bd of dto.bankDetails) {
+    //     if (!bd.id) continue; // skip creation
+    //     const existing = await this.bankDetailRepo.findOne({ where: { id: bd.id } });
+    //     if (!existing) continue;
 
+    //     if (bd.accountHolderName !== undefined) existing.accountHolderName = bd.accountHolderName;
+    //     if (bd.accountNumber !== undefined) existing.accountNumber = bd.accountNumber;
+    //     if (bd.bankName !== undefined) existing.bankName = bd.bankName;
+    //     if (bd.bankIdentifierCode !== undefined) existing.bankIdentifierCode = bd.bankIdentifierCode;
+    //     if (bd.taxPayerId !== undefined) existing.taxPayerId = bd.taxPayerId;
+    //     if (bd.branchLocation !== undefined) existing.branchLocation = bd.branchLocation;
+
+    //     existing.employee = { id: emp.id } as Employee; // Ensure FK is set
+    //     await this.bankDetailRepo.save(existing);
+    //   }
+    // }
+    if (dto.bankDetails?.length) {
+  for (const bd of dto.bankDetails) {
+    if (!bd.id) continue; // skip creation
+
+    const existing = await this.bankDetailRepo.findOne({
+      where: { id: bd.id },
+      relations: ["employee"], // 👈 ensure we can check ownership
+    });
+
+    if (!existing) {
+      throw new NotFoundException(`Bank detail with ID ${bd.id} not found`);
+    }
+
+    //  ensure the bank detail actually belongs to this employee
+    if (existing.employee?.id !== emp.id) {
+      throw new BadRequestException(
+        `Bank detail with ID ${bd.id} does not belong to employee ID ${emp.id}`
+      );
+    }
+
+    // 🔹 update only provided fields
         if (bd.accountHolderName !== undefined) existing.accountHolderName = bd.accountHolderName;
         if (bd.accountNumber !== undefined) existing.accountNumber = bd.accountNumber;
         if (bd.bankName !== undefined) existing.bankName = bd.bankName;
@@ -713,6 +745,7 @@ export class EmployeeService {
         if (bd.taxPayerId !== undefined) existing.taxPayerId = bd.taxPayerId;
         if (bd.branchLocation !== undefined) existing.branchLocation = bd.branchLocation;
 
+<<<<<<< HEAD
         existing.employee = { id: emp.id } as Employee; // Ensure FK is set
         await this.bankDetailRepo.save(existing);
       }
@@ -720,6 +753,15 @@ export class EmployeeService {
     if (dto.roasters?.length) {
       for (const bd of dto.roasters) {
         if (!bd.id) continue;
+=======
+    // ensure correct foreign key
+    existing.employee = { id: emp.id } as Employee;
+
+    await this.bankDetailRepo.save(existing);
+  }
+}
+
+>>>>>>> 89ec5ccbf0a7f9d2d75a1913ce1499dd20e0c67d
 
         // Validate shift
         if (bd.shift_id !== undefined) {
@@ -727,6 +769,7 @@ export class EmployeeService {
           if (!shift) throw new NotFoundException(`Shift ID ${bd.shift_id} not found`);
         }
 
+<<<<<<< HEAD
         // Direct update without touching employee relation
         await this.empRoasterRepo.update(bd.id, {
           shift_id: bd.shift_id,
@@ -737,6 +780,46 @@ export class EmployeeService {
       }
     }
 
+=======
+    // // 🟢 Check shift_id exists in DB
+    // if (bd.shift_id !== undefined) {
+    //   const shift = await this.shiftRepository.findOne({ where: { id: bd.shift_id } });
+    //   if (!shift) {
+    //     throw new NotFoundException(`Shift ID ${bd.shift_id} not found`);
+    //   }
+    //   existing.shift_id = bd.shift_id;
+    // }
+
+    //     if (bd.shift_id !== undefined) existing.shift_id = bd.shift_id;
+    //     if (bd.days !== undefined) existing.days = bd.days;
+    //     if (bd.start_time !== undefined) existing.start_time = bd.start_time;
+    //     if (bd.end_time !== undefined) existing.end_time = bd.end_time;
+
+    //     existing.employee = { id: emp.id } as Employee; // Ensure FK is set
+    //     await this.empRoasterRepo.save(existing);
+    //   }
+    // }
+ // --- Roasters (safe update)
+// if (dto.roasters?.length) {
+//   for (const bd of dto.roasters) {
+//     if (!bd.id) continue;
+
+//     // Validate shift
+//     if (bd.shift_id !== undefined) {
+//       const shift = await this.shiftRepository.findOne({ where: { id: bd.shift_id } });
+//       if (!shift) throw new NotFoundException(`Shift ID ${bd.shift_id} not found`);
+//     }
+
+//     // Direct update without touching employee relation
+//     await this.empRoasterRepo.update(bd.id, {
+//       shift_id: bd.shift_id,
+//       days: bd.days,
+//       start_time: bd.start_time,
+//       end_time: bd.end_time,
+//     });
+//   }
+// }
+>>>>>>> 89ec5ccbf0a7f9d2d75a1913ce1499dd20e0c67d
 
 
 
@@ -767,8 +850,14 @@ export class EmployeeService {
       mapping.branch_id = (dto.branch_id ?? []).map((b) => Number(b));
       await this.companyMaping.save(mapping);
     }
+    // Destructure so we don't accidentally overwrite relations
+const { roasters, bankDetails, ...employeeFields } = dto;
+
+// Assign only scalar/primitive employee fields
+Object.assign(emp, employeeFields);
+
     // Update Employee fields
-    Object.assign(emp, dto);
+    // Object.assign(emp, dto);
 
     // Handle is_system_user change
     if (dto.is_system_user !== undefined) {
@@ -801,6 +890,87 @@ export class EmployeeService {
 
 
     const saved = await this.employeeRepository.save(emp);
+
+    // --- Roaster Update Logic (Update Only, No New Creation) ---
+// if (dto.roasters?.length) {
+//   for (const r of dto.roasters) {
+//     if (!r.id) {
+//       throw new BadRequestException(
+//         "Roaster ID is required for update (cannot create new roaster here)"
+//       );
+//     }
+
+//     const roasterEntity = await this.empRoasterRepo.findOne({
+//       where: { id: r.id, employee: { id: emp.id } },
+//       relations: ["shift"],
+//     });
+
+//     if (!roasterEntity) {
+//       throw new NotFoundException(
+//         `Roaster not found for employee id: ${emp.id} and roaster id: ${r.id}`
+//       );
+//     }
+
+//     const shift = await this.shiftRepository.findOneBy({ id: r.shift_id });
+//     if (!shift) {
+//       throw new NotFoundException(`Shift not found: ${r.shift_id}`);
+//     }
+
+//     // convert array to string if needed
+//     const daysString = Array.isArray(r.days) ? r.days.join(",") : r.days;
+
+//     // update fields
+//     roasterEntity.shift = shift;
+// const daysArray = Array.isArray(r.days)
+//   ? r.days
+//   : (r.days as string).split(",").map((d) => d.trim());
+
+// roasterEntity.days = daysArray; //  correct type
+
+//     roasterEntity.start_time = r.start_time;
+//     roasterEntity.end_time = r.end_time;
+  
+//     await this.empRoasterRepo.save(roasterEntity);
+//   }
+// }
+if (Array.isArray(dto.roasters) && dto.roasters.length > 0) {
+  for (const r of dto.roasters) {
+    if (!r.id) {
+      throw new BadRequestException(
+        `Roaster ID is required for update (cannot create new roaster)`
+      );
+    }
+
+    const existingRoaster = await this.empRoasterRepo.findOne({
+      where: { id: r.id },
+      relations: ["employee"],
+    });
+
+    if (!existingRoaster) {
+      throw new NotFoundException(`Roaster with ID ${r.id} not found`);
+    }
+
+    // 🛑 Ensure this roaster belongs to the same employee
+    if (existingRoaster.employee?.id !== id) {
+      throw new BadRequestException(
+        `Roaster with ID ${r.id} does not belong to employee ID ${id}`
+      );
+    }
+
+    // Update only allowed fields
+    if (r.days) existingRoaster.days = r.days;
+    if (r.shift_id) existingRoaster.shift_id = r.shift_id;
+    if (r.start_time) existingRoaster.start_time = r.start_time;
+    if (r.end_time) existingRoaster.end_time = r.end_time;
+
+    existingRoaster.updated_at = new Date().toISOString().split("T")[0];
+
+    await this.empRoasterRepo.save(existingRoaster);
+  }
+}
+
+
+
 
     // Documents
     // Save/update documents via DocumentService

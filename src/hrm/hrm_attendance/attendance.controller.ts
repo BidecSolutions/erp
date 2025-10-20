@@ -54,11 +54,19 @@ export class AttendanceController {
     };
   }
 
+<<<<<<< HEAD
   @Post('auto-mark-absent')
   async autoMarkAbsent(@Req() req: any) {
     const company_id = req.user.company_id;
     return await this.attendanceService.autoMarkAbsentToday(company_id);
   }
+=======
+  @Post('auto-mark')
+async autoMarkAbsent(@Req() req: any) {
+  const company_id = req.user.company_id;
+  return await this.attendanceService.autoMarkAbsentToday(company_id);
+}
+>>>>>>> 89ec5ccbf0a7f9d2d75a1913ce1499dd20e0c67d
 
   //  Get all employees' attendance for a specific date
   @Get('all/:date')
@@ -79,6 +87,36 @@ export class AttendanceController {
     const company_id = req.user.company_id;
     return await this.attendanceService.getSingleDayAttendance(employeeId, date, company_id);
   }
+  @Post('bulk-month')
+  async bulkMonthAttendance(
+    @Req() req: any,
+    @Body() body: { employee_ids: number[]; month: number; year: number; check_in?: string; check_out?: string }
+  ) {
+    const company_id = req.user?.company_id; // company_id extracted from JWT token
+    if (!company_id) throw new BadRequestException('Company not found in token');
+
+    return this.attendanceService.bulkMonthAttendance(
+      company_id,
+      body.employee_ids,
+      body.month,
+      body.year,
+      body.check_in,
+      body.check_out
+    );
+  }
+
+@Post('update/:employeeId/:date')
+async updateSpecificDate(
+  @Param('employeeId', ParseIntPipe) employeeId: number,
+  @Param('date') date: string,
+  @Body() dto: { check_in?: string; check_out?: string },
+  @Req() req: any
+) {
+  const company_id = req.user.company_id;
+  return await this.attendanceService.updateAttendanceForDate(employeeId, date, dto, company_id);
+}
+
+
 
 
 }

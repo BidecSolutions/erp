@@ -19,14 +19,14 @@ export class CreateLeaveRequestDto {
   description?: string;
 
   @IsNotEmpty({ message: 'Start date is required' })
-  @IsDateString({}, { message: 'Start date must be a valid date (YYYY-MM-DD)' })
+  @IsDateString({}, { message: 'Start date must be a valid date string (YYYY-MM-DD)' })
   start_date: string;
 
   @IsNotEmpty({ message: 'End date is required' })
-  @IsDateString({}, { message: 'End date must be a valid date (YYYY-MM-DD)' })
+  @IsDateString({}, { message: 'End date must be a valid date string (YYYY-MM-DD)' })
   end_date: string;
 
   @IsOptional()
   @IsNumber({}, { message: 'Status must be a number (1 = pending, 2 = approved, 3 = rejected)' })
-  status?: LeaveStatus;  // default = pending
+  status?: LeaveStatus; // default = pending
 }

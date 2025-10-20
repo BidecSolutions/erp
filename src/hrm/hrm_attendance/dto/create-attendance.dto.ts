@@ -1,23 +1,18 @@
-import { IsInt, IsNotEmpty, IsOptional, IsString, IsDateString } from 'class-validator';
+import { IsInt, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
-
 export class CreateAttendanceDto {
-@IsInt()
-@Type(() => Number)
-employeeId: number;
+  @IsInt({ message: 'Employee ID must be a number' })
+  @Type(() => Number)
+  employeeId: number;
 
+  // Optional check-in time in HH:MM:SS format
+  @IsOptional()
+  @IsString({ message: 'Check-in time must be a string in HH:MM:SS format' })
+  check_in?: string;
 
-// @IsDateString()
-// date: string; // 'YYYY-MM-DD'
-
-
-@IsOptional()
-@IsString()
-check_in?: string; // 'HH:MM:SS' (if provided by client)
-
-
-@IsOptional()
-@IsString()
-check_out?: string; // 'HH:MM:SS'
+  // Optional check-out time in HH:MM:SS format
+  @IsOptional()
+  @IsString({ message: 'Check-out time must be a string in HH:MM:SS format' })
+  check_out?: string;
 }

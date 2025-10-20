@@ -47,15 +47,15 @@ check_in?: string | null;
 @Column({ type: 'time', nullable: true })
 check_out?: string | null;
 
-@Column({ type: 'int', nullable: true })
-late_minutes?: number | null;
+@Column({ type: 'varchar', length: 8, nullable: true })
+late_time: string | null; // e.g. "00:15:25"
 
-@Column({ type: 'int', nullable: true })
-overtime_minutes?: number | null;
 
-@Column({ type: 'int', nullable: true })
-work_duration_minutes?: number | null;
+@Column({ type: 'varchar', length: 8, nullable: true })
+work_duration: string | null; // "09:29:35"
 
+@Column({ type: 'varchar', length: 8, nullable: true })
+overtime: string | null; // "00:30:00"
 @Column({ type: 'int', nullable: true })
 config_id?: number | null;
 

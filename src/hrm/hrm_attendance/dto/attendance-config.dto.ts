@@ -1,23 +1,17 @@
-import {
-  IsString,
-  IsInt,
-  IsOptional,
-  IsBoolean,
-  IsArray,
-} from 'class-validator';
+import { IsString, IsInt, IsOptional, IsArray } from 'class-validator';
 
 export class AttendanceConfigDto {
+  @IsInt({ message: 'Grace period must be a number of minutes' })
+  grace_period_minutes: number; // Allowed minutes late before marking as late
 
-  @IsInt()
-  grace_period_minutes: number;
+  @IsInt({ message: 'Half day limit must be a number of minutes' })
+  half_day_after_minutes: number; // Minimum worked minutes to consider full day
 
-  @IsInt()
-  half_day_after_minutes: number;
+  @IsInt({ message: 'Overtime starts after this many minutes' })
+  overtime_after_minutes: number; // Minutes after which overtime starts
 
-  @IsInt()
-  overtime_after_minutes: number;
-
-  @IsArray()
   @IsOptional()
-  weekends?: string[];
+  @IsArray({ message: 'Weekends must be an array of strings' })
+  @IsString({ each: true, message: 'Each weekend day must be a string' })
+  weekends?: string[]; // Example: ['Saturday', 'Sunday']
 }

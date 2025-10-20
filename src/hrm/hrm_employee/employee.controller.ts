@@ -150,9 +150,10 @@ export class EmployeeController {
   //   return this.employeeService.findAll();
   // }
   @Post('list')
-  findAll(@Body() body: any, @Req() req: Request) {
+  async findAll(@Body() body: any, @Req() req: Request) {
     const company_id = req["user"].company_id;
-    return this.employeeService.findAll(body, company_id);
+    const emp = await this.employeeService.findAll(body, company_id);
+        return { status: true, message: "Get All Employee", data: emp };
   }
 
   @Get(':id/get')

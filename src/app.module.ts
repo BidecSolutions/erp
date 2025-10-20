@@ -21,6 +21,7 @@ import { FiscalModule } from './accounts/fiscal/fiscal.module';
 import { accounts } from './accounts/accounts-module-list.module';
 
 
+
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -43,7 +44,15 @@ import { accounts } from './accounts/accounts-module-list.module';
     ...HRM,
     ...sales,
     ...POS,
+<<<<<<< HEAD
     ...accounts,
+=======
+
+
+
+
+
+>>>>>>> 89ec5ccbf0a7f9d2d75a1913ce1499dd20e0c67d
   ],
   controllers: [AppController],
   providers: [AppService, registerUser, userRoles, sideMenuAndRoleSeederService,],

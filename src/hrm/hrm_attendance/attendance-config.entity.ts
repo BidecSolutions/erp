@@ -26,6 +26,20 @@ export class AttendanceConfig {
   @Column({ type: 'simple-array', nullable: true })
   weekends?: string[];
 
+   @Column({
+    type: 'int',
+    default: 3,
+    comment: 'Number of late marks that count as one absence',
+  })
+  late_to_absent_days: number;
+
+@Column({
+  type: 'int',
+  default: 30,
+  comment: 'Number of days salary is calculated for (e.g., 30 or 22)',
+})
+daysPerMonth: number;
+
   @Column({ type: 'int' })
   company_id: number; // 
   @Column({
