@@ -67,11 +67,11 @@ export class PurchaseQuotationService {
         const savedQuotation = await this.quotationRepo.save(quotation);
 
         if (supplierQuotation.items && supplierQuotation.items.length > 0) {
-          if (supplierQuotation.items.length !== prItems.length) {
-            throw new BadRequestException(
-              `Supplier ${supplier.id} items count (${supplierQuotation.items.length}) does not match PR items count (${prItems.length})`
-            );
-          }
+          // if (supplierQuotation.items.length !== prItems.length) {
+          //   throw new BadRequestException(
+          //     `Supplier ${supplier.id} items count (${supplierQuotation.items.length}) does not match PR items count (${prItems.length})`
+          //   );
+          // }
           const quotationItems = supplierQuotation.items.map(
             (item, index) => {
               const prItem = prItems[index];
@@ -156,7 +156,7 @@ export class PurchaseQuotationService {
       return errorResponse('Something went wrong', err.message);
     }
   }
-  async approveSupplier(id: number, supplier_id: number) {
+  async approveSupplier(id: number, supplier_id: number ,userId :number) {
     const existing = await this.quotationRepo.findOne({ where: { id } });
     if (!existing) {
       return errorResponse(`purchase quotation #${id} not found`);
@@ -164,6 +164,7 @@ export class PurchaseQuotationService {
     const purchase_quotation = await this.quotationRepo.save({
       ...existing,
       pq_status: PurchaseQuotationStatus.APPROVED,
+      approved_by :userId
 
     });
     return successResponse(

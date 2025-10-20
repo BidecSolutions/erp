@@ -45,9 +45,6 @@ export class Product {
   @JoinColumn({ name: 'branch_id' })
   branch: Branch
 
-
-
-
   @Column({ length: 50, unique: true })
   product_code: string;
 
@@ -60,33 +57,14 @@ export class Product {
   @Column({ type: 'text', nullable: true })
   description?: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  unit_price: number | null;
-
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  cost_price: number | null;
-
-  @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  mrp?: number;
-
-  @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  minimum_stock_level?: number;
-
-  @Column('decimal', { precision: 10, scale: 2, nullable: true })
-  maximum_stock_level?: number;
-
   @Column({ nullable: true })
   warranty_type?: number;
-
-
 
   @Column({ type: 'text', nullable: true })
   barcode?: string;
 
   @Column({ type: 'json', nullable: true })
   images: string[];
-
-
 
   @Column({ nullable: true })
   created_by: number;

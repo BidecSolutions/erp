@@ -23,10 +23,10 @@ export class productVariant {
     variant_code: string;
 
     @Column()
-    attribute_name: string;
+    attribute_id: number;
 
     @Column()
-    attribute_value: string;
+    attribute_value: number;
 
     @Column({ type: 'int', default: 1 })
     status: number;

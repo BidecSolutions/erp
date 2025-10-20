@@ -7,11 +7,10 @@ export class PurchaseOrderItem {
   id: number;
 
   @Column()
-  purchase_order_id:number
-@ManyToOne(() => PurchaseOrder, (po) => po.items, { onDelete: 'CASCADE' })
-@JoinColumn({ name: 'purchase_order_id' })
-purchaseOrder: PurchaseOrder;
-
+  purchase_order_id: number
+  @ManyToOne(() => PurchaseOrder, (po) => po.items, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'purchase_order_id' })
+  purchaseOrder: PurchaseOrder;
 
   @Column()
   product_id: number;

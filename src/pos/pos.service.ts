@@ -107,7 +107,7 @@ export class PosService {
                     // 1.1 Get product & check variant requirement
                     const product = await this.productRepo.findOne({
                         where: { id: item.product_id },
-                        select: ['id', 'has_variant', 'product_name', 'unit_price'],
+                        select: ['id', 'has_variant', 'product_name'],
                     });
 
                     if (!product) throw new Error(`Product ID ${item.product_id} not found`);
@@ -193,7 +193,7 @@ export class PosService {
                 for (const item of dto.order_details) {
                     const product = await this.productRepo.findOne({
                         where: { id: item.product_id },
-                        select: ['id', 'has_variant', 'product_name', 'unit_price'],
+                        select: ['id', 'has_variant', 'product_name'],
                     });
 
                     let unitPrice = 0;
@@ -230,7 +230,7 @@ export class PosService {
                         stock.quantity_on_hand -= item.quantity;
                         await manager.save(stock);
 
-                        unitPrice = product?.unit_price ?? 0;
+                        // unitPrice = product?.unit_price ?? 0;
                         displayName = product?.product_name ?? 'Unknown Product';
 
                         detail = manager.create(SalesOrderDetail, {

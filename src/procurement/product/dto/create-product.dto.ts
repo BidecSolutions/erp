@@ -24,29 +24,13 @@ export class CreateProductDto {
   @IsString()
   description?: string;
 
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  mrp?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  minimum_stock_level?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  maximum_stock_level?: number;
 
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
   warranty_type?: number;
 
-  @IsOptional()
-  @IsString()
-  barcode?: string;
+ 
 
   @IsOptional()
   @IsArray()
@@ -91,13 +75,13 @@ export class CreateProductVariantDto {
   @IsString()
   variant_name: string;
 
-  @IsOptional()
-  @IsString()
-  attribute_name?: string;
+  @IsNotEmpty()
+  @IsInt()
+  attribute_id?: number;
 
-  @IsOptional()
-  @IsString()
-  attribute_value?: string;
+  @IsNotEmpty()
+  @IsInt()
+  attribute_value?: number;
 
   @IsNotEmpty()
   @Type(() => Number)

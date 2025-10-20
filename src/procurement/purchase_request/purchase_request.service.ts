@@ -12,7 +12,7 @@ import { Warehouse } from '../warehouse/entities/warehouse.entity';
 import { Stock } from '../stock/entities/stock.entity';
 import { StockMovement } from '../stock_movement/entities/stock_movement.entity';
 import { InternalTransferRequest } from './entities/itr.entity';
-import { InternalTransferItem } from './entities/itr.items.entity';
+import { InternalTransferItem, ITRItemStatus } from './entities/itr.items.entity';
 import { ITRStatus } from '../enums/itr-enum';
 
 @Injectable()
@@ -173,12 +173,19 @@ export class PurchaseRequestService {
       return errorResponse('Something went wrong', err.message);
     }
   }
+
   async approvePr(id: number, companyId: number, userId: number) {
+
     const pr = await this.prRepo.findOne({
       where: { id },
       relations: ['items'],
     });
     if (!pr) return errorResponse(`Purchase Request #${id} not found`);
+     await this.prRepo.update(id,
+       { pr_status: PurchaseRequestStatus.APPROVED ,
+         approved_by: userId
+        }
+      );
 
     const headWarehouseId = 1;
     const branchWarehouseId = pr.branch_id ?? 2;
@@ -191,7 +198,7 @@ export class PurchaseRequestService {
       remarks: "Stock transfer from head office to branch",
       company_id: companyId,
       branch_id: pr.branch_id,
-      // created_at: userId,
+      created_by: userId,
     });
     const savedItr = await this.itrRepo.save(itr);
 
@@ -222,7 +229,7 @@ export class PurchaseRequestService {
       await this.pr_itemsRepo.save(item);
     }
 
-    await this.prRepo.update(id, { pr_status: PurchaseRequestStatus.APPROVED });
+   
 
     return successResponse(`Purchase Request #${id} approved and stock processed successfully.`);
   }
@@ -235,16 +242,21 @@ export class PurchaseRequestService {
     if (!itr) {
       return errorResponse(`ITR #${id} not found`);
     }
-    await this.itrRepo.update(id, { itr_status: ITRStatus.APPROVED });
+    await this.itrRepo.update(id,
+       { itr_status: ITRStatus.APPROVED,
+          approved_by: userId
+       });
 
     for (const approvedItem of approvedItems) {
-      const existing = await this.itrItemRepo.findOneBy({ id: approvedItem.itr_item_id });
-
       await this.itrItemRepo.update(
         { id: approvedItem.itr_item_id },
-        { approved_qty: approvedItem.approved_qty }
+        {
+          approved_qty: approvedItem.approved_qty,
+          status: ITRItemStatus.DISPATCH
+        }
       );
     }
+
     const updatedItr = await this.itrRepo.findOne({
       where: { id },
       relations: ['items'],

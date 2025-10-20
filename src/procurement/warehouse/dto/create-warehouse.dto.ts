@@ -3,14 +3,7 @@ import { IsInt, IsOptional, IsString, IsBoolean } from 'class-validator';
 export class CreateWarehouseDto {
   @IsOptional()
   @IsInt()
-  company_id?: number;
-
-  @IsOptional()
-  @IsInt()
   branch_id?: number;
-
-  @IsString()
-  warehouse_code: string;
 
   @IsString()
   warehouse_name: string;
@@ -42,10 +35,5 @@ export class CreateWarehouseDto {
   @IsOptional()
   @IsString()
   postal_code?: string;
-
-  @IsOptional()
-  @IsInt()
-  manager_employee_id?: number;
-
  
 }

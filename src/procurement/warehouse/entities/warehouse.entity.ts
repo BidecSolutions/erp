@@ -1,11 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert } from 'typeorm';
 
 @Entity('warehouses')
 export class Warehouse {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 50 , unique:true})
+  @Column({ length: 50, unique: true })
   warehouse_code: string;
 
   @Column({ length: 255 })
@@ -32,41 +32,31 @@ export class Warehouse {
   @Column({ length: 20, nullable: true })
   postal_code?: string;
 
+  @Column()
+  branch_id: number;
+
+  @Column()
+  company_id: number;
+
+  @Column({ name: 'status', type: 'tinyint', default: 1 })
+  status: number;
+
   @Column({ nullable: true })
-  manager_employee_id?: number;
+  created_by: number;
 
-  @Column({ type: 'tinyint', default: 0 })
-  is_default: number;
+  @Column({ nullable: true })
+  updated_by: number;
 
-  @Column({ type: 'int', default: 1 })
-  status: number; 
+  @Column({ type: 'date', nullable: true })
+  created_at: string;
 
-  @Column({ name: 'company_id', nullable: false })
-    company_id:number;
-    // @ManyToOne(() => Comapany)
-    // @JoinColumn({name : 'branch_id'})
-    // comapany: Comapany
+  @Column({ type: 'date', nullable: true })
+  updated_at: string;
 
-  @Column({ name: 'branch_id', nullable: false })
-    branch_id:number;
-    // @ManyToOne(() => Branch)
-    // @JoinColumn({name : 'branch_id'})
-    // branch: Branch
-
-   @Column({ name: 'created_by', type: 'int', nullable: true })
-   created_by?: number;
-
-  @CreateDateColumn({ name: 'created_date', type: 'timestamp' })
-  created_date: Date;
-
-  @Column({ name: 'updated_by', type: 'int', nullable: true })
-  updated_by?: number;
-
-  @UpdateDateColumn({ name: 'updated_date', type: 'timestamp', nullable: true })
-  updated_date?: Date;
-
-
-
-
-
+  @BeforeInsert()
+  setDefaults() {
+    const now = new Date();
+    this.created_at = now.toISOString().split('T')[0];
+    this.updated_at = now.toISOString().split('T')[0];
+  }
 }

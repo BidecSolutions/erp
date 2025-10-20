@@ -12,6 +12,8 @@ import { PurchaseQuotationModule } from "./purchase_quotation/purchase_quotation
 import { GoodsReceivingNoteModule } from './goods_receiving_note/goods_receiving_note.module';
 import { WarrantyModule } from './warranty/warranty.module';
 import { ModuleTypeModule } from './module_type/module_type.module';
+import { AttributeModule } from "./attribute/attribute.module";
+import { AttributeValueModule } from "./attribute value/attribute.module";
 
 export const procurement = [
 
@@ -29,5 +31,7 @@ export const procurement = [
     PurchaseRequestModule,
     PurchaseQuotationModule,
     PurchaseOrderModule,
-    GoodsReceivingNoteModule
+    GoodsReceivingNoteModule,
+    AttributeModule,
+    AttributeValueModule
 ]

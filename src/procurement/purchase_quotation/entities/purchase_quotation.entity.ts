@@ -67,4 +67,5 @@ export class PurchaseQuotation {
     @Column()
     user_id:number
 
+
 }

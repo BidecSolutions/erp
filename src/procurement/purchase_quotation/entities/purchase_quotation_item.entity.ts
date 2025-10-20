@@ -48,21 +48,7 @@ export class QuotationItem {
     @Column({ nullable: true })
     delivery_days: number;
 
-
     @Column({ type: 'int', default: 1 })
     status: number;
-
-    @Column({ name: 'created_by', type: 'int', nullable: true })
-    created_by?: number;
-
-    @CreateDateColumn({ name: 'created_date', type: 'timestamp' })
-    created_date: Date;
-
-    @Column({ name: 'updated_by', type: 'int', nullable: true })
-    updated_by?: number;
-
-    @UpdateDateColumn({ name: 'updated_date', type: 'timestamp', nullable: true })
-    updated_date?: Date;
-
 
 }
