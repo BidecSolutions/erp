@@ -710,7 +710,7 @@ export class PosService {
                     // 2) Product existence
                     const product = await manager.findOne(Product, {
                         where: { id: item.product_id },
-                        select: ['id', 'has_variant', 'product_name', 'unit_price'],
+                        select: ['id', 'has_variant', 'product_name'],
                     });
 
                     if (!product) {
@@ -750,7 +750,7 @@ export class PosService {
 
                     const unit_price =
                         item.unit_price ??
-                        (variantRecord?.unit_price ?? product.unit_price ?? 0);
+                        (variantRecord?.unit_price ?? 0);
                     totalAmount += unit_price * Number(item.quantity);
 
                     // (Stock doesn't exist in your schema) — we still validate quantity > 0 above.
