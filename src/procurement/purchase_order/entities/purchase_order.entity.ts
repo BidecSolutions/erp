@@ -6,6 +6,7 @@ import { PurchaseRequest } from "src/procurement/purchase_request/entities/purch
 import { Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany, Entity } from "typeorm";
 import { PurchaseOrderItem } from "./purchase_order_items.entity";
 import { IsDateString } from "class-validator";
+import { PurchaseQuotation } from "src/procurement/purchase_quotation/entities/purchase_quotation.entity";
 
 @Entity('purchase_orders')
 export class PurchaseOrder {
@@ -24,6 +25,12 @@ export class PurchaseOrder {
     @ManyToOne(() => PurchaseRequest)
     @JoinColumn({ name: 'pr_id' })
     purchaseRequest: PurchaseRequest
+
+     @Column()
+    pq_id: number;
+    @ManyToOne(() => PurchaseQuotation)
+    @JoinColumn({ name: 'pq_id' })
+    purchaseQuotation: PurchaseQuotation
 
     @Column()
     company_id: number;

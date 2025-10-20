@@ -251,13 +251,13 @@ export class ProductService {
         if (updateDto.variants && updateDto.variants.length > 0) {
           const incomingKeys = updateDto.variants.map(
             (v) =>
-              `${v.variant_name}-${v.attribute_name || ''}-${v.attribute_value || ''}`,
+              `${v.variant_name}-${v.attribute_id || ''}-${v.attribute_value || ''}`,
           );
           for (const variant of updateDto.variants) {
-            const key = `${variant.variant_name}-${variant.attribute_name || ''}-${variant.attribute_value || ''}`;
+            const key = `${variant.variant_name}-${variant.attribute_id || ''}-${variant.attribute_value || ''}`;
             const existingVariant = existingVariants.find(
               (v) =>
-                `${v.variant_name}-${v.attribute_name || ''}-${v.attribute_value || ''}` === key,
+                `${v.variant_name}-${v.attribute_id || ''}-${v.attribute_value || ''}` === key,
             );
             if (existingVariant) {
               variantRepo.merge(existingVariant, {

@@ -39,8 +39,10 @@ export class PurchaseQuatiationController {
   async approveSupplier(
     @Body('id') id: number,
     @Body('supplier_id') supplier_id: number,
-  ) {
-    return this.PurchaseQuotationService.approveSupplier(id, supplier_id);
+    @Req() req: Request) {
+    const userData = req["user"];
+     const userId = userData?.user?.id;
+    return this.PurchaseQuotationService.approveSupplier(id, supplier_id,userId);
   }
 
 }

@@ -12,6 +12,10 @@ export class CreatePurchaseOrderDto {
     @IsNotEmpty()
     pr_id: number;
 
+     @IsNumber()
+    @IsNotEmpty()
+    pq_id: number;
+
     @IsNumber()
     @IsNotEmpty()
     branch_id: number;

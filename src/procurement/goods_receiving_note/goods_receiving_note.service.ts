@@ -33,12 +33,12 @@ export class GoodsReceivingNoteService {
     if (!po) {
       throw new NotFoundException(`Purchase Order with id ${dto.po_id} not found`);
     }
-    const pr = await this.poRepo.findOne({
-      where: { id: dto.po_id },
-    });
-    if (!pr || pr.po_status !== 'approved') {
-      return errorResponse("Purchase Order not approved")
-    }
+    // const pr = await this.poRepo.findOne({
+    //   where: { id: dto.po_id },
+    // });
+    // if (!pr || pr.po_status !== 'approved') {
+    //   return errorResponse("Purchase Order not approved")
+    // }
     let totalAmount = 0;
     dto.items.forEach((item) => {
       totalAmount += item.received_qty * item.unit_price;
@@ -50,7 +50,7 @@ export class GoodsReceivingNoteService {
       total_amount: totalAmount,
       warehouse_id:dto.warehouse_id,
       company_id:companyId,
-      user_id:userId,
+      created_by:userId,
       branch_id :dto.branch_id
 
     });
@@ -88,26 +88,26 @@ export class GoodsReceivingNoteService {
       });
       if (stock) {
         stock.quantity_on_hand += item.received_qty;
-      } else {
-        stock = this.stockRepo.create({
-          product_id: item.product_id,
-          variant_id: item.variant_id,
-          warehouse_id: dto.warehouse_id,
-          company_id: companyId,
-          branch_id: dto.branch_id,
-          quantity_on_hand: item.received_qty,
-        });
-      }
-      await this.stockRepo.save(stock);
-    }
+              await this.stockRepo.save(stock);
+      } 
+      // else {
+      //   console.log("else");
+      //   stock = this.stockRepo.create({
+      //     product_id: item.product_id,
+      //     variant_id: item.variant_id,
+      //     warehouse_id: dto.warehouse_id,
+      //     company_id: companyId,
+      //     branch_id: dto.branch_id,
+      //     quantity_on_hand: item.received_qty,
+      //   });
+      // }
 
+    }
     return successResponse("GRN created successfully", {
       grn: savedGrn,
       grnItems: grnItems,
     })
   }
-
-
 
     async findAll(filter?: number) {
         try {

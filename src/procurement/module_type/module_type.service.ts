@@ -3,18 +3,26 @@ import { CreateModuleTypeDto } from './dto/create-module_type.dto';
 import { UpdateModuleTypeDto } from './dto/update-module_type.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ModuleType } from './entities/module_type.entity';
-import { Repository } from 'typeorm';
-import { errorResponse, successResponse, toggleStatusResponse } from 'src/commonHelper/response.util';
+import { Repository, DataSource } from 'typeorm';
+import { errorResponse, generateCode, successResponse, toggleStatusResponse } from 'src/commonHelper/response.util';
+import { Company } from 'src/Company/companies/company.entity';
 
 @Injectable()
 export class ModuleTypeService {
   constructor(
     @InjectRepository(ModuleType)
-    private readonly repo: Repository<ModuleType>) { }
+    private readonly repo: Repository<ModuleType>,
+    private readonly dataSource: DataSource,
+  ) { }
 
   async create(createDto: CreateModuleTypeDto) {
     try {
-      const module_type = this.repo.create(createDto);
+      console.log("createDto") ,createDto;
+      const code = await generateCode('module-type', 'MT', this.dataSource);
+      const module_type = this.repo.create({
+        ...createDto,
+        module_code: code
+      });
       await this.repo.save(module_type);
       return successResponse('module type created successfully!', module_type);
 
@@ -27,13 +35,7 @@ export class ModuleTypeService {
   }
   async findAll(filter?: number) {
     try {
-      const where: any = {};
-      if (filter !== undefined) {
-        where.status = filter; // filter apply
-      }
-      const [module_type, total] = await this.repo.findAndCount({
-        where,
-      });
+      const [module_type, total] = await this.repo.findAndCount({});
       return successResponse('module type retrieved successfully!', {
         total_record: total,
         module_type,

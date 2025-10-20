@@ -23,61 +23,8 @@ export class PurchaseOrderService {
     private readonly prRepo: Repository<PurchaseRequest>,
     private readonly dataSource: DataSource,
   ) { }
-  // async store(createDto: CreatePurchaseOrderDto) {
-  //   try {
-  //     // const po = await this.prRepo.findOneBy({ id: createDto.pr_id });
-  //     // if (!po) {
-  //     //   return errorResponse(`Purchase Request #${createDto.pr_id} not found`);
-  //     // }
-  //     // if ((po.pr_status ?? '').toLowerCase().trim() !== 'approved') {
-  //     //   return errorResponse("Can't create purchase order, purchase request still pending");
-  //     // }
-  //     return await this.dataSource.transaction(async (manager) => {
-  //        const prItems = await this.prRepo.find({
-  //               where: { id: createDto.pr_id },
-  //               order: { id: 'ASC' },
-  //             });
-
-
-  //       const totalAmount = createDto.items.reduce(
-  //         (sum, item) => sum + item.quantity * item.unit_price,
-  //         0,
-  //       );
-  //       const data = this.purchaseOrderRepo.create({
-  //         pr_id: createDto.pr_id,
-  //         supplier_id: createDto.supplier_id,
-  //         company_id: createDto.company_id,
-  //         branch_id: createDto.branch_id,
-  //         order_date: createDto.order_date,
-  //         expected_delivery_date: createDto.expected_delivery_date,
-  //         total_amount: totalAmount,
-  //         po_status: PurchaseOrderStatus.PENDING
-  //       });
-  //       const po = await manager.save(data);
-  //       const items = createDto.items.map((item: CreatePurchaseOrderItemDto) =>
-  //         this.purchaseOrderItemRepo.create({
-  //           purchase_order_id: po.id,
-  //           product_id: item.product_id,
-  //           variant_id: item.variant_id,
-  //           quantity: item.quantity,
-  //           unit_price: item.unit_price,
-  //           total_amount: item.quantity * item.unit_price,
-  //         }),
-  //       );
-  //       await manager.save(items);
-  //       return successResponse("purchase orders created succescfully", {
-  //         po,
-  //         items
-  //       })
-  //     });
-  //   } catch (error) {
-  //     throw new Error(`Failed to create Purchase Order: ${error.message}`);
-  //   }
-  // }
   async store(createDto: CreatePurchaseOrderDto ,userId:number, companyId:number) {
     try {
-
-      // 1) Check PR exist
       const pr = await this.prRepo.findOne({
         where: { id: createDto.pr_id },
       });
@@ -106,6 +53,7 @@ export class PurchaseOrderService {
       // 4) Create Purchase Order
       const po = this.purchaseOrderRepo.create({
         pr_id: createDto.pr_id,
+        pq_id: createDto.pq_id,
         supplier_id: createDto.supplier_id,
         company_id: companyId,
         user_id:userId,

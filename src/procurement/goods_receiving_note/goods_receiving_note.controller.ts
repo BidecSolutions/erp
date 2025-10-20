@@ -10,13 +10,15 @@ export class GoodsReceivingNoteController {
   constructor(private readonly goodsReceivingNoteService: GoodsReceivingNoteService) { }
 
   @Post('store')
-  create(@Body() createGoodsReceivingNoteDto: CreatePurchaseGrnDto,
+  create(@Body() dto: CreatePurchaseGrnDto,
     @Req() req: Request) {
     const userData = req["user"];
     const userId = userData?.user?.id;
     const companyId = userData?.company_id;
 
-    return this.goodsReceivingNoteService.store(createGoodsReceivingNoteDto, userId, companyId);
+    // console.log("dto" ,dto);
+
+    return this.goodsReceivingNoteService.store(dto, userId, companyId);
   }
 
   @Get('list')

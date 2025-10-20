@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { ModuleTypeService } from './module_type.service';
 import { CreateModuleTypeDto } from './dto/create-module_type.dto';
 import { UpdateModuleTypeDto } from './dto/update-module_type.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('module-type')
 export class ModuleTypeController {

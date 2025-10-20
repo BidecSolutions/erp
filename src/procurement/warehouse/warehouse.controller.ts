@@ -1,32 +1,40 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, UseGuards, Req } from '@nestjs/common';
 import { WarehouseService } from './warehouse.service';
 import { CreateWarehouseDto } from './dto/create-warehouse.dto';
 import { UpdateWarehouseDto } from './dto/update-warehouse.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('warehouse')
 export class WarehouseController {
-  constructor(private readonly warehouseService: WarehouseService) {}
+  constructor(private readonly warehouseService: WarehouseService) { }
 
   @Post('store')
-  create(@Body() createWarehouseDto: CreateWarehouseDto) {
-    return this.warehouseService.create(createWarehouseDto);
+  create(@Body() createWarehouseDto: CreateWarehouseDto, @Req() req: Request) {
+    const companyId = req["user"].company_id;
+    const userId = req["user"].user.id;
+    return this.warehouseService.create(createWarehouseDto, companyId, userId);
   }
 
   @Get('list')
-  findAll(@Query('filter') filter?: string) {
-    return this.warehouseService.findAll(
-      filter !== undefined ? Number(filter) : undefined,
-    );
+  findAll(@Req() req: Request) {
+    const companyId = req["user"].company_id;
+    return this.warehouseService.findAll(companyId);
+  }
+  @Get(':id')
+  findOne(@Param('id') id: string, @Req() req: Request) {
+    const companyId = req["user"].company_id;
+    return this.warehouseService.findOne(+id, companyId);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.warehouseService.findOne(+id);
-  }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateWarehouseDto: UpdateWarehouseDto) {
-    return this.warehouseService.update(+id, updateWarehouseDto);
+  update(@Param('id') id: string, @Body() updateWarehouseDto: UpdateWarehouseDto,
+    @Req() req: Request) {
+    const companyId = req["user"].company_id;
+    const userId = req["user"].user.id;
+    return this.warehouseService.update(+id, updateWarehouseDto,companyId,userId);
+
   }
 
   @Get('toogleStatus/:id')

@@ -3,81 +3,99 @@ import { CreateWarehouseDto } from './dto/create-warehouse.dto';
 import { UpdateWarehouseDto } from './dto/update-warehouse.dto';
 import { Warehouse } from './entities/warehouse.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { errorResponse, successResponse, toggleStatusResponse } from 'src/commonHelper/response.util';
+import { Repository, DataSource } from 'typeorm';
+import { errorResponse, generateCode, successResponse, toggleStatusResponse } from 'src/commonHelper/response.util';
 
 @Injectable()
 export class WarehouseService {
   constructor(
-      @InjectRepository(Warehouse)
-    private readonly warehouseRepo: Repository<Warehouse>) {}
-    
-  async create(createDto: CreateWarehouseDto) {
-      try {
-        const warehouse = this.warehouseRepo.create(createDto);
-        await this.warehouseRepo.save(warehouse);
-        return successResponse('warehouse created successfully!', warehouse);
-        
-      } catch (error) {
-          if (error.code === 'ER_DUP_ENTRY') {
-          throw new BadRequestException('warehouse already exists');
-        }
-        throw new BadRequestException(error.message || 'Failed to create warehouse');
-      }
-    }
-  async findAll(filter?: number) {
-      try {
-        const where: any = {};
-        if (filter !== undefined) {
-          where.status = filter; // filter apply
-        }
-        const [warehouse, total] = await this.warehouseRepo.findAndCount({
-          where,
-        });
-        return successResponse('warehouse retrieved successfully!', {
-          total_record: total,
-          warehouse,
-        });
-      } catch (error) {
-        return errorResponse('Failed to retrieve warehouse', error.message);
-      }
-    }
-  async findOne(id: number) {
-      try {
-        const warehouse = await this.warehouseRepo.findOneBy({ id });
-        if (!warehouse) {
-          return errorResponse(`warehouse #${id} not found`);
-        }
-    
-        return successResponse('warehouse retrieved successfully!', warehouse);
-      } catch (error) {
-        return errorResponse('Failed to retrieve warehouse', error.message);
-      }
-    }
-  async update(id: number, updateDto: UpdateWarehouseDto) {
-      try {
-        const existing = await this.warehouseRepo.findOne({ where: { id } });
-        if (!existing) {
-          return errorResponse(`warehouse #${id} not found`);
-        }
-    
-        const warehouse = await this.warehouseRepo.save({ id, ...updateDto });
-        return successResponse('warehouse updated successfully!', warehouse);
-      } catch (error) {
-        return errorResponse('Failed to update warehouse', error.message);
-      }
-    }
-  async statusUpdate(id: number) {
-  try {
-    const warehouse = await this.warehouseRepo.findOne({ where: { id } });
-    if (!warehouse) throw new NotFoundException('warehouse not found');
+    @InjectRepository(Warehouse)
+    private readonly warehouseRepo: Repository<Warehouse>,
+    private readonly dataSource: DataSource,
 
-    warehouse.status = warehouse.status === 0 ? 1 : 0;
-    const saved = await this.warehouseRepo.save(warehouse);
+  ) { }
 
-    return toggleStatusResponse('warehouse', saved.status);
-  } catch (err) {
-    return errorResponse('Something went wrong', err.message);
+  async create(createDto: CreateWarehouseDto, companyId: number, userId: number) {
+    try {
+      const warehouseCode = await generateCode('warehouse', 'WH', this.dataSource);
+      const warehouse = this.warehouseRepo.create({
+        ...createDto,
+        warehouse_code: warehouseCode,
+        company_id: companyId,
+        created_by: userId
+      });
+      await this.warehouseRepo.save(warehouse);
+      return successResponse('warehouse created successfully!', warehouse);
+
+    } catch (error) {
+      if (error.code === 'ER_DUP_ENTRY') {
+        throw new BadRequestException('warehouse already exists');
+      }
+      throw new BadRequestException(error.message || 'Failed to create warehouse');
+    }
   }
+  async findAll(companyId: number) {
+    try {
+      const [warehouse, total] = await this.warehouseRepo.findAndCount({
+        where: { company_id: companyId },
+        order: { id: 'DESC' },
+      });
+
+      return successResponse('warehouse retrieved successfully!', {
+        total_record: total,
+        warehouse,
+      });
+    } catch (error) {
+      return errorResponse('Failed to retrieve warehouse', error.message);
     }
+  }
+  async findOne(id: number, companyId: number) {
+    try {
+      const warehouse = await this.warehouseRepo.findOne(
+        { where: { id, company_id: companyId } }
+      );
+      if (!warehouse) {
+        return errorResponse(`warehouse #${id} not found`);
+      }
+
+      return successResponse('warehouse retrieved successfully!', warehouse);
+    } catch (error) {
+      return errorResponse('Failed to retrieve warehouse', error.message);
+    }
+  }
+  async update(id: number, updateDto: UpdateWarehouseDto, companyId: number, userId: number) {
+    try {
+      const existing = await this.warehouseRepo.findOne({
+        where: { id, company_id: companyId }
+      });
+      if (!existing) {
+        return errorResponse(`warehouse #${id} not found`);
+      }
+
+      const warehouse = await this.warehouseRepo.save(
+        {
+          id,
+          ...updateDto,
+          company_id: companyId,
+          updated_by: userId
+        }
+      );
+      return successResponse('warehouse updated successfully!', warehouse);
+    } catch (error) {
+      return errorResponse('Failed to update warehouse', error.message);
+    }
+  }
+  async statusUpdate(id: number) {
+    try {
+      const warehouse = await this.warehouseRepo.findOne({ where: { id } });
+      if (!warehouse) throw new NotFoundException('warehouse not found');
+
+      warehouse.status = warehouse.status === 0 ? 1 : 0;
+      const saved = await this.warehouseRepo.save(warehouse);
+
+      return toggleStatusResponse('warehouse', saved.status);
+    } catch (err) {
+      return errorResponse('Something went wrong', err.message);
+    }
+  }
 }

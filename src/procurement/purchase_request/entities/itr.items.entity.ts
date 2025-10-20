@@ -13,6 +13,7 @@ import { InternalTransferRequest } from './itr.entity';
 
 export enum ITRItemStatus {
   PENDING = 'pending',
+  DISPATCH = 'dispatch',
   APPROVED = 'approved',
   REJECTED = 'rejected',
 }
