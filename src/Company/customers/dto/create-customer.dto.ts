@@ -1,15 +1,33 @@
-import { IsNotEmpty, IsOptional, IsEmail } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsEmail, isNumber, isInt, IsInt } from 'class-validator';
 
 export class CreateCustomerDto {
 
-  @IsNotEmpty()
+  @IsInt({ message: 'Customer category must be a valid integer ID' })
+  @IsNotEmpty({ message: 'Customer category is required' })
   category_customer: number; // Pass ID of category
 
-  @IsNotEmpty()
-  customer_code: string;
-
-  @IsNotEmpty()
+  @IsNotEmpty({ message: "Customer Name is Required" })
   customer_name: string;
+
+  @IsNotEmpty({ message: "Mobile No can not Empty" })
+  phone: string;
+
+  @IsNotEmpty({ message: "Atleast one Address is required" })
+  address_line1: string;
+
+  @IsNotEmpty({ message: "Customer Email Address Is Required" })
+  @IsEmail({}, { message: 'Invalid email format' })
+  email: string;
+
+
+  @IsOptional()
+  credit_limit?: number;
+
+  @IsOptional()
+  credit_days?: number;
+
+  @IsOptional()
+  mobile?: string;
 
   @IsOptional()
   customer_type?: string;
@@ -21,20 +39,7 @@ export class CreateCustomerDto {
   designation?: string;
 
   @IsOptional()
-  @IsEmail()
-  email?: string;
-
-  @IsOptional()
-  phone?: string;
-
-  @IsOptional()
-  mobile?: string;
-
-  @IsOptional()
   website?: string;
-
-  @IsOptional()
-  address_line1?: string;
 
   @IsOptional()
   address_line2?: string;
@@ -46,16 +51,13 @@ export class CreateCustomerDto {
   state?: string;
 
   @IsOptional()
+  customer_code: string;
+
+  @IsOptional()
   country?: string;
 
   @IsOptional()
   postal_code?: string;
-
-  @IsOptional()
-  credit_limit?: number;
-
-  @IsOptional()
-  credit_days?: number;
 
   @IsOptional()
   payment_terms?: string;

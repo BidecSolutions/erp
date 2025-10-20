@@ -34,31 +34,16 @@ export class CreateEmployeeDto {
   phone: string;
 
   @IsString()
-  @IsNotEmpty({ message: "Gender is required" })
-  gender: string;
-
-  @IsOptional()
-  @IsEmail()
-  email?: string;
-
-  @IsOptional()
-  @IsString()
-  @Length(6, 100)
-  password?: string;
-
-  @IsString()
   @IsNotEmpty({ message: "Address is required" })
   address: string;
+
+  @IsString()
+  @IsNotEmpty({ message: "Gender is required" })
+  gender: string;
 
   @IsDateString()
   @IsNotEmpty({ message: "Date of birth is required" })
   dateOfBirth: string;
-
-  @IsOptional()
-  @IsEnum(["residential", "postal", "work address"], {
-    message: "Location type must be one of: residential, postal, work address",
-  })
-  locationType?: "residential" | "postal" | "work address";
 
   @IsNumber({}, { message: "Department ID must be a number" })
   @IsNotEmpty({ message: "Department is required" })
@@ -74,34 +59,46 @@ export class CreateEmployeeDto {
   @IsNotEmpty({ message: "Date of joining is required" })
   dateOfJoining: string;
 
-  //  @IsNotEmpty({ message: 'CV is required' })
-  // cv: Express.Multer.File;
+  @IsNotEmpty({ message: "Salary is required" })
+  @IsNumber()
+  @Type(() => Number)
+  fixedSalary: number;
 
-  // @IsNotEmpty({ message: 'Photo is required' })
-  // photo: Express.Multer.File;
+  @IsEnum(EmployeeType, { message: "emp_type must be Probation or Permanent" })
+  @IsNotEmpty({ message: "emp_type is required" })
+  emp_type: EmployeeType;
 
-  // @IsArray()
-  // @IsArray({ message: 'Identity Card must have exactly 2 files' })
+  @IsNotEmpty({ message: "Branch Id is Requeired" })
+  @IsArray()
+  @Type(() => Number)
+  @IsNumber({}, { each: true })
+  branch_id: number[];
 
-  // identity_card: Express.Multer.File[];
+  @IsOptional()
+  @IsEmail()
+  email?: string;
 
-  // @IsOptional()
-  // academic_transcript?: Express.Multer.File;
+  @IsOptional()
+  @IsString()
+  @Length(6, 100)
+  password?: string;
 
-  // // Multiple bank details allowed
+  @IsOptional()
+  @IsEnum(["residential", "postal", "work address"], {
+    message: "Location type must be one of: residential, postal, work address",
+  })
+  locationType?: "residential" | "postal" | "work address";
+
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateBankDetailDto)
   bankDetails?: CreateBankDetailDto[];
 
-
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateEmpRoasterDto)
   roasters?: CreateEmpRoasterDto[];
-
-
 
   @IsOptional()
   @IsNumber()
@@ -128,10 +125,6 @@ export class CreateEmployeeDto {
   @Type(() => Number)
   annualSalary?: number;
 
-  @IsNotEmpty({ message: "Salary is required" })
-  @IsNumber()
-  @Type(() => Number)
-  fixedSalary: number;
 
   @IsOptional()
   @IsNumber()
@@ -142,11 +135,6 @@ export class CreateEmployeeDto {
   @IsNumber()
   @Type(() => Number)
   ratePerHour?: number;
-
-  // @IsNumber({}, { message: "Shift ID must be a number" })
-  // @IsNotEmpty({ message: "Shift is required" })
-  // @Type(() => Number)
-  // shiftId: number;
 
   @IsBoolean()
   @Transform(({ value }) => {
@@ -185,13 +173,4 @@ export class CreateEmployeeDto {
   @Type(() => Number)
   role_id?: number;
 
-  @IsEnum(EmployeeType, { message: "emp_type must be Probation or Permanent" })
-  @IsNotEmpty({ message: "emp_type is required" })
-  emp_type: EmployeeType;
-
-  @IsNotEmpty({ message: "Branch Id is Requeired" })
-  @IsArray()
-  @Type(() => Number)
-  @IsNumber({}, { each: true })
-  branch_id: number[];
 }

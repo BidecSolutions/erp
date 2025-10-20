@@ -1,25 +1,31 @@
-import { IsNotEmpty, IsOptional } from "class-validator";
+import { IsEmail, IsInt, IsNotEmpty, IsOptional } from "class-validator";
 
 export class CreateSupplierDto {
-    @IsNotEmpty()
+    @IsInt({ message: 'Supplier category must be a valid integer ID' })
+    @IsNotEmpty({ message: 'Supplier category is required' })
     supplier_category_id: number;
 
-    @IsNotEmpty()
+    @IsNotEmpty({ message: 'Supplier Name is required' })
     supplier_name: string;
+
+    @IsNotEmpty({ message: "Supplier Email Address Is Required" })
+    @IsEmail({}, { message: 'Invalid email format' })
+    email: string;
+
+    @IsNotEmpty({ message: "Supplier Contact Number Is Required" })
+    phone: string;
+
+    @IsNotEmpty({ message: "Supplier Address Is Required" })
+    address_line1: string;
+
     @IsOptional()
     contact_person?: string;
     @IsOptional()
     designation?: string;
     @IsOptional()
-    email?: string;
-    @IsOptional()
-    phone?: string;
-    @IsOptional()
     mobile?: string;
     @IsOptional()
     website?: string;
-    @IsOptional()
-    address_line1?: string;
     @IsOptional()
     address_line2?: string;
     @IsOptional()

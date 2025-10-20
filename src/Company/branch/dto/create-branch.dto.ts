@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsNumber, IsBoolean } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsNumber, IsBoolean, IsEmail } from 'class-validator';
 
 export class CreateBranchDto {
 
@@ -6,17 +6,39 @@ export class CreateBranchDto {
   @IsNotEmpty({ message: "Branch name is required" })
   branch_name: string;
 
-  @IsOptional()
-  branch_type?: string;
+  @IsNotEmpty({ message: "Please Enter Branch City" })
+  city: string;
 
   @IsNotEmpty({ message: "Please Enter the one address at least" })
   address_line1: string;
 
+  @IsNotEmpty({ message: "Please Enter Contact No." })
+  phone: string;
+
+  @IsNotEmpty({ message: "Please Enter Contact Person Name" })
+  manager_name: string;
+
+  @IsEmail({}, { message: 'Invalid email format' })
+  @IsNotEmpty({ message: "Please Enter Contact Person Email" })
+  manager_email: string;
+
+  @IsNotEmpty({ message: "Please Enter Contact Person Phone No." })
+  manager_phone: string;
+
+  @IsNotEmpty({ message: "Opening balance is required" })
+  opening_balance: number;
+
+  @IsNotEmpty({ message: "Please Enter the Bank Account" })
+  bank_account_no: string;
+
+  @IsNotEmpty({ message: "Please Enter the Bank Name" })
+  bank_name: string;
+
+  @IsOptional()
+  branch_type?: string;
+
   @IsOptional()
   address_line2?: string;
-
-  @IsNotEmpty({ message: "Please Enter Branch City" })
-  city: string;
 
   @IsOptional()
   state: string;
@@ -27,32 +49,11 @@ export class CreateBranchDto {
   @IsOptional()
   postal_code?: string;
 
-  @IsNotEmpty({ message: "Please Enter Contact No." })
-  phone?: string;
-
   @IsOptional()
   mobile?: string;
 
   @IsOptional()
   email?: string;
-
-  @IsNotEmpty({ message: "Please Enter Contact Person Name" })
-  manager_name?: string;
-
-  @IsNotEmpty({ message: "Please Enter Contact Person Email" })
-  manager_email?: string;
-
-  @IsNotEmpty({ message: "Please Enter Contact Person Phone No." })
-  manager_phone?: string;
-
-  @IsNotEmpty({ message: "Opening balance is required" })
-  opening_balance?: number;
-
-  @IsNotEmpty({ message: "Please Enter the Bank Account" })
-  bank_account_no?: string;
-
-  @IsNotEmpty({ message: "Please Enter the Bank Name" })
-  bank_name?: string;
 
   @IsOptional()
   ifsc_code?: string;

@@ -2,10 +2,10 @@ import { IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
 
 export class CreateCustomerCategoryDto {
 
-  @IsNotEmpty()
+  @IsOptional()
   category_code: string;
 
-  @IsNotEmpty()
+  @IsNotEmpty({ message: "Category Name is Required" })
   category_name: string;
 
   @IsOptional()
