@@ -1016,6 +1016,7 @@ export class PosService {
         }
     }
 
+    // Search product by barcode for POS
     async findByBarcode(barcode: string) {
         // 1) Find variant by barcode
         const variant = await this.productVariantRepo.findOne({
