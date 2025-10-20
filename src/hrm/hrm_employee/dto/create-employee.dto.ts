@@ -227,7 +227,6 @@ export class CreateEmployeeDto {
   phone: string;
 
   @IsString()
-<<<<<<< HEAD
   @IsNotEmpty({ message: "Address is required" })
   address: string;
 
@@ -236,26 +235,6 @@ export class CreateEmployeeDto {
   gender: string;
 
   @IsDateString()
-=======
-  @IsNotEmpty({ message: "Gender is required" })
-  @IsEnum(["male", "female", "other"], { message: "Gender must be male, female, or other" })
-  gender: string;
-
-  @IsOptional()
-  @IsEmail({}, { message: "Invalid email format" })
-  email?: string;
-
-  @IsOptional()
-  @IsString()
-  @Length(6, 100, { message: "Password must be between 6 and 100 characters" })
-  password?: string;
-
-  @IsString()
-  @IsNotEmpty({ message: "Address is required" })
-  address: string;
-
-  @IsDateString({}, { message: "Invalid date format for dateOfBirth" })
->>>>>>> 89ec5ccbf0a7f9d2d75a1913ce1499dd20e0c67d
   @IsNotEmpty({ message: "Date of birth is required" })
   dateOfBirth: string;
 
@@ -273,7 +252,6 @@ export class CreateEmployeeDto {
   @IsNotEmpty({ message: "Date of joining is required" })
   dateOfJoining: string;
 
-<<<<<<< HEAD
   @IsNotEmpty({ message: "Salary is required" })
   @IsNumber()
   @Type(() => Number)
@@ -304,8 +282,6 @@ export class CreateEmployeeDto {
   })
   locationType?: "residential" | "postal" | "work address";
 
-=======
->>>>>>> 89ec5ccbf0a7f9d2d75a1913ce1499dd20e0c67d
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
@@ -316,11 +292,7 @@ export class CreateEmployeeDto {
   @ArrayNotEmpty({ message: "At least one roster is required" })
   @ValidateNested({ each: true })
   @Type(() => CreateEmpRoasterDto)
-<<<<<<< HEAD
   roasters?: CreateEmpRoasterDto[];
-=======
-  roasters: CreateEmpRoasterDto[];
->>>>>>> 89ec5ccbf0a7f9d2d75a1913ce1499dd20e0c67d
 
   @IsOptional()
   @IsNumber({}, { message: "hoursPerDay must be a number" })
@@ -347,13 +319,6 @@ export class CreateEmployeeDto {
   @Type(() => Number)
   annualSalary?: number;
 
-<<<<<<< HEAD
-=======
-  @IsNotEmpty({ message: "Salary is required" })
-  @IsNumber({}, { message: "fixedSalary must be a number" })
-  @Type(() => Number)
-  fixedSalary: number;
->>>>>>> 89ec5ccbf0a7f9d2d75a1913ce1499dd20e0c67d
 
   @IsOptional()
   @IsNumber({}, { message: "ratePerDay must be a number" })
@@ -392,16 +357,4 @@ export class CreateEmployeeDto {
   @Type(() => Number)
   role_id?: number;
 
-<<<<<<< HEAD
-=======
-  @IsEnum(EmployeeType, { message: "emp_type must be Probation or Permanent" })
-  @IsNotEmpty({ message: "emp_type is required" })
-  emp_type: EmployeeType;
-
-  @IsArray()
-  @ArrayNotEmpty({ message: "At least one branch must be selected" })
-  @IsNumber({}, { each: true, message: "Each branch_id must be a number" })
-  @Type(() => Number)
-  branch_id: number[];
->>>>>>> 89ec5ccbf0a7f9d2d75a1913ce1499dd20e0c67d
 }

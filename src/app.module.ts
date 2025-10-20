@@ -30,7 +30,7 @@ import { accounts } from './accounts/accounts-module-list.module';
       port: 3306,
       username: 'root',
       password: '',
-      database: 'bidec_erp1',
+      database: 'bidec_erp',
       autoLoadEntities: true,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
@@ -44,15 +44,7 @@ import { accounts } from './accounts/accounts-module-list.module';
     ...HRM,
     ...sales,
     ...POS,
-<<<<<<< HEAD
     ...accounts,
-=======
-
-
-
-
-
->>>>>>> 89ec5ccbf0a7f9d2d75a1913ce1499dd20e0c67d
   ],
   controllers: [AppController],
   providers: [AppService, registerUser, userRoles, sideMenuAndRoleSeederService,],

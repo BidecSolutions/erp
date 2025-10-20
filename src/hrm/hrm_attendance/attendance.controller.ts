@@ -54,19 +54,11 @@ export class AttendanceController {
     };
   }
 
-<<<<<<< HEAD
-  @Post('auto-mark-absent')
+  @Post('auto-mark')
   async autoMarkAbsent(@Req() req: any) {
     const company_id = req.user.company_id;
     return await this.attendanceService.autoMarkAbsentToday(company_id);
   }
-=======
-  @Post('auto-mark')
-async autoMarkAbsent(@Req() req: any) {
-  const company_id = req.user.company_id;
-  return await this.attendanceService.autoMarkAbsentToday(company_id);
-}
->>>>>>> 89ec5ccbf0a7f9d2d75a1913ce1499dd20e0c67d
 
   //  Get all employees' attendance for a specific date
   @Get('all/:date')
@@ -105,16 +97,16 @@ async autoMarkAbsent(@Req() req: any) {
     );
   }
 
-@Post('update/:employeeId/:date')
-async updateSpecificDate(
-  @Param('employeeId', ParseIntPipe) employeeId: number,
-  @Param('date') date: string,
-  @Body() dto: { check_in?: string; check_out?: string },
-  @Req() req: any
-) {
-  const company_id = req.user.company_id;
-  return await this.attendanceService.updateAttendanceForDate(employeeId, date, dto, company_id);
-}
+  @Post('update/:employeeId/:date')
+  async updateSpecificDate(
+    @Param('employeeId', ParseIntPipe) employeeId: number,
+    @Param('date') date: string,
+    @Body() dto: { check_in?: string; check_out?: string },
+    @Req() req: any
+  ) {
+    const company_id = req.user.company_id;
+    return await this.attendanceService.updateAttendanceForDate(employeeId, date, dto, company_id);
+  }
 
 
 

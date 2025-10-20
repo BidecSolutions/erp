@@ -46,10 +46,7 @@ export class ShiftService {
         .select([
           "shift.id as id",
           "shift.name as name",
-<<<<<<< HEAD
-=======
-       
->>>>>>> 89ec5ccbf0a7f9d2d75a1913ce1499dd20e0c67d
+
           "shift.status as status",
           "c.id as company_id",
           "c.company_name as company_name"
@@ -72,10 +69,7 @@ export class ShiftService {
         .select([
           "shift.id as id",
           "shift.name as name",
-<<<<<<< HEAD
-=======
-         
->>>>>>> 89ec5ccbf0a7f9d2d75a1913ce1499dd20e0c67d
+
           "shift.status as status",
           "c.id as company_id",
           "c.company_name as company_name"
