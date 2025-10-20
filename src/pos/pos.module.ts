@@ -18,6 +18,9 @@ import { productVariant } from 'src/procurement/product/entities/variant.entity'
 import { SalesReturnDetail } from './entities/sales-return-detail.entity';
 import { SalesReturn } from './entities/sales-return.entity';
 import { Category } from 'src/procurement/categories/entities/category.entity';
+import { HoldOrder } from './entities/hold-order.entity';
+import { HoldOrderDetail } from './entities/hold-order-detail.entity';
+import { CashRegisterSession } from './entities/cash-register-session.entity';
 
 @Module({
   imports: [ProductModule,
@@ -28,7 +31,8 @@ import { Category } from 'src/procurement/categories/entities/category.entity';
       SalesOrderDetail,
       Company,
       Customer,
-      Product,CustomerAccount,Stock,Branch,productVariant,SalesReturnDetail,SalesReturn,Category,
+      Product,CustomerAccount,Stock,Branch,productVariant,SalesReturnDetail,SalesReturn,
+      Category,HoldOrderDetail,HoldOrder,CashRegisterSession,
     ]),
   ],
   providers: [PosService],

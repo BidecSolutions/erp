@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { ProductService } from 'src/procurement/product/product.service';
@@ -19,6 +19,10 @@ import { SalesReturnDetail } from './entities/sales-return-detail.entity';
 import { productVariant } from 'src/procurement/product/entities/variant.entity';
 import { generateCode } from 'src/commonHelper/response.util';
 import { Category } from 'src/procurement/categories/entities/category.entity';
+import { HoldOrder, HoldStatus } from './entities/hold-order.entity';
+import { HoldOrderDetail } from './entities/hold-order-detail.entity';
+import { CreateHoldOrderDto } from './dto/create-hold-order.dto';
+import { CashRegisterSession, CashRegisterStatus } from './entities/cash-register-session.entity';
 
 @Injectable()
 export class PosService {
@@ -52,6 +56,12 @@ export class PosService {
         private readonly salesReturnRepo: Repository<SalesReturn>,
         @InjectRepository(SalesReturnDetail)
         private readonly salesReturnDetailRepo: Repository<SalesReturnDetail>,
+        @InjectRepository(HoldOrder)
+        private holdOrderRepo: Repository<HoldOrder>,
+        @InjectRepository(HoldOrderDetail)
+        private holdOrderDetailRepo: Repository<HoldOrderDetail>,
+        @InjectRepository(CashRegisterSession)
+        private readonly repo: Repository<CashRegisterSession>,
 
     ) { }
 
@@ -602,159 +612,6 @@ export class PosService {
     }
 
 
-    // async getCategoriesWithProductsForPOS(companyId: number) {
-    //     try {
-    //         // Raw query builder: fetch everything in one shot
-    //         const qb = this.dataSource
-    //             .createQueryBuilder()
-    //             .select([
-    //                 'c.category_id AS category_id',
-    //                 'c.category_name AS category_name',
-
-    //                 // product columns (nullable if category has no product)
-    //                 'p.id AS product_id',
-    //                 'p.product_name AS product_name',
-    //                 'p.images AS product_images',
-
-    //                 // variant columns (nullable if product has no variant)
-    //                 'v.id AS variant_id',
-    //                 'v.variant_name AS variant_name',
-    //                 // placeholder for variant image - if you add it later as v.image it will be returned
-    //                 //'v.image AS variant_image',
-
-    //                 // aggregated stock
-    //                 'COALESCE(SUM(s.quantity_on_hand), 0) AS total_stock'
-    //             ])
-    //             .from(Category, 'c')
-    //             // left join product (only include products for the given company)
-    //             .leftJoin(Product, 'p', 'p.category_id = c.category_id AND p.company_id = :companyId', { companyId })
-    //             // left join variants
-    //             .leftJoin(productVariant, 'v', 'v.product_id = p.id')
-    //             // left join stock: include stock rows for variant OR (when variant is null) product-level stock (variant_id IS NULL)
-    //             .leftJoin(
-    //                 Stock,
-    //                 's',
-    //                 `( (s.variant_id IS NOT NULL AND s.variant_id = v.id) OR (v.id IS NULL AND s.product_id = p.id) )
-    //        AND s.company_id = :companyId`,
-    //                 { companyId },
-    //             )
-    //             // group by category, product, variant so SUM works per variant (or per product when variant is null)
-    //             .groupBy('c.category_id')
-    //             .addGroupBy('c.category_name')
-    //             .addGroupBy('p.id')
-    //             .addGroupBy('p.product_name')
-    //             .addGroupBy('p.images')
-    //             .addGroupBy('v.id')
-    //             .addGroupBy('v.variant_name')
-    //             //.addGroupBy('v.image') // will be NULL until added; safe to group by
-    //             .orderBy('c.category_name', 'ASC')
-    //             .addOrderBy('p.product_name', 'ASC')
-    //             .addOrderBy('v.variant_name', 'ASC');
-
-    //         const raw = await qb.getRawMany();
-
-    //         // Map raw rows -> nested structure
-    //         const categoriesMap = new Map<number, any>();
-
-    //         for (const row of raw) {
-    //             const categoryId = row.category_id;
-    //             const categoryName = row.category_name;
-
-    //             if (!categoriesMap.has(categoryId)) {
-    //                 categoriesMap.set(categoryId, {
-    //                     category_id: categoryId,
-    //                     category_name: categoryName,
-    //                     products: [],
-    //                 });
-    //             }
-
-    //             // If product is null (no product for this category/company) we'll skip adding product
-    //             const productId = row.product_id;
-    //             if (!productId) {
-    //                 // continue to next row (category without products)
-    //                 continue;
-    //             }
-
-    //             const categoryObj = categoriesMap.get(categoryId);
-
-    //             // find product in categoryObj.products or create it
-    //             let productObj = categoryObj.products.find((p) => p.product_id === productId);
-    //             if (!productObj) {
-    //                 // parse images JSON safely
-    //                 let productImages: string[] | null = null;
-    //                 if (row.product_images) {
-    //                     try {
-    //                         // row.product_images may be returned as a JSON string or already parsed depending on driver
-    //                         productImages = typeof row.product_images === 'string' ? JSON.parse(row.product_images) : row.product_images;
-    //                     } catch (err) {
-    //                         productImages = null;
-    //                     }
-    //                 }
-
-    //                 productObj = {
-    //                     product_id: productId,
-    //                     product_name: row.product_name || null,
-    //                     product_image: Array.isArray(productImages) && productImages.length > 0 ? productImages[0] : null,
-    //                     variants: [],
-    //                 };
-
-    //                 categoryObj.products.push(productObj);
-    //             }
-
-    //             // Now handle variant (could be null if product has no variants)
-    //             const variantId = row.variant_id;
-    //             const variantName = row.variant_name ?? null;
-    //             const variantImage = row.variant_image ?? null; // future-ready
-
-    //             // total_stock comes as string (from DB) — convert to number
-    //             let stockValue = 0;
-    //             if (row.total_stock !== undefined && row.total_stock !== null) {
-    //                 stockValue = typeof row.total_stock === 'string' ? parseInt(row.total_stock, 10) || 0 : Number(row.total_stock || 0);
-    //             }
-
-    //             if (variantId) {
-    //                 // add variant entry
-    //                 productObj.variants.push({
-    //                     variant_id: variantId,
-    //                     variant_name: variantName,
-    //                     variant_image: variantImage,
-    //                     stock: stockValue,
-    //                 });
-    //             } else {
-    //                 // No variants: we still want to show product-level stock (sum where variant_id IS NULL)
-    //                 // We'll push a single "null-variant" placeholder so UI can read stock
-    //                 // If you prefer product-level stock as product.stock instead of a variant entry, you can change this.
-    //                 productObj.variants.push({
-    //                     variant_id: null,
-    //                     variant_name: null,
-    //                     variant_image: null,
-    //                     stock: stockValue,
-    //                 });
-    //             }
-    //         }
-
-    //         // Convert map to array
-    //         const categories = Array.from(categoriesMap.values());
-
-    //         // total_records equals number of categories returned
-    //         return {
-    //             success: true,
-    //             message: 'Categories retrieved successfully',
-    //             data: {
-    //                 total_records: categories.length,
-    //                 categories,
-    //             },
-    //         };
-    //     } catch (error) {
-    //         return {
-    //             success: false,
-    //             message: 'Failed to retrieve categories for POS',
-    //             error: error.message || error,
-    //         };
-    //     }
-    // }
-
-
     async getCategoriesWithProductsForPOS(companyId: number) {
         // 1) Get categories
         const categories = await this.productCategory
@@ -810,60 +667,352 @@ export class PosService {
     }
 
 
+    async createHoldOrder(dto: CreateHoldOrderDto, user: any) {
+        try {
+            const company_id = user.company_id;
+            const user_id = user.user.id;
 
-    // async getCategoriesWithProductsForPOS(companyId: number) {
-    //     // 1) Get categories
-    //     const categories = await this.productCategory
-    //         .createQueryBuilder('category')
-    //         .select(['category.id as id', 'category.category_name as category_name'])
-    //         .where('category.company_id = :companyId', { companyId })
-    //         .getRawMany();
-    //     const categoriesWithProducts = await Promise.all(
-    //         categories.map(async (category) => {
-    //             const products = await this.productRepo.find({
-    //                 where: { category_id: category.id },
-    //                 select: ['id', 'product_name', 'images'],
-    //             });
+            // Generate hold_no before transaction
+            const hold_no = await generateCode('Hold_order', 'Hold', this.dataSource);
 
-    //             const productsWithVariants = await Promise.all(
-    //                 products.map(async (product) => {
-    //                     const variants = await this.productVariantRepo.find({
-    //                         where: { product: { id: product.id } },
-    //                         select: ['id', 'variant_name', 'unit_price'],
-    //                     });
-    //                     const variantsWithStock = await Promise.all(
-    //                         variants.map(async (variant) => {
-    //                             const stockResult = await this.stockRepo
-    //                                 .createQueryBuilder('stock')
-    //                                 .select('SUM(stock.quantity_on_hand)', 'total_stock')
-    //                                 .where('stock.product_id = :productId', { productId: product.id })
-    //                                 .andWhere('stock.variant_id = :variantId', { variantId: variant.id })
-    //                                 .getRawOne();
+            const customerId =
+                dto.customer_id && Number(dto.customer_id) > 0
+                    ? dto.customer_id
+                    : 1;
 
-    //                             return {
-    //                                 ...variant,
-    //                                 image: null,
-    //                                 stock: Number(stockResult?.total_stock || 0), // ✅ return 0 if null
-    //                             };
-    //                         })
-    //                     );
+            const result = await this.dataSource.transaction(async (manager) => {
+                let totalAmount = 0;
+                // Create base hold order entity
+                const holdOrder = manager.create(HoldOrder, {
+                    company_id: company_id ?? undefined,
+                    branch_id: dto.branch_id,
+                    customer_id: customerId,
+                    sales_person_id: dto.sale_person_id,
+                    hold_no,
+                    order_date: new Date(),
+                    total_amount: 0,
+                    created_by: user_id,
+                    hold_status: HoldStatus.HOLD,
+                    status: 1,
+                });
 
-    //                     return {
-    //                         ...product,
-    //                         variants: variantsWithStock,
-    //                     };
-    //                 })
-    //             );
+                const savedHold = await manager.save(holdOrder);
 
-    //             return {
-    //                 ...category,
-    //                 products: productsWithVariants,
-    //             };
-    //         })
-    //     );
+                // Loop details
+                for (const item of dto.order_details) {
+                    // 1) Basic validation: quantity must be > 0
+                    if (!item.quantity || Number(item.quantity) <= 0) {
+                        throw new Error(
+                            `Invalid quantity for product_id ${item.product_id}. Quantity must be greater than 0.`,
+                        );
+                    }
 
-    //     return categoriesWithProducts;
-    // }
+                    // 2) Product existence
+                    const product = await manager.findOne(Product, {
+                        where: { id: item.product_id },
+                        select: ['id', 'has_variant', 'product_name', 'unit_price'],
+                    });
+
+                    if (!product) {
+                        throw new Error(`Product ID ${item.product_id} not found`);
+                    }
+
+                    // 3) Variant rules
+                    let variantRecord: productVariant | null = null;
+                    if (product.has_variant && Number(product.has_variant) > 0) {
+                        // product expects variant_id
+                        if (!item.variant_id) {
+                            throw new Error(
+                                `Variant ID is required for product ID ${item.product_id}`,
+                            );
+                        }
+
+                        variantRecord = await manager.findOne(productVariant, {
+                            where: { id: item.variant_id, product: { id: item.product_id } },
+                            select: ['id', 'variant_name', 'unit_price'],
+                        });
+
+                        if (!variantRecord) {
+                            throw new Error(
+                                `Variant ID ${item.variant_id} not found for product ID ${item.product_id}`,
+                            );
+                        }
+                    } else {
+                        // product has no variant -> variant_id should not be provided (or can be ignored)
+                        if (item.variant_id) {
+                            // you requested strictness — treat this as an error
+                            throw new Error(
+                                `Product ID ${item.product_id} does not accept variants. Remove variant_id.`,
+                            );
+                        }
+                    }
+
+
+                    const unit_price =
+                        item.unit_price ??
+                        (variantRecord?.unit_price ?? product.unit_price ?? 0);
+                    totalAmount += unit_price * Number(item.quantity);
+
+                    // (Stock doesn't exist in your schema) — we still validate quantity > 0 above.
+                    // If in future you have a stock table, add a check here.
+                    let availableStock = 0;
+
+                    if (variantRecord) {
+                        // Product has variant -> check variant stock
+                        const stock = await manager.findOne(Stock, {
+                            where: {
+                                product_id: item.product_id,
+                                variant_id: variantRecord.id,
+                                // branch_id: dto.branch_id,
+                            },
+                            select: ['quantity_on_hand'],
+                        });
+                        availableStock = stock?.quantity_on_hand ?? 0;
+                    } else {
+                        // Product has no variant -> check product stock (variant_id should be null)
+                        const stock = await manager.findOne(Stock, {
+                            where: {
+                                product_id: item.product_id,
+                                variant_id: undefined,
+                                // branch_id: dto.branch_id,
+                            },
+                            select: ['quantity_on_hand'],
+                        });
+                        availableStock = stock?.quantity_on_hand ?? 0;
+                    }
+
+                    // Compare
+                    if (Number(item.quantity) > availableStock) {
+                        throw new Error(
+                            `Not enough stock for product_id ${item.product_id}${variantRecord ? ` (variant_id ${variantRecord.id})` : ''
+                            }. Requested: ${item.quantity}, Available: ${availableStock}`
+                        );
+                    }
+
+                    // Prepare the hold order detail
+                    const detail = manager.create(HoldOrderDetail, {
+                        holdOrder: { id: savedHold.id } as HoldOrder,
+                        product: { id: item.product_id } as Product,
+                        productVariant: variantRecord ? ({ id: variantRecord.id } as productVariant) : undefined,
+                        unit_price,
+                        quantity: item.quantity,
+                    });
+
+                    await manager.save(detail);
+                }
+
+                savedHold.total_amount = totalAmount;
+                await manager.save(savedHold);
+
+                // Return saved hold (with basic info)
+                return {
+                    success: true,
+                    message: 'Hold order created successfully',
+                    hold_order_id: savedHold.id,
+                    hold_no: savedHold.hold_no,
+                    total_amount: totalAmount,
+                };
+            });
+
+            return result;
+        } catch (error) {
+            return {
+                success: false,
+                message: error?.message ?? 'Failed to create hold order',
+            };
+        }
+    }
+
+
+    async listHoldOrders(companyId: number) {
+        try {
+            const holdOrders = await this.dataSource
+                .getRepository(HoldOrder)
+                .createQueryBuilder('ho')
+                .leftJoin(HoldOrderDetail, 'hod', 'hod.hold_order_id = ho.id')
+                .select([
+                    'ho.id AS hold_order_id',
+                    'ho.branch_id AS branch_id',
+                    'ho.customer_id AS customer_id',
+                    'hod.product_id AS product_id',
+                    'hod.product_variant_id AS variant_id',
+                    'hod.unit_price AS unit_price',
+                    'hod.quantity AS quantity'
+                ])
+                .where('ho.company_id = :companyId', { companyId })
+                // .andWhere('ho.status = :status', { status: 'HOLD' })
+                .orderBy('ho.id', 'DESC')
+                .getRawMany();
+
+
+            // Group By hold_order_id
+            const grouped = {};
+            holdOrders.forEach(row => {
+                if (!grouped[row.hold_order_id]) {
+                    grouped[row.hold_order_id] = {
+                        branch_id: row.branch_id,
+                        customer_id: row.customer_id,
+                        hold_order_id: row.hold_order_id,
+                        order_details: [],
+                        total_amount: 0,
+                    };
+                }
+
+                if (row.product_id !== null) {
+                    grouped[row.hold_order_id].order_details.push({
+                        product_id: row.product_id,
+                        variant_id: row.variant_id,
+                        unit_price: row.unit_price,
+                        quantity: row.quantity,
+                    });
+
+                    grouped[row.hold_order_id].total_amount += row.unit_price * row.quantity;
+                }
+            });
+
+            return Object.values(grouped).sort((a, b) => {
+                const holdA = a as { hold_order_id: number };
+                const holdB = b as { hold_order_id: number };
+                return holdB.hold_order_id - holdA.hold_order_id;
+            });
+        } catch (error) {
+            console.log('ERROR =>', error);
+            throw error;
+        }
+    }
+
+    /** Return active OPEN session for employee (or null) */
+    // Check if employee has active session
+    async getActiveSessionForEmployee(userId: number) {
+        return this.repo.findOne({
+            where: { user_id: userId, status: CashRegisterStatus.OPEN },
+        });
+    }
+
+    // Return flag: true = can continue POS, false = needs opening balance
+    async requiresOpeningBalance(userId: number): Promise<boolean> {
+        const active = await this.getActiveSessionForEmployee(userId);
+        return !!active;
+    }
+
+    // Start session with opening balance
+    async startSession(userId: number, opening_balance: number, branch_id?: number) {
+        const existing = await this.getActiveSessionForEmployee(userId);
+        if (existing) {
+            throw new BadRequestException('You already have an active session.');
+        }
+
+        const session = this.repo.create({
+            user_id: userId,
+            branch_id: branch_id ?? undefined,
+            opening_balance,
+            start_date: new Date(),
+            status: CashRegisterStatus.OPEN,
+        });
+
+        return this.repo.save(session);
+    }
+
+
+    async closeSession(sessionId: number, userId: number, closing_balance: number) {
+        try {
+            const session = await this.repo.findOne({ where: { id: sessionId } });
+            if (!session) {
+                throw new BadRequestException('Session not found');
+            }
+
+
+            if (session.user_id !== userId) {
+                throw new BadRequestException('Cannot close this session');
+            }
+
+            if (session.status !== CashRegisterStatus.OPEN) {
+                throw new BadRequestException('Session not open');
+            }
+
+
+            if (!session.start_date) {
+                throw new BadRequestException('Session start date missing - cannot calculate totals');
+            }
+
+
+            const startDate = session.start_date;
+            const endDate = new Date();
+
+
+            const salesQuery = this.salesOrderRepo.createQueryBuilder('so')
+                .select('COALESCE(SUM(so.total_amount), 0)', 'total')
+                .where('so.sales_person_id = :userId', { userId })
+                .andWhere('so.order_date BETWEEN :start AND :end', { start: startDate, end: endDate });
+
+            if (session.branch_id) {
+                salesQuery.andWhere('so.branch_id = :branchId', { branchId: session.branch_id });
+            }
+
+            const salesRow = await salesQuery.getRawOne();
+            const totalSales = Number(salesRow?.total ?? 0);
+
+
+            const returnsQuery = this.salesReturnRepo.createQueryBuilder('sr')
+                .select('COALESCE(SUM(sr.total_return_amount), 0)', 'total')
+                .where('sr.created_by = :userId', { userId })
+                .andWhere('sr.return_date BETWEEN :start AND :end', { start: startDate, end: endDate });
+
+            if (session.branch_id) {
+                returnsQuery.andWhere('sr.branch_id = :branchId', { branchId: session.branch_id });
+            }
+
+            const returnsRow = await returnsQuery.getRawOne();
+            const totalReturns = Number(returnsRow?.total ?? 0);
+
+            const opening = Number(session.opening_balance ?? 0);
+            const expected = Number((opening + totalSales - totalReturns).toFixed(2));
+            const difference = Number((closing_balance - expected).toFixed(2));
+
+          
+            const saved = await this.dataSource.transaction(async (manager) => {
+                const sess = await manager.findOne(CashRegisterSession, { where: { id: sessionId } });
+                if (!sess) throw new BadRequestException('Session not found in transaction');
+
+                
+                sess.closing_balance = Number(closing_balance.toFixed ? closing_balance.toFixed(2) : closing_balance);
+                sess.end_date = endDate;
+                sess.status = CashRegisterStatus.CLOSED;
+
+                
+                (sess as any).total_sales = Number(totalSales.toFixed ? totalSales.toFixed(2) : totalSales);
+                (sess as any).total_refunds = Number(totalReturns.toFixed ? totalReturns.toFixed(2) : totalReturns);
+                (sess as any).expected_balance = expected;
+                (sess as any).difference = difference;
+
+                const updated = await manager.save(sess);
+                return updated;
+            });
+
+            return {
+                success: true,
+                message: 'Session closed successfully',
+                data: {
+                    session_id: saved.id,
+                    user_id: saved.user_id,
+                    branch_id: saved.branch_id ?? null,
+                    opening_balance: Number(opening.toFixed ? opening.toFixed(2) : opening),
+                    total_sales: Number(totalSales.toFixed ? totalSales.toFixed(2) : totalSales),
+                    total_returns: Number(totalReturns.toFixed ? totalReturns.toFixed(2) : totalReturns),
+                    expected_balance: Number(expected.toFixed ? expected.toFixed(2) : expected),
+                    closing_balance: Number(saved.closing_balance ?? closing_balance),
+                    difference: Number(difference.toFixed ? difference.toFixed(2) : difference),
+                    start_date: session.start_date,
+                    end_date: saved.end_date,
+                    status: saved.status,
+                },
+                //  session: saved,
+            };
+        } catch (error) {
+            if (error instanceof BadRequestException) throw error;
+            throw new BadRequestException(error?.message ?? 'Failed to close session');
+        }
+    }
 
 }
 
