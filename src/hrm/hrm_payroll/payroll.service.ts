@@ -24,20 +24,20 @@ export class PayrollService {
   ) {}
 
 async generatePayroll(employee_id: number, month: number, year: number) {
-  // 1️⃣ Employee
+  //  Employee
   const emp = await this.employeeRepo.findOne({
     where: { id: employee_id },
     relations: ['allowances', 'annualLeave'],
   });
   if (!emp) throw new BadRequestException('Employee not found');
 
-  // 2️⃣ Employee company mapping
+  //  Employee company mapping
   const mapping = await this.userCompanyMappingRepo.findOne({
     where: { user_id: employee_id, status: 1 },
   });
   if (!mapping) throw new BadRequestException('Employee company mapping not found');
 
-  // 3️⃣ Attendance config
+  //  Attendance config
   const cfg = await this.configRepo.findOne({
     where: { company_id: mapping.company_id, status: 1 },
   });
@@ -48,7 +48,7 @@ async generatePayroll(employee_id: number, month: number, year: number) {
   const dailyHours = 9; // shift hours
   const salaryDays = cfg.daysPerMonth || 30;
 
-  // 4️⃣ Attendance & hours
+  // Attendance & hours
   let totalWorkHours = 0;
   let workedHours = 0;
   let lateHours = 0;
@@ -67,13 +67,13 @@ async generatePayroll(employee_id: number, month: number, year: number) {
     }
   }
 
-  // 5️⃣ Salary calculation
+  //  Salary calculation
   const salaryPerDay = emp.fixedSalary / salaryDays;
   const salaryPerHour = salaryPerDay / dailyHours;
   const lateDeduction = salaryPerHour * lateHours;
   let salaryAfterLate = emp.fixedSalary - lateDeduction;
 
-  // 6️⃣ Allowances
+  //  Allowances
   if (emp.allowances && emp.allowances.length) {
     for (const al of emp.allowances) {
       if (al.type === 'fixed') salaryAfterLate += Number(al.amount);
@@ -81,11 +81,11 @@ async generatePayroll(employee_id: number, month: number, year: number) {
     }
   }
 
-  // 7️⃣ Loan
+  //  Loan
   const loan = await this.loanRepo.findOne({ where: { emp_id: employee_id, loan_status: 2 } });
   if (loan) salaryAfterLate -= Number(loan.amount);
 
-  // 8️⃣ Unpaid leave
+  // Unpaid leave
   const unpaid = await this.unpaidLeaveRepo.findOne({ where: { employee: { id: employee_id }, status: 1 } });
   if (unpaid) {
     const unpaidHours = unpaid.unpain_days * dailyHours;
