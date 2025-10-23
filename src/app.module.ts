@@ -1,6 +1,6 @@
 import { Module, OnModuleInit } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppController } from 'src/app.controller';
+import { AppController } from '../src/app.controller';
 import { AppService } from './app.service';
 import { registerUser } from './seeder/user-seeder.service';
 import { User } from './entities/user.entity';
